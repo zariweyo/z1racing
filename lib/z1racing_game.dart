@@ -11,10 +11,9 @@ import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
 import 'package:z1racing/car.dart';
 import 'package:z1racing/game_colors.dart';
-import 'package:z1racing/lap_line.dart';
+import 'package:z1racing/track/components/lap_line.dart';
 import 'package:z1racing/lap_text.dart';
-import 'package:z1racing/track/slot.dart';
-import 'package:z1racing/track/wall.dart';
+import 'package:z1racing/track/track.dart';
 
 final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
   {
@@ -62,14 +61,8 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     cameraWorld = World();
     add(cameraWorld);
 
-    final walls = createWalls(trackSize);
-    cameraWorld.addAll([
-      LapLine(1, Vector2(25, 50), Vector2(50, 5), isFinish: false),
-      LapLine(2, Vector2(25, 70), Vector2(50, 5), isFinish: false),
-      LapLine(3, Vector2(52.5, 25), Vector2(5, 50), isFinish: true),
-      ...walls,
-      ...Slot(position: Vector2(10, 100), size: 30).getBodys(),
-    ]);
+    cameraWorld
+        .addAll(Track(position: Vector2(200, 200), size: 30).getComponents());
 
     openMenu();
   }

@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as Math;
 import 'dart:ui';
 
 import 'package:flame/extensions.dart';
@@ -10,13 +10,15 @@ import 'package:z1racing/car.dart';
 import 'package:z1racing/game_colors.dart';
 
 class LapLine extends BodyComponent with ContactCallbacks {
-  LapLine(this.id, this.position, this.size, {required this.isFinish})
+  LapLine(this.id, this.position, this.size,
+      {required this.isFinish, this.angle = 0})
       : super(priority: 1);
 
   final int id;
   final bool isFinish;
   final Vector2 position;
   final Vector2 size;
+  final double angle;
   late final Rect rect = size.toRect();
   Image? _finishOverlay;
 
@@ -36,7 +38,7 @@ class LapLine extends BodyComponent with ContactCallbacks {
       ..style = PaintingStyle.fill
       ..shader = Gradient.radial(
         (size / 2).toOffset(),
-        max(size.x, size.y),
+        Math.max(size.x, size.y),
         [
           paint.color,
           Colors.black,
@@ -79,6 +81,7 @@ class LapLine extends BodyComponent with ContactCallbacks {
   @override
   void render(Canvas canvas) {
     canvas.translate(-size.x / 2, -size.y / 2);
+    canvas.rotate(angle);
     canvas.drawRect(rect, paint);
     if (_finishOverlay != null) {
       canvas.drawImageRect(_finishOverlay!, _scaledRect, _drawRect, paint);

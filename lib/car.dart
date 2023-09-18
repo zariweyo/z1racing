@@ -5,7 +5,7 @@ import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:z1racing/game_colors.dart';
-import 'package:z1racing/lap_line.dart';
+import 'package:z1racing/track/components/lap_line.dart';
 import 'package:z1racing/z1racing_game.dart';
 import 'package:z1racing/tire.dart';
 
