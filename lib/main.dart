@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart' hide Image, Gradient;
-import 'package:z1racing/z1racing_widget.dart';
+import 'package:flutter/services.dart';
+import 'package:z1racing/game/z1racing_widget.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(
     const Z1RacingWidget(),
   );
