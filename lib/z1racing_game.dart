@@ -11,7 +11,6 @@ import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
 import 'package:z1racing/car.dart';
 import 'package:z1racing/game_colors.dart';
-import 'package:z1racing/track/components/lap_line.dart';
 import 'package:z1racing/lap_text.dart';
 import 'package:z1racing/track/track.dart';
 
