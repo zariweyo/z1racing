@@ -13,6 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   url_launcher: ^6.1.11
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flame_lint: ^1.1.0
@@ -24,3 +25,4 @@ flutter:
 
   assets:
     - assets/images/
+    - google_fonts/

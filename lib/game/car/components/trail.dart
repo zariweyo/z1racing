@@ -20,8 +20,8 @@ class Trail extends Component with HasPaint {
   @override
   Future<void> onLoad() async {
     paint
-      ..color = (tire.paint.color.withOpacity(0.9))
-      ..strokeWidth = 1.0;
+      ..color = (Color.fromARGB(40, 144, 121, 121))
+      ..strokeWidth = 2.0;
   }
 
   @override

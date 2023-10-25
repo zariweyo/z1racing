@@ -14,6 +14,7 @@ import 'package:z1racing/game/controls/components/buttons_game.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
 import 'package:z1racing/game/game_colors.dart';
 import 'package:z1racing/game/panel/components/lap_text.dart';
+import 'package:z1racing/game/panel/components/sublap_list.dart';
 import 'package:z1racing/game/track/track.dart';
 
 final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
@@ -169,10 +170,16 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     }
 
     for (var i = 0; i < numberOfPlayers; i++) {
-      final car = Car(playerNumber: i, cameraComponent: cameras[i]);
+      final car =
+          Car(images: images, playerNumber: i, cameraComponent: cameras[i]);
       final lapText = LapText(
         car: car,
         position: Vector2.all(100),
+      );
+
+      final sublapText = SubLapList(
+        car: car,
+        position: Vector2(100, 150),
       );
 
       car.lapNotifier.addListener(() {
@@ -198,7 +205,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       });
       cars.add(car);
       cameraWorld.add(car);
-      cameras[i].viewport.addAll([lapText, mapCameras[i]]);
+      cameras[i].viewport.addAll([lapText, sublapText, mapCameras[i]]);
     }
 
     pressedKeySets = List.generate(numberOfPlayers, (_) => {});
@@ -262,20 +269,6 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     for (final camera in children.query<CameraComponent>()) {
       camera.removeFromParent();
     }
-  }
-
-  String _maybePrefixZero(int number) {
-    if (number < 10) {
-      return '0$number';
-    }
-    return number.toString();
-  }
-
-  String get timePassed {
-    final minutes = _maybePrefixZero((_timePassed / 60).floor());
-    final seconds = _maybePrefixZero((_timePassed % 60).floor());
-    final ms = _maybePrefixZero(((_timePassed % 1) * 100).floor());
-    return [minutes, seconds, ms].join(':');
   }
 
   double get seconds => _timePassed * 1000;

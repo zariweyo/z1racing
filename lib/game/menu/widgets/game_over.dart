@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide Image, Gradient;
+import 'package:z1racing/extensions/duration_extension.dart';
 import 'package:z1racing/game/menu/widgets/menu_card.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
@@ -24,7 +25,7 @@ class GameOver extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Time: ${game.timePassed}',
+                  'Time: ${Duration(milliseconds: game.seconds.toInt()).toChronoString()}',
                   style: textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 10),

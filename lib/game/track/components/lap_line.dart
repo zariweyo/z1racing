@@ -7,7 +7,6 @@ import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
 
 import 'package:z1racing/game/car/components/car.dart';
-import 'package:z1racing/game/game_colors.dart';
 
 class LapLine extends BodyComponent with ContactCallbacks {
   LapLine(this.id, this.position, this.size,
@@ -32,8 +31,9 @@ class LapLine extends BodyComponent with ContactCallbacks {
 
   @override
   Body createBody() {
-    paint.color = (isFinish ? GameColors.green.color : GameColors.green.color)
-      ..withOpacity(0.5);
+    paint.color = (isFinish
+        ? Color.fromARGB(255, 255, 255, 255)
+        : Color.fromARGB(128, 255, 255, 255));
     paint
       ..style = PaintingStyle.fill
       ..shader = Gradient.radial(

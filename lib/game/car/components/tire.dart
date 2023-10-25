@@ -18,8 +18,8 @@ class Tire extends BodyComponent<Z1RacingGame> {
     this.isTurnableTire = false,
   }) : super(
           paint: Paint()
-            ..color = car.paint.color
-            ..strokeWidth = 0.2
+            ..color = Color.fromARGB(207, 144, 10, 10)
+            ..strokeWidth = 0.5
             ..style = PaintingStyle.stroke,
           priority: 2,
         );

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
@@ -10,7 +11,10 @@ import 'package:z1racing/game/z1racing_game.dart';
 import 'package:z1racing/game/car/components/tire.dart';
 
 class Car extends BodyComponent<Z1RacingGame> {
-  Car({required this.playerNumber, required this.cameraComponent})
+  Car(
+      {required this.images,
+      required this.playerNumber,
+      required this.cameraComponent})
       : super(
           priority: 3,
           paint: Paint()..color = colors[playerNumber],
@@ -21,56 +25,25 @@ class Car extends BodyComponent<Z1RacingGame> {
     GameColors.blue.color,
   ];
 
+  final Images images;
   late final List<Tire> tires;
   final ValueNotifier<int> lapNotifier = ValueNotifier<int>(1);
   final int playerNumber;
   final Set<LapLine> passedStartControl = {};
   final CameraComponent cameraComponent;
   late final Image _image;
-  final size = const Size(6, 10);
+  final size = const Size(7, 12);
   final scale = 10.0;
   late final _renderPosition = -size.toOffset() / 2;
-  late final _scaledRect = (size * scale).toRect();
   late final _renderRect = _renderPosition & size;
-
-  final vertices = <Vector2>[
-    Vector2(1.5, -5.0),
-    Vector2(3.0, -2.5),
-    Vector2(2.8, 0.5),
-    Vector2(1.0, 5.0),
-    Vector2(-1.0, 5.0),
-    Vector2(-2.8, 0.5),
-    Vector2(-3.0, -2.5),
-    Vector2(-1.5, -5.0),
-  ];
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    final recorder = PictureRecorder();
-    final canvas = Canvas(recorder, _scaledRect);
-    final path = Path();
-    final bodyPaint = Paint()..color = paint.color;
-    for (var i = 0.0; i < _scaledRect.width / 4; i++) {
-      bodyPaint.color = bodyPaint.color.darken(0.1);
-      path.reset();
-      final offsetVertices = vertices
-          .map(
-            (v) =>
-                v.toOffset() * scale -
-                Offset(i * v.x.sign, i * v.y.sign) +
-                _scaledRect.bottomRight / 2,
-          )
-          .toList();
-      path.addPolygon(offsetVertices, true);
-      canvas.drawPath(path, bodyPaint);
-    }
-    final picture = recorder.endRecording();
-    _image = await picture.toImage(
-      _scaledRect.width.toInt(),
-      _scaledRect.height.toInt(),
-    );
+    final image = await images.load('ford_mini.png');
+
+    _image = image;
   }
 
   @override
@@ -84,10 +57,11 @@ class Car extends BodyComponent<Z1RacingGame> {
       ..userData = this
       ..angularDamping = 3.0;
 
-    final shape = PolygonShape()..set(vertices);
+    final shape = PolygonShape()
+      ..setAsBoxXY(_renderPosition.dx, _renderPosition.dy);
     final fixtureDef = FixtureDef(shape)
-      ..density = 0.2
-      ..restitution = 2.0;
+      ..density = 0.03
+      ..restitution = 0.9;
     body.createFixture(fixtureDef);
 
     final jointDef = RevoluteJointDef()
@@ -124,7 +98,7 @@ class Car extends BodyComponent<Z1RacingGame> {
   void render(Canvas canvas) {
     canvas.drawImageRect(
       _image,
-      _scaledRect,
+      _image.size.toRect(),
       _renderRect,
       paint,
     );

@@ -1,6 +1,8 @@
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
+import 'package:google_fonts/google_fonts.dart';
+import 'package:z1racing/extensions/duration_extension.dart';
 
 import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/z1racing_game.dart';
@@ -17,9 +19,9 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    final textStyle = TextStyle(
-      fontSize: 35,
-      color: car.paint.color,
+    final textStyle = GoogleFonts.rubikMonoOne(
+      fontSize: 20,
+      color: Color.fromARGB(235, 248, 248, 248),
     );
     final defaultRenderer = TextPaint(style: textStyle);
     final lapCountRenderer = TextPaint(
@@ -46,8 +48,6 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
       } else {
         lapCounter.text = 'DONE';
       }
-      if (lapNotifier.value > 1)
-        _addTime(Duration(milliseconds: gameRef.seconds.toInt()));
     }
 
     _timePassedComponent = TextComponent(
@@ -58,7 +58,7 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
     add(_timePassedComponent);
 
     _backgroundPaint = Paint()
-      ..color = car.paint.color
+      ..color = Color.fromARGB(235, 248, 248, 248)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -66,34 +66,13 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
     updateLapText();
   }
 
-  _addTime(Duration time) {
-    Duration timeMod = time;
-    if (!lapTimes.isEmpty) {
-      timeMod = time - lapTimes.last;
-    }
-    lapTimes.add(time);
-
-    final textStyle = TextStyle(
-      fontSize: 20,
-      color: car.paint.color,
-    );
-    final defaultRenderer = TextPaint(style: textStyle);
-    final newTime = TextComponent(
-      text:
-          "${timeMod.inMinutes}:${timeMod.inSeconds % 60}:${timeMod.inMilliseconds % 1000}",
-      position: Vector2(0, 70 + (lapTimes.length) * 22),
-      anchor: Anchor.center,
-      textRenderer: defaultRenderer,
-    );
-    add(newTime);
-  }
-
   @override
   void update(double dt) {
     if (gameRef.isGameOver) {
       return;
     }
-    _timePassedComponent.text = gameRef.timePassed;
+    _timePassedComponent.text =
+        Duration(milliseconds: gameRef.seconds.toInt()).toChronoString();
   }
 
   final _backgroundRect = RRect.fromRectAndRadius(
