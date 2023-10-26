@@ -9,12 +9,14 @@ import 'package:flame/input.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
+import 'package:z1racing/game/z1racing_game.dart';
 
 enum ButtonGameType { left, right, up, down }
 
 class ButtonsGame extends PositionComponent {
-  static Future<ButtonsGame> create({required Images images}) async {
-    return ButtonsGame(images: images);
+  static Future<ButtonsGame> create(
+      {required game, required Images images}) async {
+    return ButtonsGame(game: game, images: images);
   }
 
   StreamSubscription? _valueChangeSubscription;
@@ -22,9 +24,9 @@ class ButtonsGame extends PositionComponent {
   final _notifier = ValueNotifier<ControlsData>(ControlsData.zero());
   final Images images;
 
-  ButtonsGame({required this.images}) {
+  ButtonsGame({required Z1RacingGame game, required this.images}) {
     position = Vector2(0, 100);
-    size = Vector2(200, 200);
+    size = game.size;
     this._notifier.addListener(_listener);
   }
 

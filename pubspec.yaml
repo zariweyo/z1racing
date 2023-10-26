@@ -8,8 +8,8 @@ environment:
 
 dependencies:
   collection: ^1.17.1
-  flame: ^1.8.2
-  flame_forge2d: ^0.14.1+1
+  flame: ^1.10.0
+  flame_forge2d: ^0.15.1
   flutter:
     sdk: flutter
   url_launcher: ^6.1.11

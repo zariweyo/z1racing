@@ -70,7 +70,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    gameRef.cameraWorld.add(Trail(car: car, tire: this));
+    game.cameraWorld.add(Trail(car: car, tire: this));
   }
 
   @override
@@ -103,7 +103,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
         controlsData.hasVertical()) {
       _updateTurn(dt);
       _updateFriction();
-      if (!gameRef.isGameOver) {
+      if (!game.isGameOver) {
         _updateDrive();
       }
     }

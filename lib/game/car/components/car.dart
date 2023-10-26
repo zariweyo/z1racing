@@ -76,8 +76,8 @@ class Car extends BodyComponent<Z1RacingGame> {
       final isLeftTire = i.isEven;
       return Tire(
         car: this,
-        pressedKeys: gameRef.pressedKeySets[playerNumber],
-        controlsData: gameRef.controlsDatas[playerNumber],
+        pressedKeys: game.pressedKeySets[playerNumber],
+        controlsData: game.controlsDatas[playerNumber],
         isFrontTire: isFrontTire,
         isLeftTire: isLeftTire,
         jointDef: jointDef,
@@ -85,7 +85,7 @@ class Car extends BodyComponent<Z1RacingGame> {
       );
     });
 
-    gameRef.cameraWorld.addAll(tires);
+    game.cameraWorld.addAll(tires);
     return body;
   }
 

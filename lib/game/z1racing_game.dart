@@ -106,7 +106,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   }
 
   void initJoystick() async {
-    joystick = await ButtonsGame.create(images: images);
+    joystick = await ButtonsGame.create(game: this, images: images);
     joystick?.stream.listen(onJoystickChange);
   }
 
