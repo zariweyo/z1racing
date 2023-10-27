@@ -68,8 +68,6 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     cameraWorld
         .addAll(Track(position: Vector2(200, 200), size: 30).getComponents());
 
-    initJoystick();
-
     openMenu();
   }
 
@@ -105,7 +103,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       );
   }
 
-  void initJoystick() async {
+  Future<void> initJoystick() async {
     joystick = await ButtonsGame.create(game: this, images: images);
     joystick?.stream.listen(onJoystickChange);
   }
@@ -150,7 +148,8 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         ..viewfinder.zoom = playZoom;
     });
 
-    final mapCameraSize = Vector2.all(500);
+    // Disabled for performance issues in some devices
+    /* final mapCameraSize = Vector2.all(500);
     const mapCameraZoom = 0.3;
     final mapCameras = List.generate(numberOfPlayers, (i) {
       return CameraComponent(
@@ -163,11 +162,8 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       )
         ..viewfinder.anchor = Anchor.topLeft
         ..viewfinder.zoom = mapCameraZoom;
-    });
+    }); */
     addAll(cameras);
-    if (joystick != null) {
-      add(joystick!);
-    }
 
     for (var i = 0; i < numberOfPlayers; i++) {
       final car =
@@ -203,9 +199,17 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
           );
         }
       });
+
+      initJoystick().then((_) {
+        add(joystick!);
+      });
       cars.add(car);
       cameraWorld.add(car);
-      cameras[i].viewport.addAll([lapText, sublapText, mapCameras[i]]);
+      cameras[i].viewport.addAll([
+        lapText,
+        sublapText,
+        /*mapCameras[i] disabled by performance issue*/
+      ]);
     }
 
     pressedKeySets = List.generate(numberOfPlayers, (_) => {});
