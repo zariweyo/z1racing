@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart' hide Image, Gradient;
+import 'package:nakama/nakama.dart';
 import 'package:z1racing/game/menu/widgets/menu_card.dart';
 import 'package:z1racing/game/z1racing_game.dart';
+import 'package:z1racing/repositories/nakama_repository.dart';
 
 class Menu extends StatelessWidget {
   const Menu(this.game, {super.key});
@@ -37,6 +39,19 @@ class Menu extends StatelessWidget {
                     Text(
                       'Arrow keys or Buttons',
                       style: textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      child: const Text('Connect Nakama'),
+                      onPressed: () {
+                        NakamaRepository.testCreate();
+                      },
+                    ),
+                    ElevatedButton(
+                      child: const Text('Join Nakama'),
+                      onPressed: () {
+                        NakamaRepository.testJoin();
+                      },
                     ),
                     /* const SizedBox(height: 10),
                     ElevatedButton(
