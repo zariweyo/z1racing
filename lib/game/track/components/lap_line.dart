@@ -7,6 +7,7 @@ import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
 
 import 'package:z1racing/game/car/components/car.dart';
+import 'package:z1racing/game/repositories/game_repository_impl.dart';
 
 class LapLine extends BodyComponent with ContactCallbacks {
   LapLine(this.id, this.position, this.size,
@@ -94,7 +95,7 @@ class LapLine extends BodyComponent with ContactCallbacks {
       return;
     }
     if (isFinish && other.passedStartControl.length == 2) {
-      other.lapNotifier.value++;
+      GameRepositoryImpl().addLap();
       other.passedStartControl.clear();
     } else if (!isFinish) {
       other.passedStartControl

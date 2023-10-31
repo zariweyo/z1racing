@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
 
 import 'package:z1racing/game/car/components/car.dart';
+import 'package:z1racing/game/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
@@ -12,9 +13,9 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
       : super(position: position);
 
   final Car car;
-  late final ValueNotifier<int> lapNotifier = car.lapNotifier;
+  late final ValueNotifier<int> lapNotifier =
+      GameRepositoryImpl().getLapNotifier();
   late final TextComponent _timePassedComponent;
-  List<Duration> lapTimes = [];
 
   @override
   Future<void> onLoad() async {
@@ -42,7 +43,7 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
     );
     add(lapCounter);
     void updateLapText() {
-      if (lapNotifier.value <= Z1RacingGame.numberOfLaps) {
+      if (!GameRepositoryImpl().raceEnd()) {
         final prefix = lapNotifier.value < 10 ? '0' : '';
         lapCounter.text = '$prefix${lapNotifier.value}';
       } else {
@@ -72,7 +73,8 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
       return;
     }
     _timePassedComponent.text =
-        Duration(milliseconds: gameRef.seconds.toInt()).toChronoString();
+        Duration(milliseconds: GameRepositoryImpl().getTime().toInt())
+            .toChronoString();
   }
 
   final _backgroundRect = RRect.fromRectAndRadius(

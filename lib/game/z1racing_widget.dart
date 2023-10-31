@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'package:z1racing/game/menu/widgets/game_over.dart';
 import 'package:z1racing/game/menu/widgets/menu.dart';
+import 'package:z1racing/game/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class Z1RacingWidget extends StatefulWidget {
@@ -19,11 +20,13 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
   @override
   void initState() {
     key = GlobalKey();
+    GameRepositoryImpl();
     super.initState();
   }
 
   _reset() {
     setState(() {
+      GameRepositoryImpl().reset();
       key = GlobalKey();
     });
   }

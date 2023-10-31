@@ -2,9 +2,10 @@ import 'dart:math' as Math;
 
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
+import 'package:z1racing/game/repositories/track_repository.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/track/models/track_model.dart';
-import 'package:z1racing/game/track/repositories/track_repository.dart';
+import 'package:z1racing/game/repositories/track_repository_mock.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
 
 class Track {
@@ -15,7 +16,7 @@ class Track {
   List<TrackModel> _trackModels = [];
 
   Track({this.size = 40, required this.position}) {
-    TrackRepository trackRepository = TrackRepository();
+    TrackRepository trackRepository = TrackRepositoryMock();
 
     _trackModels = trackRepository.getTrack();
 

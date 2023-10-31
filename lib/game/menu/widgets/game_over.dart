@@ -1,6 +1,8 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:z1racing/extensions/duration_extension.dart';
 import 'package:z1racing/game/menu/widgets/menu_card.dart';
+import 'package:z1racing/game/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class GameOver extends StatelessWidget {
@@ -20,12 +22,16 @@ class GameOver extends StatelessWidget {
             MenuCard(
               children: [
                 Text(
-                  'Player ${game.winner!.playerNumber + 1} wins!',
+                  'FINISH!!!',
                   style: textTheme.displayLarge,
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Time: ${Duration(milliseconds: game.seconds.toInt()).toChronoString()}',
+                  'Time: ${Duration(milliseconds: GameRepositoryImpl().getTime().toInt()).toChronoString()}',
+                  style: textTheme.bodyLarge,
+                ),
+                Text(
+                  'Best LAP: ${Duration(milliseconds: GameRepositoryImpl().getLapTimes().min.inMilliseconds).toChronoString()}',
                   style: textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 10),
