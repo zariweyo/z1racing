@@ -59,7 +59,7 @@ class Car extends BodyComponent<Z1RacingGame> {
     final shape = PolygonShape()
       ..setAsBoxXY(_renderPosition.dx, _renderPosition.dy);
     final fixtureDef = FixtureDef(shape)
-      ..density = 0.06
+      ..density = 0.04
       ..restitution = 0.9;
     body.createFixture(fixtureDef);
 
