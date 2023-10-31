@@ -1,6 +1,8 @@
+import 'package:z1racing/game/repositories/track_repository.dart';
 import 'package:z1racing/game/track/models/track_model.dart';
 
-class TrackRepository {
+class TrackRepositoryMock extends TrackRepository {
+  @override
   List<TrackModel> getTrack() {
     List<Map<String, dynamic>> data = [
       {

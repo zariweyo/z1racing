@@ -4,7 +4,6 @@ import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
-import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:z1racing/game/game_colors.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/z1racing_game.dart';
@@ -27,7 +26,7 @@ class Car extends BodyComponent<Z1RacingGame> {
 
   final Images images;
   late final List<Tire> tires;
-  final ValueNotifier<int> lapNotifier = ValueNotifier<int>(1);
+
   final int playerNumber;
   final Set<LapLine> passedStartControl = {};
   final CameraComponent cameraComponent;

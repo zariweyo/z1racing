@@ -13,8 +13,11 @@ import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/controls/components/buttons_game.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
 import 'package:z1racing/game/game_colors.dart';
+import 'package:z1racing/game/panel/components/countdown_text.dart';
 import 'package:z1racing/game/panel/components/lap_text.dart';
 import 'package:z1racing/game/panel/components/sublap_list.dart';
+import 'package:z1racing/game/repositories/game_repository.dart';
+import 'package:z1racing/game/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/track/track.dart';
 
 final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
@@ -47,7 +50,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
 
   static final Vector2 trackSize = Vector2.all(500);
   static const double playZoom = 3.0;
-  static const int numberOfLaps = 5;
+
   late final World cameraWorld;
   late CameraComponent startCamera;
   late List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> activeKeyMaps;
@@ -57,16 +60,20 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   final cars = <Car>[];
   bool isGameOver = true;
   Car? winner;
-  double _timePassed = 0;
+  late CountdownText countdownText;
+  GameRepository _gameRepository = GameRepositoryImpl();
 
   @override
   Future<void> onLoad() async {
+    _gameRepository.reset();
     children.register<CameraComponent>();
     cameraWorld = World();
     add(cameraWorld);
 
     cameraWorld
         .addAll(Track(position: Vector2(200, 200), size: 30).getComponents());
+
+    countdownText = CountdownText();
 
     openMenu();
   }
@@ -178,8 +185,8 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         position: Vector2(100, 150),
       );
 
-      car.lapNotifier.addListener(() {
-        if (car.lapNotifier.value > numberOfLaps) {
+      _gameRepository.getLapNotifier().addListener(() {
+        if (_gameRepository.raceEnd()) {
           isGameOver = true;
           winner = car;
           overlays.add('game_over');
@@ -203,6 +210,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       initJoystick().then((_) {
         add(joystick!);
       });
+
       cars.add(car);
       cameraWorld.add(car);
       cameras[i].viewport.addAll([
@@ -210,6 +218,13 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         sublapText,
         /*mapCameras[i] disabled by performance issue*/
       ]);
+
+      add(countdownText);
+      countdownText.onFinish.addListener(() {
+        if (countdownText.onFinish.value) {
+          remove(countdownText);
+        }
+      });
     }
 
     pressedKeySets = List.generate(numberOfPlayers, (_) => {});
@@ -223,7 +238,9 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     if (isGameOver) {
       return;
     }
-    _timePassed += dt;
+    if (countdownText.onFinish.value) {
+      _gameRepository.addTime(dt);
+    }
   }
 
   void onJoystickChange(ControlsData event) {
@@ -260,20 +277,4 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       pressedKeySet.clear();
     }
   }
-
-  void reset() {
-    _clearPressedKeys();
-    activeKeyMaps.clear();
-    _timePassed = 0;
-    overlays.remove('game_over');
-    openMenu();
-    for (final car in cars) {
-      car.removeFromParent();
-    }
-    for (final camera in children.query<CameraComponent>()) {
-      camera.removeFromParent();
-    }
-  }
-
-  double get seconds => _timePassed * 1000;
 }
