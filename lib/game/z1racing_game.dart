@@ -177,33 +177,15 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
           Car(images: images, playerNumber: i, cameraComponent: cameras[i]);
       final lapText = LapText(
         car: car,
-        position: Vector2.all(100),
       );
 
-      final sublapText = SubLapList(
-        car: car,
-        position: Vector2(100, 150),
-      );
+      final sublapText = SubLapList(car: car);
 
       _gameRepository.getLapNotifier().addListener(() {
         if (_gameRepository.raceEnd()) {
           isGameOver = true;
           winner = car;
           overlays.add('game_over');
-          lapText.addAll([
-            ScaleEffect.by(
-              Vector2.all(1.5),
-              EffectController(duration: 0.2, alternate: true, repeatCount: 3),
-            ),
-            RotateEffect.by(pi * 2, EffectController(duration: 0.5)),
-          ]);
-        } else {
-          lapText.add(
-            ScaleEffect.by(
-              Vector2.all(1.5),
-              EffectController(duration: 0.2, alternate: true),
-            ),
-          );
         }
       });
 

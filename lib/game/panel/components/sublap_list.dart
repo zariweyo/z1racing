@@ -11,8 +11,7 @@ import 'package:z1racing/game/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class SubLapList extends PositionComponent with HasGameRef<Z1RacingGame> {
-  SubLapList({required this.car, required Vector2 position})
-      : super(position: position);
+  SubLapList({required this.car}) : super(position: Vector2(80, 80));
 
   final Car car;
   List<TextComponent> textComponents = [];
@@ -37,7 +36,7 @@ class SubLapList extends PositionComponent with HasGameRef<Z1RacingGame> {
     lapTimes.forEachIndexed((index, lapTime) {
       bool isMin = lapTimes.min.inMilliseconds == lapTime.inMilliseconds;
       final textStyle = GoogleFonts.rubikMonoOne(
-        fontSize: isMin ? 20 : 15,
+        fontSize: isMin ? 15 : 12,
         fontWeight: isMin ? FontWeight.bold : FontWeight.w300,
         color: Color.fromARGB(232, 240, 234, 234),
       );

@@ -51,7 +51,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   // Make mutable if ice or something should be implemented
   final double _currentTraction = 1.0;
-  final double _currentInertia = 0.01;
+  final double _currentInertia = 0.001;
 
   final double _maxForwardSpeed = 250.0;
   final double _maxBackwardSpeed = -40.0;
