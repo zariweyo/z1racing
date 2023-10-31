@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'package:z1racing/game/menu/widgets/game_over.dart';
 import 'package:z1racing/game/menu/widgets/menu.dart';
+import 'package:z1racing/game/repositories/firebase_auth_repository.dart';
 import 'package:z1racing/game/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
@@ -20,6 +21,7 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
   @override
   void initState() {
     key = GlobalKey();
+    FirebaseAuthRepository();
     GameRepositoryImpl();
     super.initState();
   }
