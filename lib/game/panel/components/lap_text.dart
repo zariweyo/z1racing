@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:google_fonts/google_fonts.dart';
@@ -9,8 +12,7 @@ import 'package:z1racing/game/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
-  LapText({required this.car, required Vector2 position})
-      : super(position: position);
+  LapText({required this.car}) : super(position: Vector2(70, 50));
 
   final Car car;
   late final ValueNotifier<int> lapNotifier =
@@ -20,24 +22,24 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    final textStyle = GoogleFonts.rubikMonoOne(
-      fontSize: 20,
+    final TextStyle textStyle = GoogleFonts.rubikMonoOne(
+      fontSize: 12,
       color: Color.fromARGB(235, 248, 248, 248),
     );
     final defaultRenderer = TextPaint(style: textStyle);
-    final lapCountRenderer = TextPaint(
-      style: textStyle.copyWith(fontSize: 45, fontWeight: FontWeight.bold),
+    TextPaint lapCountRenderer = TextPaint(
+      style: textStyle.copyWith(fontSize: 25, fontWeight: FontWeight.bold),
     );
     add(
       TextComponent(
         text: 'Lap',
-        position: Vector2(0, -20),
+        position: Vector2(0, -10),
         anchor: Anchor.center,
         textRenderer: defaultRenderer,
       ),
     );
     final lapCounter = TextComponent(
-      position: Vector2(0, 20),
+      position: Vector2(0, 10),
       anchor: Anchor.center,
       textRenderer: lapCountRenderer,
     );
@@ -52,7 +54,7 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
     }
 
     _timePassedComponent = TextComponent(
-      position: Vector2(0, 70),
+      position: Vector2(0, 50),
       anchor: Anchor.center,
       textRenderer: defaultRenderer,
     );
@@ -65,6 +67,25 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
 
     lapNotifier.addListener(updateLapText);
     updateLapText();
+
+    GameRepositoryImpl().getLapNotifier().addListener(() {
+      if (GameRepositoryImpl().raceEnd()) {
+        addAll([
+          ScaleEffect.by(
+            Vector2.all(1.5),
+            EffectController(duration: 0.2, alternate: true, repeatCount: 3),
+          ),
+          RotateEffect.by(pi * 2, EffectController(duration: 0.5)),
+        ]);
+      } else {
+        add(
+          ScaleEffect.by(
+            Vector2.all(1.5),
+            EffectController(duration: 0.2, alternate: true),
+          ),
+        );
+      }
+    });
   }
 
   @override
@@ -78,7 +99,7 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
   }
 
   final _backgroundRect = RRect.fromRectAndRadius(
-    Rect.fromCircle(center: Offset.zero, radius: 50),
+    Rect.fromCircle(center: Offset.zero, radius: 30),
     const Radius.circular(10),
   );
   late final Paint _backgroundPaint;
