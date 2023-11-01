@@ -4,7 +4,7 @@ import 'package:z1racing/game/track/models/rect_model.dart';
 
 enum TrackModelType { rect, curve }
 
-abstract class TrackModel {
+abstract class SlotModel {
   final Vector2 size;
   final TrackModelType type;
   List<Vector2> get points1;
@@ -15,9 +15,9 @@ abstract class TrackModel {
   double get inputAngle;
   double get outputAngle;
 
-  TrackModel({required this.size, required this.type});
+  SlotModel({required this.size, required this.type});
 
-  factory TrackModel.fromMap(Map<String, dynamic> map) {
+  factory SlotModel.fromMap(Map<String, dynamic> map) {
     assert(TrackModelType.values.map((e) => e.name).contains(map['type']));
     TrackModelType type = TrackModelType.values
         .firstWhere((element) => element.name == map['type']);

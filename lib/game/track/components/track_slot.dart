@@ -2,26 +2,26 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:z1racing/game/track/models/track_model.dart';
+import 'package:z1racing/game/track/models/slot_model.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class TrackSlot extends BodyComponent<Z1RacingGame> {
   TrackSlot(
-      {required this.trackModel,
+      {required this.slotModel,
       required this.position,
       required this.angle,
       this.backgroundColor = const Color.fromARGB(0, 0, 0, 0)}) {}
 
   final Color backgroundColor;
-  final TrackModel trackModel;
+  final SlotModel slotModel;
 
   late final Image _image;
 
   final Vector2 position;
 
   final scale = 10.0;
-  late final _scaledRect = (trackModel.size * scale).toRect();
-  late final _renderRect = Offset(0, 0) & trackModel.size.toSize();
+  late final _scaledRect = (slotModel.size * scale).toRect();
+  late final _renderRect = Offset(0, 0) & slotModel.size.toSize();
 
   final double angle;
 
@@ -39,7 +39,7 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
 
     Path path = Path();
 
-    trackModel.points1.forEachIndexed((index, element) {
+    slotModel.points1.forEachIndexed((index, element) {
       element = element * scale;
       if (index == 0) {
         path.moveTo(element.x, element.y);
@@ -48,7 +48,7 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
       }
     });
 
-    trackModel.points2.reversed.forEachIndexed((index, element) {
+    slotModel.points2.reversed.forEachIndexed((index, element) {
       element = element * scale;
       if (index == 0) {
         path.moveTo(element.x, element.y);
@@ -65,7 +65,7 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
     paint.style = PaintingStyle.fill;
     paint.strokeWidth = 7.0;
 
-    trackModel.pointsAdded.reversed.forEachIndexed((index, element) {
+    slotModel.pointsAdded.reversed.forEachIndexed((index, element) {
       element = element * scale;
       if (index == 0) {
         path.moveTo(element.x, element.y);
@@ -74,7 +74,7 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
       }
     });
 
-    trackModel.pointsAddedPlus.forEachIndexed((index, element) {
+    slotModel.pointsAddedPlus.forEachIndexed((index, element) {
       element = element * scale;
       path.lineTo(element.x, element.y);
     });
@@ -100,11 +100,11 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
       ..userData = this
       ..angularDamping = 3.0;
 
-    final shapeExternal = ChainShape()..createChain(trackModel.points1);
+    final shapeExternal = ChainShape()..createChain(slotModel.points1);
     final shapeInternal = ChainShape()
-      ..createChain(trackModel.pointsAdded.isNotEmpty
-          ? trackModel.pointsAdded
-          : trackModel.points2);
+      ..createChain(slotModel.pointsAdded.isNotEmpty
+          ? slotModel.pointsAdded
+          : slotModel.points2);
 
     final fixtureDefExternal = FixtureDef(shapeExternal)..restitution = 0.5;
     final fixtureDefInternal = FixtureDef(shapeInternal)..restitution = 0.5;

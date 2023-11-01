@@ -1,12 +1,12 @@
 import 'dart:math' as Math;
 import 'package:flame/extensions.dart';
-import 'package:z1racing/game/track/models/track_model.dart';
+import 'package:z1racing/game/track/models/slot_model.dart';
 
 enum CurveModelDirection { right, left }
 
 enum CurveModelClosedAdded { none, start, end, both }
 
-class CurveModel extends TrackModel {
+class CurveModel extends SlotModel {
   final double radius;
   final CurveModelDirection direction;
   final CurveModelClosedAdded closedAdded;

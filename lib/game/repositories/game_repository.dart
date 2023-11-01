@@ -9,11 +9,11 @@ abstract class GameRepository {
   void setTime(double time);
   void addTime(double time);
   double getTime();
-  bool raceEnd();
+  bool raceIsEnd();
   GameStatus getStatus();
   void setStatus(GameStatus status);
   void reset();
-  void addLap();
   void addLapTimeFromCurrent();
   List<Duration> getLapTimes();
+  Future<void> saveRace();
 }

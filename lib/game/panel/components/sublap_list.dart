@@ -27,7 +27,6 @@ class SubLapList extends PositionComponent with HasGameRef<Z1RacingGame> {
   }
 
   _addTime() {
-    GameRepositoryImpl().addLapTimeFromCurrent();
     List<Duration> lapTimes = GameRepositoryImpl().getLapTimes();
 
     removeAll(textComponents);

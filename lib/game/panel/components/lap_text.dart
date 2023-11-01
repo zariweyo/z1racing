@@ -45,7 +45,7 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
     );
     add(lapCounter);
     void updateLapText() {
-      if (!GameRepositoryImpl().raceEnd()) {
+      if (!GameRepositoryImpl().raceIsEnd()) {
         final prefix = lapNotifier.value < 10 ? '0' : '';
         lapCounter.text = '$prefix${lapNotifier.value}';
       } else {
@@ -69,7 +69,7 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
     updateLapText();
 
     GameRepositoryImpl().getLapNotifier().addListener(() {
-      if (GameRepositoryImpl().raceEnd()) {
+      if (GameRepositoryImpl().raceIsEnd()) {
         addAll([
           ScaleEffect.by(
             Vector2.all(1.5),

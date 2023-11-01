@@ -1,5 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:z1racing/game/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/game/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/game/repositories/game_repository.dart';
+import 'package:z1racing/game/repositories/models/z1track.dart';
+import 'package:z1racing/game/repositories/models/z1user_race.dart';
 
 class GameRepositoryImpl extends GameRepository {
   static final GameRepositoryImpl _instance = GameRepositoryImpl._internal();
@@ -12,11 +17,45 @@ class GameRepositoryImpl extends GameRepository {
     // initialization logic
   }
 
-  static const int numberOfLaps = 5;
   double _time = 0;
   ValueNotifier<int> lapNotifier = ValueNotifier<int>(0);
   GameStatus status = GameStatus.none;
-  List<Duration> lapTimes = [];
+  Z1Track currentTrack = Z1Track.empty();
+  Z1UserRace? z1UserRace;
+  List<Z1UserRace> currentZ1UserRaces = [];
+  Z1UserRace? get currentZ1UserRace => currentZ1UserRaces.firstWhereOrNull(
+        (element) => element.uid == FirebaseAuthRepository().currentUser?.uid,
+      );
+
+  loadTrack({required Z1Track track}) {
+    currentTrack = track;
+  }
+
+  resetUserRace() {
+    assert(FirebaseAuthRepository().currentUser != null);
+    z1UserRace = Z1UserRace.init(
+        uid: FirebaseAuthRepository().currentUser!.uid,
+        trackId: currentTrack.trackId,
+        displayName: FirebaseAuthRepository().currentUser!.displayName ?? "");
+    lapNotifier.removeListener(_onLapUpdate);
+    lapNotifier.addListener(_onLapUpdate);
+  }
+
+  Future loadCurrentRace() async {
+    assert(FirebaseAuthRepository().currentUser != null);
+    currentZ1UserRaces = await FirebaseFirestoreRepository().getUserRaces(
+        uid: FirebaseAuthRepository().currentUser!.uid,
+        raceId: currentTrack.id);
+  }
+
+  _onLapUpdate() async {
+    addLapTimeFromCurrent();
+    if (raceIsEnd()) {
+      z1UserRace =
+          z1UserRace?.copyWith(time: Duration(milliseconds: getTime().toInt()));
+      saveRace();
+    }
+  }
 
   void setTime(double time) {
     _time = time;
@@ -34,9 +73,9 @@ class GameRepositoryImpl extends GameRepository {
 
   int getCurrentLap() => lapNotifier.value;
 
-  bool raceEnd() => lapNotifier.value > numberOfLaps;
+  bool raceIsEnd() => lapNotifier.value > currentTrack.numLaps;
 
-  int getTotalLaps() => numberOfLaps;
+  int getTotalLaps() => currentTrack.numLaps;
 
   GameStatus getStatus() => status;
 
@@ -45,20 +84,27 @@ class GameRepositoryImpl extends GameRepository {
   }
 
   void addLapTimeFromCurrent() {
+    assert(z1UserRace != null);
     Duration timeMod = Duration(milliseconds: getTime().toInt());
-    if (!lapTimes.isEmpty) {
-      timeMod = timeMod - lapTimes.reduce((value, element) => value + element);
+    if (!z1UserRace!.lapTimes.isEmpty) {
+      timeMod = timeMod -
+          z1UserRace!.lapTimes.reduce((value, element) => value + element);
     }
-    lapTimes.add(timeMod);
+    z1UserRace!.addLaptime(timeMod);
   }
 
-  List<Duration> getLapTimes() => lapTimes;
+  List<Duration> getLapTimes() => z1UserRace?.lapTimes ?? [];
+
+  Future saveRace() {
+    assert(z1UserRace != null);
+    return FirebaseFirestoreRepository().saveUserRace(z1UserRace!);
+  }
 
   void reset() {
     lapNotifier.dispose();
     lapNotifier = ValueNotifier<int>(1);
     setTime(0);
     setStatus(GameStatus.gameover);
-    lapTimes = [];
+    resetUserRace();
   }
 }

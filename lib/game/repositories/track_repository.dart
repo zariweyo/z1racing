@@ -1,5 +1,5 @@
-import 'package:z1racing/game/track/models/track_model.dart';
+import 'package:z1racing/game/repositories/models/z1track.dart';
 
 abstract class TrackRepository {
-  List<TrackModel> getTrack();
+  Future<Z1Track> getTrack();
 }

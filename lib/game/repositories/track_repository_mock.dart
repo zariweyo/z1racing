@@ -1,10 +1,11 @@
+import 'package:z1racing/game/repositories/models/z1track.dart';
 import 'package:z1racing/game/repositories/track_repository.dart';
-import 'package:z1racing/game/track/models/track_model.dart';
+import 'package:z1racing/game/track/models/slot_model.dart';
 
 class TrackRepositoryMock extends TrackRepository {
   @override
-  List<TrackModel> getTrack() {
-    List<Map<String, dynamic>> data = [
+  Future<Z1Track> getTrack() async {
+    List<Map<String, dynamic>> slots = [
       {
         "type": "rect",
         "size": {
@@ -131,6 +132,11 @@ class TrackRepositoryMock extends TrackRepository {
         "closedAdded": "both"
       }
     ];
-    return data.map((e) => TrackModel.fromMap(e)).toList();
+    await Future.delayed(Duration(seconds: 3));
+    return Z1Track(
+        trackId: "MockTrackId",
+        name: "The Mock Track",
+        numLaps: 3,
+        slots: slots.map((e) => SlotModel.fromMap(e)).toList());
   }
 }
