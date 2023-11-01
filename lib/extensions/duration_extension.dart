@@ -11,4 +11,27 @@ extension DurationExtension on Duration {
             : "${_millisD}";
     return "${_minutes}:${_seconds}.${_milliseconds}";
   }
+
+  static Duration fromMap(dynamic millis) {
+    var value = int.tryParse(millis.toString());
+    if (value == null) {
+      return Duration();
+    }
+
+    return Duration(milliseconds: millis);
+  }
+
+  int toMap() {
+    return this.inMilliseconds;
+  }
+}
+
+extension DurationListExtension on List<Duration> {
+  static List<Duration> fromMap(List<dynamic> millis) {
+    return millis.map((e) => DurationExtension.fromMap(e)).toList();
+  }
+
+  List<int> toMap() {
+    return this.map((e) => e.toMap()).toList();
+  }
 }

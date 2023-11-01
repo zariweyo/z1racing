@@ -70,8 +70,11 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     cameraWorld = World();
     add(cameraWorld);
 
-    cameraWorld
-        .addAll(Track(position: Vector2(200, 200), size: 30).getComponents());
+    cameraWorld.addAll(Track(
+            position: Vector2(200, 200),
+            size: 30,
+            z1track: GameRepositoryImpl().currentTrack)
+        .getComponents());
 
     countdownText = CountdownText();
 
@@ -80,6 +83,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
 
   void openMenu() {
     overlays.add('menu');
+    overlays.add('timeList');
     final zoomLevel = min(
       canvasSize.x / trackSize.x,
       canvasSize.y / trackSize.y,
@@ -118,6 +122,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   void start({required int numberOfPlayers}) {
     isGameOver = false;
     overlays.remove('menu');
+    overlays.remove('timeList');
     startCamera.removeFromParent();
     final isHorizontal = canvasSize.x > canvasSize.y;
     Vector2 alignedVector({
@@ -182,7 +187,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       final sublapText = SubLapList(car: car);
 
       _gameRepository.getLapNotifier().addListener(() {
-        if (_gameRepository.raceEnd()) {
+        if (_gameRepository.raceIsEnd()) {
           isGameOver = true;
           winner = car;
           overlays.add('game_over');

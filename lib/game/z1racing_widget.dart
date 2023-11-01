@@ -4,8 +4,12 @@ import 'package:flutter/services.dart';
 
 import 'package:z1racing/game/menu/widgets/game_over.dart';
 import 'package:z1racing/game/menu/widgets/menu.dart';
+import 'package:z1racing/game/menu/widgets/race_time_user_list.dart';
 import 'package:z1racing/game/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/game/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/game/repositories/game_repository_impl.dart';
+import 'package:z1racing/game/repositories/models/z1track.dart';
+import 'package:z1racing/game/repositories/track_repository_mock.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class Z1RacingWidget extends StatefulWidget {
@@ -17,12 +21,20 @@ class Z1RacingWidget extends StatefulWidget {
 
 class _Z1RacingWidgetState extends State<Z1RacingWidget> {
   late GlobalKey key;
+  bool initiated = false;
 
   @override
   void initState() {
     key = GlobalKey();
-    FirebaseAuthRepository();
-    GameRepositoryImpl();
+    FirebaseAuthRepository().init().then((_) async {
+      await FirebaseFirestoreRepository().init();
+      Z1Track track = await TrackRepositoryMock().getTrack();
+      GameRepositoryImpl().loadTrack(track: track);
+      setState(() {
+        initiated = true;
+      });
+    });
+
     super.initState();
   }
 
@@ -83,22 +95,37 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
 
     return MaterialApp(
       title: 'Z1Racing',
-      home: GameWidget<Z1RacingGame>(
-        key: key,
-        game: Z1RacingGame(),
-        loadingBuilder: (context) => Center(
-          child: Text(
-            'Loading...',
-            style: Theme.of(context).textTheme.displayLarge,
-          ),
-        ),
-        overlayBuilderMap: {
-          'menu': (_, game) => Menu(game),
-          'game_over': (_, game) => GameOver(game, onReset: _reset),
-        },
-        initialActiveOverlays: const ['menu'],
-      ),
+      home: initiated ? gameWidget() : loadingWidget(),
       theme: theme,
+    );
+  }
+
+  Widget loadingWidget() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.width,
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget gameWidget() {
+    return GameWidget<Z1RacingGame>(
+      key: key,
+      game: Z1RacingGame(),
+      loadingBuilder: (context) => Center(
+        child: Text(
+          'Loading...',
+          style: Theme.of(context).textTheme.displayLarge,
+        ),
+      ),
+      overlayBuilderMap: {
+        'menu': (_, game) => Menu(game),
+        'timeList': (_, game) => RaceTimeUserList(),
+        'game_over': (_, game) => GameOver(game, onReset: _reset),
+      },
+      initialActiveOverlays: const ['menu'],
     );
   }
 }

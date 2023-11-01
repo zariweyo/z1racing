@@ -1,8 +1,8 @@
 import 'dart:math' as Math;
 import 'package:vector_math/vector_math_64.dart';
-import 'package:z1racing/game/track/models/track_model.dart';
+import 'package:z1racing/game/track/models/slot_model.dart';
 
-class RectModel extends TrackModel {
+class RectModel extends SlotModel {
   RectModel({
     required super.size,
   }) : super(type: TrackModelType.rect);

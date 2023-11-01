@@ -2,10 +2,9 @@ import 'dart:math' as Math;
 
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
-import 'package:z1racing/game/repositories/track_repository.dart';
+import 'package:z1racing/game/repositories/models/z1track.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
-import 'package:z1racing/game/track/models/track_model.dart';
-import 'package:z1racing/game/repositories/track_repository_mock.dart';
+import 'package:z1racing/game/track/models/slot_model.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
 
 class Track {
@@ -13,27 +12,23 @@ class Track {
   final double size;
 
   List<TrackSlot> _tracks = [];
-  List<TrackModel> _trackModels = [];
+  Z1Track z1track;
 
-  Track({this.size = 40, required this.position}) {
-    TrackRepository trackRepository = TrackRepositoryMock();
-
-    _trackModels = trackRepository.getTrack();
-
+  Track({this.size = 40, required this.position, required this.z1track}) {
     compose();
   }
 
   compose() {
     Vector2 initPosition = position.clone()..add(Vector2(-160, -150));
 
-    double currentAngle = _trackModels.first.inputAngle - Math.pi;
-    TrackModel currentTrack = _trackModels.first;
+    double currentAngle = z1track.slots.first.inputAngle - Math.pi;
+    SlotModel currentTrack = z1track.slots.first;
     Vector2 currentPosition = initPosition;
-    _trackModels.forEachIndexed((index, trackModel) {
+    z1track.slots.forEachIndexed((index, trackModel) {
       if (index == 0) {
         _tracks.add(TrackSlot(
             position: initPosition.clone(),
-            trackModel: trackModel,
+            slotModel: trackModel,
             angle: currentAngle));
         currentTrack = trackModel;
       } else {
@@ -43,7 +38,7 @@ class Track {
             (currentTrack.masterPoints.last.clone()..rotate(currentAngle)) +
             ((-trackModel.masterPoints.first.clone())..rotate(nextAngle));
         _tracks.add(TrackSlot(
-            position: nextPosition, trackModel: trackModel, angle: nextAngle));
+            position: nextPosition, slotModel: trackModel, angle: nextAngle));
         currentTrack = trackModel;
         currentAngle = nextAngle;
         currentPosition = nextPosition;
