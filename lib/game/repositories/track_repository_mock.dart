@@ -136,7 +136,7 @@ class TrackRepositoryMock extends TrackRepository {
     return Z1Track(
         trackId: "MockTrackId",
         name: "The Mock Track",
-        numLaps: 3,
+        numLaps: 5,
         slots: slots.map((e) => SlotModel.fromMap(e)).toList());
   }
 }

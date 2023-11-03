@@ -109,7 +109,7 @@ class FirebaseFirestoreRepository {
     if (z1userRace != null) {
       time = z1userRace.time;
     }
-    int position = await getUserRacePositionByTime(time: time, raceId: raceId);
+    // int position = await getUserRacePositionByTime(time: time, raceId: raceId);
     List<Z1UserRace> z1userRacesResult = await getUserRacesByTime(
         time: time, raceId: raceId, descending: true, limit: 5);
     z1userRacesResult.addAll(await getUserRacesByTime(

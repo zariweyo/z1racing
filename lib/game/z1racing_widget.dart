@@ -94,18 +94,21 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     ]);
 
     return MaterialApp(
-      title: 'Z1Racing',
+      title: 'Z1 Racing',
+      debugShowCheckedModeBanner: false,
       home: initiated ? gameWidget() : loadingWidget(),
       theme: theme,
     );
   }
 
   Widget loadingWidget() {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.width,
-      child: Center(
-        child: CircularProgressIndicator(),
+    return Center(
+      child: Text(
+        'Loading...',
+        style: Theme.of(context)
+            .textTheme
+            .displayMedium
+            ?.copyWith(color: Colors.white, fontSize: 35),
       ),
     );
   }
@@ -114,12 +117,7 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     return GameWidget<Z1RacingGame>(
       key: key,
       game: Z1RacingGame(),
-      loadingBuilder: (context) => Center(
-        child: Text(
-          'Loading...',
-          style: Theme.of(context).textTheme.displayLarge,
-        ),
-      ),
+      loadingBuilder: (context) => loadingWidget(),
       overlayBuilderMap: {
         'menu': (_, game) => Menu(game),
         'timeList': (_, game) => RaceTimeUserList(),
