@@ -48,9 +48,8 @@ jobs:
           packageName: com.zwymobile.z1racing
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: internal
-          status: inProgress
+          status: draft
           inAppUpdatePriority: 2
-          userFraction: 0.33
           whatsNewDirectory: distribution/whatsnew
           mappingFile: build/app/outputs/mapping/release/mapping.txt
           debugSymbols: build/app/intermediates/merged_native_libs/release/out/lib
