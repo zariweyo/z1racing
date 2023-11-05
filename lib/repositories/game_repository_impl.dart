@@ -1,10 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:z1racing/game/repositories/firebase_auth_repository.dart';
-import 'package:z1racing/game/repositories/firebase_firestore_repository.dart';
-import 'package:z1racing/game/repositories/game_repository.dart';
-import 'package:z1racing/game/repositories/models/z1track.dart';
-import 'package:z1racing/game/repositories/models/z1user_race.dart';
+import 'package:z1racing/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/repositories/game_repository.dart';
+import 'package:z1racing/models/z1track.dart';
+import 'package:z1racing/models/z1user_race.dart';
 
 class GameRepositoryImpl extends GameRepository {
   static final GameRepositoryImpl _instance = GameRepositoryImpl._internal();

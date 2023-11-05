@@ -4,8 +4,8 @@ import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
 import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
-import 'package:z1racing/game/repositories/game_repository.dart';
-import 'package:z1racing/game/repositories/game_repository_impl.dart';
+import 'package:z1racing/repositories/game_repository.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 import 'package:z1racing/game/car/components/trail.dart';
 

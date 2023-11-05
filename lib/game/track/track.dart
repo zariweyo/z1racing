@@ -2,7 +2,7 @@ import 'dart:math' as Math;
 
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
-import 'package:z1racing/game/repositories/models/z1track.dart';
+import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/track/models/slot_model.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';

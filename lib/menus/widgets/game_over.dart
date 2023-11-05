@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:z1racing/extensions/duration_extension.dart';
-import 'package:z1racing/game/menu/widgets/menu_card.dart';
-import 'package:z1racing/game/repositories/game_repository_impl.dart';
+import 'package:z1racing/menus/widgets/menu_card.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class GameOver extends StatelessWidget {

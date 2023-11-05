@@ -3,8 +3,8 @@ import 'package:flame/effects.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:z1racing/game/repositories/game_repository.dart';
-import 'package:z1racing/game/repositories/game_repository_impl.dart';
+import 'package:z1racing/repositories/game_repository.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 
 import 'package:z1racing/game/z1racing_game.dart';
 

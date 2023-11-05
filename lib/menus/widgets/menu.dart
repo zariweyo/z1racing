@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:z1racing/game/repositories/firebase_auth_repository.dart';
-import 'package:z1racing/game/repositories/firebase_firestore_repository.dart';
-import 'package:z1racing/game/repositories/game_repository_impl.dart';
-import 'package:z1racing/game/menu/widgets/menu_settings.dart';
+import 'package:z1racing/base/components/update_button.dart';
+import 'package:z1racing/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
+import 'package:z1racing/menus/widgets/menu_settings.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class Menu extends StatefulWidget {
@@ -46,8 +47,9 @@ class _MenuState extends State<Menu> {
     return Material(
       color: Colors.transparent,
       child: Container(
-          width: MediaQuery.of(context).size.width,
-          margin: EdgeInsets.all(50),
+          width: MediaQuery.of(context).size.width / 2,
+          margin: EdgeInsets.only(
+              top: 0, right: 50, left: MediaQuery.of(context).size.width / 2),
           child: Wrap(
             alignment: WrapAlignment.end,
             crossAxisAlignment: WrapCrossAlignment.end,
@@ -93,6 +95,7 @@ class _MenuState extends State<Menu> {
                               MenuSettings.open(context: context);
                             },
                           ),
+                          UpdateButton()
                         ],
                       ))
                 ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:z1racing/game/repositories/firebase_auth_repository.dart';
-import 'package:z1racing/game/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/base/components/common_textfield.dart';
+import 'package:z1racing/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class MenuSettings extends StatefulWidget {
   static Future open({required BuildContext context}) {
@@ -12,27 +13,19 @@ class MenuSettings extends StatefulWidget {
 }
 
 class _MenuSettingsState extends State<MenuSettings> {
-  late TextEditingController controller;
-  late FocusNode focusNode;
+  late String displayName;
   bool loading = false;
+
   @override
   initState() {
     super.initState();
-    String displayName =
-        FirebaseAuthRepository().currentUser?.displayName ?? "";
-    controller = TextEditingController(text: displayName);
-    focusNode = FocusNode();
-  }
-
-  @override
-  dispose() {
-    super.dispose();
+    displayName = FirebaseAuthRepository().currentUser?.displayName ?? "";
   }
 
   _nameUpdated(String newName) async {
-    focusNode.unfocus();
-
-    if (FirebaseFirestoreRepository().currentUser?.displayName != newName) {
+    if (newName.length > 3 &&
+        newName.length <= 15 &&
+        FirebaseFirestoreRepository().currentUser?.displayName != newName) {
       setState(() {
         loading = true;
       });
@@ -72,20 +65,14 @@ class _MenuSettingsState extends State<MenuSettings> {
 
   _textfield() {
     return Expanded(
-        child: Row(children: [
-      Text("Nickname: "),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+          padding: EdgeInsets.only(top: 17),
+          child: Text("Nickname: ",
+              style: Theme.of(context).textTheme.bodyMedium)),
       Expanded(
-          child: TextField(
-        focusNode: focusNode,
-        style: Theme.of(context).textTheme.bodyMedium,
-        textAlignVertical: TextAlignVertical.bottom,
-        controller: controller,
-        maxLength: 15,
-        onSubmitted: _nameUpdated,
-        onTapOutside: (_) {
-          _nameUpdated(controller.text);
-        },
-      ))
+          child: CommonTextfield(
+              initialText: displayName, onSubmitted: _nameUpdated))
     ]));
   }
 
@@ -108,18 +95,14 @@ class _MenuSettingsState extends State<MenuSettings> {
     return Material(
         color: Colors.black54,
         child: Container(
-          margin: EdgeInsets.all(10),
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                _backButton(context),
-                _textfield(),
-              ]),
-              _loadingWidget()
-            ],
-          ),
-        ));
+            margin: EdgeInsets.all(10),
+            width: MediaQuery.of(context).size.width,
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _backButton(context),
+              Expanded(
+                  child: ListView(
+                children: [_textfield(), _loadingWidget()],
+              )),
+            ])));
   }
 }

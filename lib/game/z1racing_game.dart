@@ -16,8 +16,8 @@ import 'package:z1racing/game/game_colors.dart';
 import 'package:z1racing/game/panel/components/countdown_text.dart';
 import 'package:z1racing/game/panel/components/lap_text.dart';
 import 'package:z1racing/game/panel/components/sublap_list.dart';
-import 'package:z1racing/game/repositories/game_repository.dart';
-import 'package:z1racing/game/repositories/game_repository_impl.dart';
+import 'package:z1racing/repositories/game_repository.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/track/track.dart';
 
 final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [

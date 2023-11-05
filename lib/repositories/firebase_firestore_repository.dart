@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:z1racing/game/repositories/models/z1user.dart';
-import 'package:z1racing/game/repositories/models/z1user_race.dart';
+import 'package:z1racing/models/z1user.dart';
+import 'package:z1racing/models/z1user_race.dart';
+import 'package:z1racing/models/z1version.dart';
 
 class FirebaseFirestoreRepository {
   static const String USERCOL = "users";
   static const String USERRACESCOL = "races";
+  static const String VERSIONDOC = "settings/version";
 
   static final FirebaseFirestoreRepository _instance =
       FirebaseFirestoreRepository._internal();
@@ -19,17 +21,23 @@ class FirebaseFirestoreRepository {
 
   FirebaseFirestoreRepository._internal();
 
+  late Z1Version _z1version;
+  Z1Version get z1version => _z1version;
+
   User? get currentUser => FirebaseAuth.instance.currentUser;
 
   CollectionReference get usersCol =>
       FirebaseFirestore.instance.collection(USERCOL);
   DocumentReference get userDoc => usersCol.doc(currentUser?.uid);
+  DocumentReference get versionDoc =>
+      FirebaseFirestore.instance.doc(VERSIONDOC);
   CollectionReference get userRaceCol => userDoc.collection(USERRACESCOL);
 
   Future init() async {
     assert(currentUser != null);
 
     Z1User z1user = Z1User.fromUser(currentUser!);
+    _z1version = await getVersion();
     return userDoc.set(z1user.toJson());
   }
 
@@ -102,13 +110,14 @@ class FirebaseFirestoreRepository {
       Query query = FirebaseFirestore.instance
           .collectionGroup(USERRACESCOL)
           .where("id", isEqualTo: raceId)
-          .orderBy("time", descending: descending)
+          .orderBy("positionHash", descending: descending)
           .limit(limit);
 
       if (descending) {
-        query = query.where("time", isLessThanOrEqualTo: time.inMilliseconds);
+        query = query.where("positionHash",
+            isLessThanOrEqualTo: time.inMilliseconds);
       } else {
-        query = query.where("time", isGreaterThan: time.inMilliseconds);
+        query = query.where("positionHash", isGreaterThan: time.inMilliseconds);
       }
 
       QuerySnapshot qsnap = await query.get();
@@ -130,13 +139,22 @@ class FirebaseFirestoreRepository {
     }
     // int position = await getUserRacePositionByTime(time: time, raceId: raceId);
     List<Z1UserRace> z1userRacesResult = await getUserRacesByTime(
-        time: time, raceId: raceId, descending: true, limit: 5);
+        time: time, raceId: raceId, descending: true, limit: 10);
     z1userRacesResult.addAll(await getUserRacesByTime(
         time: time,
         raceId: raceId,
         descending: false,
-        limit: 10 - z1userRacesResult.length));
+        limit: 20 - z1userRacesResult.length));
 
     return z1userRacesResult.sorted((a, b) => a.time.compareTo(b.time));
+  }
+
+  Future<Z1Version> getVersion() async {
+    DocumentSnapshot docSnap = await versionDoc.get();
+    if (!docSnap.exists) {
+      return Z1Version();
+    }
+
+    return Z1Version.fromMap(docSnap.data() as Map<String, dynamic>);
   }
 }

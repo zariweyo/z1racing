@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
-import 'package:z1racing/game/z1racing_widget.dart';
+import 'package:z1racing/z1racing_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

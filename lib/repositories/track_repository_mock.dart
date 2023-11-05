@@ -1,5 +1,5 @@
-import 'package:z1racing/game/repositories/models/z1track.dart';
-import 'package:z1racing/game/repositories/track_repository.dart';
+import 'package:z1racing/models/z1track.dart';
+import 'package:z1racing/repositories/track_repository.dart';
 import 'package:z1racing/game/track/models/slot_model.dart';
 
 class TrackRepositoryMock extends TrackRepository {
