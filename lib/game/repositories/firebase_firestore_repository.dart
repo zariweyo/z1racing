@@ -37,16 +37,21 @@ class FirebaseFirestoreRepository {
     DocumentReference raceDoc = userRaceCol.doc(z1userRace.id);
     DocumentSnapshot docSnap = await raceDoc.get();
     bool insert = true;
+    bool updateBestLap = true;
     if (docSnap.exists) {
       Z1UserRace currentRace =
           Z1UserRace.fromMap(docSnap.data() as Map<String, dynamic>);
       if (currentRace.time < z1userRace.time) {
         insert = false;
+      } else if (z1userRace.bestLapTime < currentRace.bestLapTime) {
+        updateBestLap = true;
       }
     }
 
     if (insert) {
       return raceDoc.set(z1userRace.toJson());
+    } else if (updateBestLap) {
+      return raceDoc.update(z1userRace.toUpdateBestLapJson());
     }
   }
 
@@ -59,6 +64,20 @@ class FirebaseFirestoreRepository {
     }
 
     return null;
+  }
+
+  Future<void> updateName(String newName) async {
+    WriteBatch _batch = FirebaseFirestore.instance.batch();
+    _batch.update(userDoc, {"name": newName});
+    (await userRaceCol.get()).docs.forEach((qSnap) {
+      Z1UserRace userRace =
+          Z1UserRace.fromMap(qSnap.data() as Map<String, dynamic>);
+      userRace.metadata = userRace.metadata.copyWith(displayName: newName);
+      print(userRace.toJson());
+      _batch.update(qSnap.reference, userRace.toUpdateMetadataJson());
+    });
+    await _batch.commit();
+    return FirebaseAuth.instance.currentUser?.updateDisplayName(newName);
   }
 
   Future<int> getUserRacePositionByTime(

@@ -1,5 +1,8 @@
-import 'package:flutter/material.dart' hide Image, Gradient;
+import 'package:flutter/material.dart';
+import 'package:z1racing/game/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/game/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/game/repositories/game_repository_impl.dart';
+import 'package:z1racing/game/menu/widgets/menu_settings.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class Menu extends StatefulWidget {
@@ -16,13 +19,30 @@ class _MenuState extends State<Menu> {
 
   @override
   void initState() {
+    FirebaseAuthRepository()
+        .currentUserNotifier
+        .addListener(_currentUserModified);
     super.initState();
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    FirebaseAuthRepository()
+        .currentUserNotifier
+        .removeListener(_currentUserModified);
+  }
+
+  _currentUserModified() {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final numLaps = GameRepositoryImpl().currentTrack.numLaps;
+    final String name =
+        FirebaseFirestoreRepository().currentUser?.displayName ?? "";
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -43,13 +63,14 @@ class _MenuState extends State<Menu> {
                           borderRadius: BorderRadius.circular(20)),
                       child: Column(
                         children: [
-                          Text(
-                            'Z1 Racing',
-                            style: textTheme.displayLarge,
+                          Image.asset(
+                            "assets/images/logo_alpha.png",
+                            height: 50,
+                            fit: BoxFit.contain,
                           ),
                           Text(
-                            'First to ${numLaps} laps win',
-                            style: textTheme.bodyLarge,
+                            'Hello ${name}',
+                            style: textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 5),
                           ElevatedButton(
@@ -59,9 +80,19 @@ class _MenuState extends State<Menu> {
                             },
                           ),
                           Text(
+                            '${numLaps} laps',
+                            style: textTheme.bodySmall,
+                          ),
+                          Text(
                             'Arrow keys or Buttons',
-                            style: textTheme.bodyMedium,
-                          )
+                            style: textTheme.bodySmall,
+                          ),
+                          ElevatedButton(
+                            child: const Text('Settings'),
+                            onPressed: () {
+                              MenuSettings.open(context: context);
+                            },
+                          ),
                         ],
                       ))
                 ],

@@ -84,6 +84,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   void openMenu() {
     overlays.add('menu');
     overlays.add('timeList');
+    overlays.remove('game_control');
     final zoomLevel = min(
       canvasSize.x / trackSize.x,
       canvasSize.y / trackSize.y,
@@ -123,6 +124,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     isGameOver = false;
     overlays.remove('menu');
     overlays.remove('timeList');
+    overlays.add('game_control');
     startCamera.removeFromParent();
     final isHorizontal = canvasSize.x > canvasSize.y;
     Vector2 alignedVector({

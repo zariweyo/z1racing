@@ -5,6 +5,7 @@ class Z1UserRace {
   final String uid;
   final String trackId;
   final Duration time;
+  Duration bestLap;
   final List<Duration> lapTimes;
   final DateTime updated;
   Z1UserRaceMetadata metadata;
@@ -17,18 +18,21 @@ class Z1UserRace {
       required this.time,
       required this.updated,
       required this.lapTimes,
+      required this.bestLap,
       this.metadata = const Z1UserRaceMetadata()});
 
   Z1UserRace copyWith(
       {String? uid,
       String? trackId,
       Duration? time,
+      Duration? bestLap,
       List<Duration>? lapTimes,
       DateTime? updated}) {
     return Z1UserRace(
         uid: uid ?? this.uid,
         trackId: trackId ?? this.trackId,
         time: time ?? this.time,
+        bestLap: bestLap ?? this.bestLap,
         updated: updated ?? this.updated,
         lapTimes: lapTimes ?? this.lapTimes,
         metadata: this
@@ -37,11 +41,21 @@ class Z1UserRace {
   }
 
   addLaptime(Duration laptime) {
+    if (lapTimes.isEmpty) {
+      bestLap = laptime;
+    } else {
+      if (laptime < bestLap) {
+        bestLap = laptime;
+      }
+    }
+
     lapTimes.add(laptime);
     metadata = metadata.copyWith(numLaps: lapTimes.length);
   }
 
-  Duration get bestLapTime => lapTimes.min;
+  Duration get bestLapTime => bestLap != Duration.zero ? bestLap : lapTimes.min;
+  int get positionHash =>
+      time.inMilliseconds * 1000000 + bestLapTime.inMilliseconds;
 
   factory Z1UserRace.init(
       {required String uid,
@@ -51,6 +65,7 @@ class Z1UserRace {
         uid: uid,
         trackId: trackId,
         time: Duration(),
+        bestLap: Duration(),
         updated: DateTime.now(),
         lapTimes: [],
         metadata: Z1UserRaceMetadata(displayName: displayName));
@@ -61,6 +76,7 @@ class Z1UserRace {
         uid: map['uid'] ?? "",
         trackId: map['trackId'] ?? "",
         time: DurationExtension.fromMap(map['time']),
+        bestLap: DurationExtension.fromMap(map['bestLap']),
         updated: map['updated'] != null
             ? DateTime.fromMillisecondsSinceEpoch(map['updated'], isUtc: true)
             : DateTime.now().toUtc(),
@@ -70,15 +86,31 @@ class Z1UserRace {
             : Z1UserRaceMetadata());
   }
 
-  dynamic toJson() {
+  Map<String, dynamic> toJson() {
     return {
       "id": id,
       "uid": uid,
       "trackId": trackId,
       "time": time.toMap(),
+      "bestLap": bestLap.toMap(),
       "lapTimes": lapTimes.toMap(),
       "updated": updated.millisecondsSinceEpoch,
-      "metadata": metadata.toJson()
+      "metadata": metadata.toJson(),
+      "positionHash": positionHash
+    };
+  }
+
+  Map<String, dynamic> toUpdateBestLapJson() {
+    return {
+      "bestLap": bestLap.toMap(),
+      "updated": updated.millisecondsSinceEpoch,
+      "positionHash": positionHash
+    };
+  }
+
+  Map<String, dynamic> toUpdateMetadataJson() {
+    return {
+      "metadata": metadata.toJson(),
     };
   }
 }

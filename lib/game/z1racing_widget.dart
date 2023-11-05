@@ -1,6 +1,8 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
+import 'package:z1racing/base/components/loading_widget.dart';
+import 'package:z1racing/game/menu/widgets/game_control.dart';
 
 import 'package:z1racing/game/menu/widgets/game_over.dart';
 import 'package:z1racing/game/menu/widgets/menu.dart';
@@ -49,23 +51,26 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
   Widget build(BuildContext context) {
     final theme = ThemeData(
       textTheme: TextTheme(
-        displayLarge: TextStyle(
-          fontSize: 35,
-          color: Colors.white,
-        ),
-        labelLarge: TextStyle(
-          fontSize: 30,
-          fontWeight: FontWeight.w500,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 28,
-          color: Colors.grey,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 18,
-          color: Colors.grey,
-        ),
-      ),
+          displayLarge: TextStyle(
+            fontSize: 35,
+            color: Colors.white,
+          ),
+          labelLarge: TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.w500,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 28,
+            color: Colors.grey,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 18,
+            color: Colors.grey,
+          ),
+          bodySmall: TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          )),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
@@ -96,20 +101,8 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     return MaterialApp(
       title: 'Z1 Racing',
       debugShowCheckedModeBanner: false,
-      home: initiated ? gameWidget() : loadingWidget(),
+      home: initiated ? gameWidget() : LoadingWidget(),
       theme: theme,
-    );
-  }
-
-  Widget loadingWidget() {
-    return Center(
-      child: Text(
-        'Loading...',
-        style: Theme.of(context)
-            .textTheme
-            .displayMedium
-            ?.copyWith(color: Colors.white, fontSize: 35),
-      ),
     );
   }
 
@@ -117,11 +110,13 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     return GameWidget<Z1RacingGame>(
       key: key,
       game: Z1RacingGame(),
-      loadingBuilder: (context) => loadingWidget(),
+      loadingBuilder: (context) => LoadingWidget(),
       overlayBuilderMap: {
         'menu': (_, game) => Menu(game),
         'timeList': (_, game) => RaceTimeUserList(),
         'game_over': (_, game) => GameOver(game, onReset: _reset),
+        'game_control': (_, game) =>
+            GameControl(gameRef: game, onReset: _reset),
       },
       initialActiveOverlays: const ['menu'],
     );

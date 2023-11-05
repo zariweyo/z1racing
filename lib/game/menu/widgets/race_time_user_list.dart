@@ -21,6 +21,18 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   @override
   void initState() {
     currentTrack = GameRepositoryImpl().currentTrack;
+    FirebaseAuthRepository().currentUserNotifier.addListener(_update);
+    _update();
+    super.initState();
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    FirebaseAuthRepository().currentUserNotifier.removeListener(_update);
+  }
+
+  _update() {
     FirebaseFirestoreRepository()
         .getUserRaces(
             uid: FirebaseAuthRepository().currentUser!.uid,
@@ -32,7 +44,6 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
           currentZ1UserRaces = raceList;
         });
     });
-    super.initState();
   }
 
   Widget dataRow(Z1UserRace race) {
@@ -80,7 +91,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
       width: MediaQuery.of(context).size.width,
       padding: EdgeInsets.only(bottom: 10),
       child: Text(
-        currentTrack.name,
+        "${currentTrack.name} (${currentTrack.numLaps} laps)",
         style: bodyMedium,
         textAlign: TextAlign.center,
       ),
