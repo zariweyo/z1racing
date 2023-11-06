@@ -50,10 +50,9 @@ class Tire extends BodyComponent<Z1RacingGame> {
       isFrontTire ? _frontTireMaxLateralImpulse : _backTireMaxLateralImpulse;
 
   // Make mutable if ice or something should be implemented
-  final double _currentTraction = 1.0;
+  late double _currentTraction = car.traction;
   final double _currentInertia = 0.001;
 
-  final double _maxForwardSpeed = 250.0;
   final double _maxBackwardSpeed = -40.0;
 
   double currentSpeed = 0;
@@ -141,14 +140,14 @@ class Tire extends BodyComponent<Z1RacingGame> {
     var desiredSpeed = 0.0;
 
     if (controlsData.upValue > 0) {
-      desiredSpeed = _maxForwardSpeed * controlsData.upValue;
+      desiredSpeed = car.speed * controlsData.upValue;
     }
     if (controlsData.downValue > 0) {
       desiredSpeed += _maxBackwardSpeed * controlsData.downValue;
     }
 
     if (pressedKeys.contains(LogicalKeyboardKey.arrowUp)) {
-      desiredSpeed = _maxForwardSpeed;
+      desiredSpeed = car.speed;
     }
     if (pressedKeys.contains(LogicalKeyboardKey.arrowDown)) {
       desiredSpeed += _maxBackwardSpeed;
@@ -172,7 +171,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
     }
 
     if (force.abs() > 0) {
-      body.applyForce(currentForwardNormal..scale(traction * force));
+      body.applyForce(currentForwardNormal..scale(1 * traction * force));
     }
   }
 

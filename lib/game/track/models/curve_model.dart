@@ -1,4 +1,5 @@
 import 'dart:math' as Math;
+import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
 import 'package:z1racing/game/track/models/slot_model.dart';
 
@@ -10,32 +11,41 @@ class CurveModel extends SlotModel {
   final double radius;
   final CurveModelDirection direction;
   final CurveModelClosedAdded closedAdded;
+  final bool added;
+  final double angle;
   CurveModel(
-      {required super.size,
-      this.radius = 20,
+      {this.radius = 20,
+      this.added = false,
+      this.angle = 90,
+      super.sensor,
       this.closedAdded = CurveModelClosedAdded.none,
       this.direction = CurveModelDirection.right})
-      : super(type: TrackModelType.curve) {
+      : super(type: TrackModelType.curve, size: Vector2(radius, radius)) {
     calculateData();
   }
 
   factory CurveModel.fromMap(Map<String, dynamic> map) {
-    assert(map['size'] != null);
-    assert(map['size']['x'] != null && map['size']['x'] is double);
-    assert(map['size']['y'] != null && map['size']['y'] is double);
     assert(map['radius'] != null && map['radius'] is double);
     assert(CurveModelDirection.values
         .map((e) => e.name)
         .contains(map['direction']));
 
     return CurveModel(
-      size: Vector2(map['size']['x'], map['size']['y']),
-      radius: map['radius'],
+      angle: map['angle'] ?? 90,
+      radius: map['radius'] ?? 20,
+      sensor: map['sensor'] != null
+          ? TrackModelSensor.values.firstWhereOrNull(
+                  (element) => element.name == map['sensor']) ??
+              TrackModelSensor.none
+          : TrackModelSensor.none,
+      added: map['added'] ?? false,
       direction: CurveModelDirection.values
           .firstWhere((element) => element.name == map['direction']),
-      closedAdded: CurveModelClosedAdded.values.firstWhere(
-          (element) => element.name == map['closedAdded'],
-          orElse: () => CurveModelClosedAdded.none),
+      closedAdded: map['closedAdded'] != null
+          ? CurveModelClosedAdded.values.firstWhere(
+              (element) => element.name == map['closedAdded'],
+              orElse: () => CurveModelClosedAdded.none)
+          : CurveModelClosedAdded.none,
     );
   }
 
@@ -45,62 +55,87 @@ class CurveModel extends SlotModel {
       direction == CurveModelDirection.right ? Math.pi : 0;
 
   double get inputAngle =>
-      Math.atan2(points2.first.y - points1.first.y,
-          points2.first.x - points1.first.x) -
+      Math.atan2(_firstP2.y - _firstP1.y, _firstP2.x - _firstP1.x) -
       _angleAddToAdjust;
   double get outputAngle =>
-      Math.atan2(
-          points2.last.y - points1.last.y, points2.last.x - points1.last.x) -
+      Math.atan2(_lastP2.y - _lastP1.y, _lastP2.x - _lastP1.x) -
       _angleAddToAdjust;
 
+  List<Vector2> inside = [];
   List<Vector2> points1 = [];
   List<Vector2> points2 = [];
   List<Vector2> pointsAdded = [];
   List<Vector2> pointsAddedPlus = [];
 
-  List<Vector2> get masterPoints =>
-      direction == CurveModelDirection.right ? points1 : points2;
+  List<Vector2> get masterPoints => _masterPoints;
 
-  Vector2 get vectorPoints1 => points1.last - points1.first;
-  Vector2 get vectorPoints2 => points2.last - points2.first;
+  Vector2 get vectorPoints1 => _lastP1 - _firstP1;
+  Vector2 get vectorPoints2 => _lastP2 - _firstP2;
+
+  late Vector2 _firstP1;
+  late Vector2 _firstP2;
+  late Vector2 _lastP1;
+  late Vector2 _lastP2;
+  late List<Vector2> _masterPoints;
 
   calculateData() {
+    int addedExtend = 2;
+
     Vector2 center =
         _centerOfMedium(pointA: Vector2.zero(), pointB: size, radius: radius);
 
+    inside = points(center, radius);
+    inside.addAll(points(center, radius - 40).reversed);
+
     points1 = points(center, radius);
+    _firstP1 = points1.first.clone();
+    _lastP1 = points1.last.clone();
+    if (direction == CurveModelDirection.right)
+      _masterPoints = points(center, radius);
+    points1.addAll(points(center, radius - 2).reversed);
+    points1.add(_firstP1);
+
     points2 = points(center, radius - 40);
-    List<Vector2> pointsAddedBase = points(center, radius - 45);
-    pointsAddedPlus = points(center, radius - 40);
-    int limitStart = 0;
-    int limitEnd = 0;
-    switch (closedAdded) {
-      case CurveModelClosedAdded.none:
-        limitStart = 0;
-        limitEnd = 0;
-        break;
-      case CurveModelClosedAdded.start:
-        limitStart = pointsAddedBase.length > 10 ? 5 : 0;
-        limitEnd = 0;
-        break;
-      case CurveModelClosedAdded.end:
-        limitStart = 0;
-        limitEnd = pointsAddedBase.length > 10 ? 5 : 0;
-        break;
-      case CurveModelClosedAdded.both:
-        limitStart = pointsAddedBase.length > 10 ? 5 : 0;
-        limitEnd = pointsAddedBase.length > 10 ? 5 : 0;
-        break;
-    }
-    if ([CurveModelClosedAdded.start, CurveModelClosedAdded.both]
-        .contains(closedAdded)) {
-      pointsAdded.add(pointsAddedPlus.first);
-    }
-    pointsAdded.addAll(
-        pointsAddedBase.sublist(limitStart, pointsAddedBase.length - limitEnd));
-    if ([CurveModelClosedAdded.end, CurveModelClosedAdded.both]
-        .contains(closedAdded)) {
-      pointsAdded.add(pointsAddedPlus.last);
+    _firstP2 = points2.first.clone();
+    _lastP2 = points2.last.clone();
+    if (direction == CurveModelDirection.left)
+      _masterPoints = points(center, radius - 40);
+    points2.addAll(points(center, radius - 38).reversed);
+    points2.add(_firstP2);
+
+    if (added) {
+      List<Vector2> pointsAddedBase = points(center, radius - 45);
+      pointsAddedPlus = points(center, radius - 38);
+      int limitStart = 0;
+      int limitEnd = 0;
+      switch (closedAdded) {
+        case CurveModelClosedAdded.none:
+          limitStart = 0;
+          limitEnd = 0;
+          break;
+        case CurveModelClosedAdded.start:
+          limitStart = pointsAddedBase.length > 10 ? addedExtend : 0;
+          limitEnd = 0;
+          break;
+        case CurveModelClosedAdded.end:
+          limitStart = 0;
+          limitEnd = pointsAddedBase.length > 10 ? addedExtend : 0;
+          break;
+        case CurveModelClosedAdded.both:
+          limitStart = pointsAddedBase.length > 10 ? addedExtend : 0;
+          limitEnd = pointsAddedBase.length > 10 ? addedExtend : 0;
+          break;
+      }
+      if ([CurveModelClosedAdded.start, CurveModelClosedAdded.both]
+          .contains(closedAdded)) {
+        pointsAdded.add(pointsAddedPlus.first);
+      }
+      pointsAdded.addAll(pointsAddedBase.sublist(
+          limitStart, pointsAddedBase.length - limitEnd));
+      if ([CurveModelClosedAdded.end, CurveModelClosedAdded.both]
+          .contains(closedAdded)) {
+        pointsAdded.add(pointsAddedPlus.last);
+      }
     }
   }
 
@@ -133,7 +168,8 @@ class CurveModel extends SlotModel {
     double angMin = Math.pi / 2 - angMax;
 
     List<Vector2> vertices = [];
-    for (double x = 0; x <= size.x; x++) {
+    double xLim = (radius * Math.sin((this.angle / 180) * Math.pi)) / 90;
+    for (double x = 0; x <= 1 + this.radius * xLim; x++) {
       num xx = Math.pow((x - center.x), 2);
       num r_2 = Math.pow(radius, 2);
       num k_2 = Math.pow(center.y, 2);
@@ -151,7 +187,8 @@ class CurveModel extends SlotModel {
 
     if (direction == CurveModelDirection.left) {
       vertices = vertices.reversed
-          .map((vert) => (vert..rotate(Math.pi)).translated(size.x, size.y))
+          .map((vert) =>
+              (vert..rotate(Math.pi)).translated(this.radius, this.radius))
           .toList();
     }
 

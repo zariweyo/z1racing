@@ -12,14 +12,16 @@ class Track {
   final double size;
 
   List<TrackSlot> _tracks = [];
+  List<LapLine> _lapLines = [];
   Z1Track z1track;
+  Vector2 initPosition = Vector2.zero();
 
   Track({this.size = 40, required this.position, required this.z1track}) {
     compose();
   }
 
   compose() {
-    Vector2 initPosition = position.clone()..add(Vector2(-160, -150));
+    initPosition = position.clone()..add(Vector2(-160, -150));
 
     double currentAngle = z1track.slots.first.inputAngle - Math.pi;
     SlotModel currentTrack = z1track.slots.first;
@@ -37,8 +39,22 @@ class Track {
         Vector2 nextPosition = currentPosition +
             (currentTrack.masterPoints.last.clone()..rotate(currentAngle)) +
             ((-trackModel.masterPoints.first.clone())..rotate(nextAngle));
+
         _tracks.add(TrackSlot(
             position: nextPosition, slotModel: trackModel, angle: nextAngle));
+
+        /* if (index == 2) {
+          _tracks.add(TrackSlot(
+              position: nextPosition,
+              slotModel: trackModel,
+              angle: nextAngle,
+              backgroundColor: Colors.blue.withAlpha(50)));
+          _lapLines.add(LapLine(4, nextPosition, Vector2(40, 1),
+              isFinish: false, angle: trackModel.inputAngle));
+        } else {
+          _tracks.add(TrackSlot(
+              position: nextPosition, slotModel: trackModel, angle: nextAngle));
+        } */
         currentTrack = trackModel;
         currentAngle = nextAngle;
         currentPosition = nextPosition;
@@ -50,8 +66,10 @@ class Track {
     return [
       LapLine(1, Vector2(20, 50), Vector2(40, 1), isFinish: false),
       LapLine(2, Vector2(20, 70), Vector2(40, 1), isFinish: false),
-      LapLine(3, Vector2(50, 25), Vector2(3, 40), isFinish: true, angle: -0.05),
-      ..._tracks
+      LapLine(3, Vector2(30, 20), Vector2(3, 40),
+          isFinish: true, angle: Math.pi / 4),
+      ..._tracks,
+      ..._lapLines
     ];
   }
 }

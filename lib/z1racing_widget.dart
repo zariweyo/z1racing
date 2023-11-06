@@ -41,11 +41,7 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
       switch (z1versionState) {
         case Z1VersionState.none:
         case Z1VersionState.updateAvailable:
-          Z1Track track = await TrackRepositoryMock().getTrack();
-          GameRepositoryImpl().loadTrack(track: track);
-          setState(() {
-            stateHome = _Z1RacingWidgetStateHome.normal;
-          });
+          await _loadTrack();
           break;
         case Z1VersionState.updateForced:
           setState(() {
@@ -56,6 +52,14 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     });
 
     super.initState();
+  }
+
+  _loadTrack() async {
+    Z1Track track = await TrackRepositoryMock().getTrack();
+    GameRepositoryImpl().loadTrack(track: track);
+    setState(() {
+      stateHome = _Z1RacingWidgetStateHome.normal;
+    });
   }
 
   _reset() {
@@ -99,7 +103,10 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
       game: Z1RacingGame(),
       loadingBuilder: (context) => LoadingWidget(),
       overlayBuilderMap: {
-        'menu': (_, game) => Menu(game),
+        'menu': (_, game) => Menu(
+              game,
+              changeTrack: _loadTrack,
+            ),
         'timeList': (_, game) => RaceTimeUserList(),
         'game_over': (_, game) => GameOver(game, onReset: _reset),
         'game_control': (_, game) =>

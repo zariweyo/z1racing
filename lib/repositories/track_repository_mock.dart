@@ -11,15 +11,14 @@ class TrackRepositoryMock extends TrackRepository {
         "size": {
           "x": 60.0,
           "y": 60.0,
-        }
+        },
+        "sensor": "finish"
       },
       {
         "type": "curve",
-        "size": {
-          "x": 90.0,
-          "y": 90.0,
-        },
+        "angle": 70.0,
         "radius": 90.0,
+        "added": true,
         "direction": "left",
         "closedAdded": "both"
       },
@@ -32,40 +31,32 @@ class TrackRepositoryMock extends TrackRepository {
       },
       {
         "type": "curve",
-        "size": {
-          "x": 60.0,
-          "y": 60.0,
-        },
+        "angle": 30.0,
+        "added": true,
         "radius": 60.0,
         "direction": "right",
         "closedAdded": "start"
       },
       {
         "type": "curve",
-        "size": {
-          "x": 100.0,
-          "y": 100.0,
-        },
+        "added": true,
         "radius": 100.0,
         "direction": "right",
-        "closedAdded": "end"
+        "closedAdded": "end",
+        "sensor": "sensor"
       },
       {
         "type": "curve",
-        "size": {
-          "x": 100.0,
-          "y": 100.0,
-        },
+        "added": true,
         "radius": 100.0,
         "direction": "left",
-        "closedAdded": "start"
+        "closedAdded": "start",
+        "sensor": "sensor"
       },
       {
         "type": "curve",
-        "size": {
-          "x": 60.0,
-          "y": 60.0,
-        },
+        "angle": 40.0,
+        "added": true,
         "radius": 60.0,
         "direction": "left",
         "closedAdded": "end"
@@ -75,67 +66,73 @@ class TrackRepositoryMock extends TrackRepository {
         "size": {
           "x": 300.0,
           "y": 120.0,
-        }
+        },
+        "sensor": "sensor"
       },
       {
         "type": "curve",
-        "size": {
-          "x": 120.0,
-          "y": 120.0,
-        },
-        "radius": 150.0,
-        "direction": "left",
-        "closedAdded": "start"
-      },
-      {
-        "type": "curve",
-        "size": {
-          "x": 120.0,
-          "y": 120.0,
-        },
-        "radius": 120.0,
-        "direction": "left",
-        "closedAdded": "end"
-      },
-      {
-        "type": "rect",
-        "size": {
-          "x": 360.0,
-          "y": 60.0,
-        }
-      },
-      {
-        "type": "curve",
-        "size": {
-          "x": 60.0,
-          "y": 60.0,
-        },
-        "radius": 73.0,
+        "angle": 90.0,
+        "added": true,
+        "radius": 170.0,
         "direction": "left",
         "closedAdded": "both"
       },
       {
         "type": "rect",
         "size": {
-          "x": 129.5,
+          "x": 200.0,
+          "y": 60.0,
+        },
+        "sensor": "sensor"
+      },
+      {
+        "type": "curve",
+        "added": true,
+        "radius": 90.0,
+        "angle": 70.0,
+        "direction": "left",
+        "closedAdded": "both"
+      },
+      {
+        "type": "rect",
+        "size": {
+          "x": 282.0,
           "y": 60.0,
         }
       },
       {
         "type": "curve",
-        "size": {
-          "x": 50.0,
-          "y": 50.0,
-        },
-        "radius": 50.0,
+        "added": true,
+        "radius": 90.0,
+        "angle": 140.0,
         "direction": "left",
         "closedAdded": "both"
-      }
+      },
+      {
+        "type": "rect",
+        "size": {
+          "x": 325.5,
+          "y": 60.0,
+        }
+      },
+      {
+        "type": "curve",
+        "radius": 90.0,
+        "direction": "left",
+        "closedAdded": "both"
+      },
+      {
+        "type": "rect",
+        "size": {
+          "x": 35.0,
+          "y": 60.0,
+        }
+      },
     ];
     await Future.delayed(Duration(seconds: 3));
     return Z1Track(
-        trackId: "MockTrackId",
-        name: "The Mock Track",
+        trackId: "Mock2TrackId",
+        name: "The Mock 2 Track",
         numLaps: 5,
         slots: slots.map((e) => SlotModel.fromMap(e)).toList());
   }

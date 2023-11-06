@@ -12,7 +12,6 @@ import 'package:flutter/services.dart';
 import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/controls/components/buttons_game.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
-import 'package:z1racing/game/game_colors.dart';
 import 'package:z1racing/game/panel/components/countdown_text.dart';
 import 'package:z1racing/game/panel/components/lap_text.dart';
 import 'package:z1racing/game/panel/components/sublap_list.dart';
@@ -142,12 +141,6 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     }
 
     final viewportSize = alignedVector(longMultiplier: 1 / numberOfPlayers);
-
-    RectangleComponent viewportRimGenerator() =>
-        RectangleComponent(size: viewportSize, anchor: Anchor.topLeft)
-          ..paint.color = GameColors.blue.color
-          ..paint.strokeWidth = 2.0
-          ..paint.style = PaintingStyle.stroke;
     final cameras = List.generate(numberOfPlayers, (i) {
       return CameraComponent(
         world: cameraWorld,
@@ -155,9 +148,9 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
           ..position = alignedVector(
             longMultiplier: i == 0 ? 0.0 : 1 / (i + 1),
             shortMultiplier: 0.0,
-          )
-          ..add(viewportRimGenerator()),
+          ),
       )
+        ..priority = -1
         ..viewfinder.anchor = Anchor.center
         ..viewfinder.zoom = playZoom;
     });
@@ -177,6 +170,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         ..viewfinder.anchor = Anchor.topLeft
         ..viewfinder.zoom = mapCameraZoom;
     }); */
+
     addAll(cameras);
 
     for (var i = 0; i < numberOfPlayers; i++) {

@@ -7,7 +7,8 @@ import 'package:z1racing/menus/widgets/menu_settings.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class Menu extends StatefulWidget {
-  const Menu(this.game, {super.key});
+  final Function()? changeTrack;
+  const Menu(this.game, {super.key, this.changeTrack});
 
   final Z1RacingGame game;
 
@@ -95,6 +96,12 @@ class _MenuState extends State<Menu> {
                               MenuSettings.open(context: context);
                             },
                           ),
+                          /* ElevatedButton(
+                            child: const Text('Load Track'),
+                            onPressed: () {
+                              widget.changeTrack?.call();
+                            },
+                          ), */
                           UpdateButton()
                         ],
                       ))

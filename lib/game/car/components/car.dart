@@ -6,10 +6,11 @@ import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:z1racing/game/game_colors.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
+import 'package:z1racing/game/track/components/track_slot.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 import 'package:z1racing/game/car/components/tire.dart';
 
-class Car extends BodyComponent<Z1RacingGame> {
+class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
   Car(
       {required this.images,
       required this.playerNumber,
@@ -36,11 +37,22 @@ class Car extends BodyComponent<Z1RacingGame> {
   late final _renderPosition = -size.toOffset() / 2;
   late final _renderRect = _renderPosition & size;
 
+  late double _maxSpeed;
+  late double _traction;
+  late double _speed;
+
+  double get traction => _traction;
+  double get speed => _speed;
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
+    // These params should be loaded from car model
     final image = await images.load('ford_mini.png');
+    _traction = 0.9;
+    _maxSpeed = 250;
+    _speed = _maxSpeed;
 
     _image = image;
   }
@@ -58,9 +70,10 @@ class Car extends BodyComponent<Z1RacingGame> {
 
     final shape = PolygonShape()
       ..setAsBoxXY(_renderPosition.dx, _renderPosition.dy);
-    final fixtureDef = FixtureDef(shape)
+    final fixtureDef = FixtureDef(shape, isSensor: true)
       ..density = 0.04
-      ..restitution = 0.9;
+      ..restitution = 0.9
+      ..userData = this;
     body.createFixture(fixtureDef);
 
     final jointDef = RevoluteJointDef()
@@ -108,5 +121,21 @@ class Car extends BodyComponent<Z1RacingGame> {
     for (final tire in tires) {
       tire.removeFromParent();
     }
+  }
+
+  @override
+  void beginContact(Object other, Contact contact) {
+    if (other is! TrackSlot) {
+      return;
+    }
+    _speed = 50;
+  }
+
+  @override
+  void endContact(Object other, Contact contact) {
+    if (other is! TrackSlot) {
+      return;
+    }
+    _speed = _maxSpeed;
   }
 }

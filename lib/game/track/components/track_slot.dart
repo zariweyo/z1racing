@@ -32,23 +32,18 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder, _scaledRect);
 
-    paint.style = PaintingStyle.stroke;
+    paint.style = PaintingStyle.fill;
     paint.strokeWidth = 7.0;
     paint.color = ColorExtension.fromRGBHexString('#cccccc');
     paint.color = paint.color.darken(0.4);
 
     Path path = Path();
 
-    slotModel.points1.forEachIndexed((index, element) {
-      element = element * scale;
-      if (index == 0) {
-        path.moveTo(element.x, element.y);
-      } else {
-        path.lineTo(element.x, element.y);
-      }
-    });
+    paint.style = PaintingStyle.fill;
+    paint.color = ColorExtension.fromRGBHexString('#883438');
+    paint.color = paint.color.darken(0.4);
 
-    slotModel.points2.reversed.forEachIndexed((index, element) {
+    slotModel.inside.forEachIndexed((index, element) {
       element = element * scale;
       if (index == 0) {
         path.moveTo(element.x, element.y);
@@ -60,7 +55,41 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
     canvas.drawPath(path, paint);
 
     path.reset();
+    paint.style = PaintingStyle.fill;
     paint.color = ColorExtension.fromRGBHexString('#cccccc');
+    paint.color = paint.color.darken(0.4);
+
+    slotModel.points1.forEachIndexed((index, element) {
+      element = element * scale;
+      if (index == 0) {
+        path.moveTo(element.x, element.y);
+      } else {
+        path.lineTo(element.x, element.y);
+      }
+
+      if (index == slotModel.points1.length - 1) {
+        path.lineTo(slotModel.points1.first.x, slotModel.points1.first.y);
+      }
+    });
+
+    if (slotModel.pointsAdded.isEmpty) {
+      slotModel.points2.reversed.forEachIndexed((index, element) {
+        element = element * scale;
+        if (index == 0) {
+          path.moveTo(element.x, element.y);
+        } else {
+          path.lineTo(element.x, element.y);
+        }
+
+        if (index == slotModel.points2.length - 1) {
+          path.lineTo(slotModel.points2.first.x, slotModel.points2.first.y);
+        }
+      });
+    }
+    canvas.drawPath(path, paint);
+
+    path.reset();
+    paint.color = ColorExtension.fromRGBHexString('#33cccc');
     paint.color = paint.color.darken(0.5);
     paint.style = PaintingStyle.fill;
     paint.strokeWidth = 7.0;
@@ -106,8 +135,14 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
           ? slotModel.pointsAdded
           : slotModel.points2);
 
-    final fixtureDefExternal = FixtureDef(shapeExternal)..restitution = 0.5;
-    final fixtureDefInternal = FixtureDef(shapeInternal)..restitution = 0.5;
+    final fixtureDefExternal = FixtureDef(shapeExternal)
+      ..restitution = 0.5
+      ..userData = this
+      ..friction = 0.1;
+    final fixtureDefInternal = FixtureDef(shapeInternal)
+      ..restitution = 0.5
+      ..userData = this
+      ..friction = 0.1;
     return body
       ..createFixture(fixtureDefInternal)
       ..createFixture(fixtureDefExternal);
