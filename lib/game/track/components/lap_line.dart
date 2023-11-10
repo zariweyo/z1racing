@@ -49,6 +49,7 @@ class LapLine extends BodyComponent with ContactCallbacks {
     final groundBody = world.createBody(
       BodyDef(
         position: position,
+        angle: angle,
         userData: this,
       ),
     );
@@ -82,7 +83,6 @@ class LapLine extends BodyComponent with ContactCallbacks {
   @override
   void render(Canvas canvas) {
     canvas.translate(-size.x / 2, -size.y / 2);
-    canvas.rotate(angle);
     canvas.drawRect(rect, paint);
     if (_finishOverlay != null) {
       canvas.drawImageRect(_finishOverlay!, _scaledRect, _drawRect, paint);
@@ -94,6 +94,7 @@ class LapLine extends BodyComponent with ContactCallbacks {
     if (other is! Car) {
       return;
     }
+
     if (isFinish && other.passedStartControl.length == 2) {
       GameRepositoryImpl().addLap();
       other.passedStartControl.clear();

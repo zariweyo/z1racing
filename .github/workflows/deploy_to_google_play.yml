@@ -37,19 +37,19 @@ jobs:
       - run: echo $GOOGLE_SERVICE_ANDROID | base64 -d > android/app/google-services.json
       - run: flutter pub get
       - run: flutter analyze
-      - run: flutter build appbundle --release
+      - run: flutter build appbundle --release --flavor prod
       - uses: actions/upload-artifact@v1
         with:
           name: release-appbundle
-          path: build/app/outputs/bundle/release/app-release.aab
+          path: build/app/outputs/bundle/prodRelease/app-prod-release.aab
       - uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.zwymobile.z1racing
-          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          releaseFiles: build/app/outputs/bundle/prodRelease/app-prod-release.aab
           track: internal
           status: draft
           inAppUpdatePriority: 2
           whatsNewDirectory: distribution/whatsnew
-          mappingFile: build/app/outputs/mapping/release/mapping.txt
-          debugSymbols: build/app/intermediates/merged_native_libs/release/out/lib
+          mappingFile: build/app/outputs/mapping/prodRelease/mapping.txt
+          debugSymbols: build/app/intermediates/merged_native_libs/prodRelease/out/lib

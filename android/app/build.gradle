@@ -55,6 +55,21 @@ android {
         multiDexEnabled true
     }
 
+    flavorDimensions "default"
+
+    productFlavors {
+        prod {
+            dimension "default"
+            resValue "string", "app_name", "Z1 Racing DEV"
+            applicationIdSuffix ""
+        }
+        dev {
+            dimension "default"
+            resValue "string", "app_name", "Z1 Racing DEV"
+            applicationIdSuffix ".dev"
+        }
+    }
+
     signingConfigs {
         release {
             keyAlias "z1racing"

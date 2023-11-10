@@ -64,10 +64,11 @@ class _MenuSettingsState extends State<MenuSettings> {
   }
 
   _textfield() {
-    return Expanded(
+    return Container(
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
           padding: EdgeInsets.only(top: 17),
+          width: 100,
           child: Text("Nickname: ",
               style: Theme.of(context).textTheme.bodyMedium)),
       Expanded(
