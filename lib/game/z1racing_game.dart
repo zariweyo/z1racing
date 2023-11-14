@@ -47,7 +47,6 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   @override
   Color backgroundColor() => Colors.black;
 
-  static final Vector2 trackSize = Vector2.all(500);
   static const double playZoom = 3.0;
 
   late final World cameraWorld;
@@ -81,6 +80,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   }
 
   void openMenu() {
+    Vector2 trackSize = GameRepositoryImpl().trackSize;
     overlays.add('menu');
     overlays.add('timeList');
     overlays.remove('game_control');
@@ -93,7 +93,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     )
       ..viewfinder.position = trackSize / 2
       ..viewfinder.anchor = Anchor.center
-      ..viewfinder.zoom = zoomLevel - 0.2;
+      ..viewfinder.zoom = zoomLevel - 0.5;
     add(startCamera);
   }
 
@@ -108,7 +108,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       )
       ..add(
         MoveEffect.to(
-          Vector2.all(20),
+          GameRepositoryImpl().startPosition,
           EffectController(duration: 1.0),
         ),
       );
@@ -176,11 +176,9 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     for (var i = 0; i < numberOfPlayers; i++) {
       final car =
           Car(images: images, playerNumber: i, cameraComponent: cameras[i]);
-      final lapText = LapText(
-        car: car,
-      );
+      final lapText = LapText();
 
-      final sublapText = SubLapList(car: car);
+      final sublapText = SubLapList();
 
       _gameRepository.getLapNotifier().addListener(() {
         if (_gameRepository.raceIsEnd()) {
@@ -190,10 +188,6 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         }
       });
 
-      initJoystick().then((_) {
-        add(joystick!);
-      });
-
       cars.add(car);
       cameraWorld.add(car);
       cameras[i].viewport.addAll([
@@ -201,14 +195,18 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         sublapText,
         /*mapCameras[i] disabled by performance issue*/
       ]);
-
-      add(countdownText);
-      countdownText.onFinish.addListener(() {
-        if (countdownText.onFinish.value) {
-          remove(countdownText);
-        }
-      });
     }
+
+    initJoystick().then((_) {
+      add(joystick!);
+    });
+
+    add(countdownText);
+    countdownText.onFinish.addListener(() {
+      if (countdownText.onFinish.value) {
+        remove(countdownText);
+      }
+    });
 
     pressedKeySets = List.generate(numberOfPlayers, (_) => {});
     activeKeyMaps = List.generate(numberOfPlayers, (i) => playersKeys[i]);

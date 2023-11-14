@@ -10,7 +10,7 @@ class Z1UserRace {
   final DateTime updated;
   Z1UserRaceMetadata metadata;
 
-  String get id => "${trackId}_${metadata.numLaps}";
+  String get id => "${trackId}_${uid}_${metadata.numLaps}";
 
   Z1UserRace(
       {required this.uid,

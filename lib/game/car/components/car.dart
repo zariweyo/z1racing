@@ -9,6 +9,7 @@ import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 import 'package:z1racing/game/car/components/tire.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
   Car(
@@ -59,10 +60,11 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
 
   @override
   Body createBody() {
-    final startPosition =
-        Vector2(20, 30) + Vector2(15, 0) * playerNumber.toDouble();
+    final startPosition = GameRepositoryImpl().startPosition;
+    final startAngle = GameRepositoryImpl().startAngle;
     final def = BodyDef()
       ..type = BodyType.dynamic
+      ..angle = startAngle / 3.03
       ..position = startPosition;
     final body = world.createBody(def)
       ..userData = this
@@ -79,8 +81,8 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     final jointDef = RevoluteJointDef()
       ..bodyA = body
       ..enableLimit = true
-      ..lowerAngle = 0.0
-      ..upperAngle = 0.0
+      ..lowerAngle = startAngle
+      ..upperAngle = startAngle
       ..localAnchorB.setZero();
 
     tires = List.generate(4, (i) {

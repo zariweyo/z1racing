@@ -143,6 +143,7 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
       ..restitution = 0.5
       ..userData = this
       ..friction = 0.1;
+
     return body
       ..createFixture(fixtureDefInternal)
       ..createFixture(fixtureDefExternal);

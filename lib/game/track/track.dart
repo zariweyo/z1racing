@@ -6,12 +6,13 @@ import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/track/models/slot_model.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class Track {
   final Vector2 position;
   final double size;
 
-  List<TrackSlot> _tracks = [];
+  List<Component> _tracks = [];
   Z1Track z1track;
   Vector2 initPosition = Vector2.zero();
 
@@ -42,20 +43,53 @@ class Track {
         _tracks.add(TrackSlot(
             position: nextPosition, slotModel: trackModel, angle: nextAngle));
 
+        if (trackModel.sensor == TrackModelSensor.finish) {
+          _tracks.add(LapLine(
+              id: 1,
+              position: nextPosition.clone(),
+              size: Vector2(1, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(40, 25),
+              isFinish: false));
+          _tracks.add(LapLine(
+              id: 2,
+              position: nextPosition.clone(),
+              size: Vector2(1, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(60, 25),
+              isFinish: false));
+          _tracks.add(LapLine(
+              id: 3,
+              position: nextPosition.clone(),
+              size: Vector2(3, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(20, 25),
+              isFinish: true));
+          GameRepositoryImpl().startPosition = nextPosition.clone()
+            ..add(Vector2(10, 25)..rotate(nextAngle));
+          GameRepositoryImpl().startAngle = nextAngle - Math.pi / 2;
+        }
+
         currentTrack = trackModel;
         currentAngle = nextAngle;
         currentPosition = nextPosition;
+
+        if (currentPosition.x > GameRepositoryImpl().trackSize.x) {
+          GameRepositoryImpl().trackSize.x = currentPosition.x;
+        }
+
+        if (currentPosition.y > GameRepositoryImpl().trackSize.y) {
+          GameRepositoryImpl().trackSize.y = currentPosition.y;
+        }
       }
     });
+
+    /* print("--> " + initPosition.toString());
+    print("--> " + currentPosition.toString());
+    print("--> " + (initPosition - currentPosition).toString()); */
   }
 
   Iterable<Component> getComponents() {
-    return [
-      LapLine(1, Vector2(20, 70), Vector2(40, 1), isFinish: false),
-      LapLine(2, Vector2(20, 90), Vector2(40, 1), isFinish: false),
-      LapLine(3, Vector2(20, 50), Vector2(3, 35),
-          isFinish: true, angle: Math.pi / 2),
-      ..._tracks
-    ];
+    return _tracks;
   }
 }

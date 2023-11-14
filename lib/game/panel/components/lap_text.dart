@@ -7,14 +7,11 @@ import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
 
-import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
-  LapText({required this.car}) : super(position: Vector2(70, 50));
-
-  final Car car;
+  LapText() : super(position: Vector2(70, 50));
   late final ValueNotifier<int> lapNotifier =
       GameRepositoryImpl().getLapNotifier();
   late final TextComponent _timePassedComponent;

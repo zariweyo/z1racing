@@ -29,7 +29,9 @@ class Z1Track {
       name: map['name'] ?? "",
       numLaps: map['numLaps'] ?? 0,
       slots: map['slots'] != null
-          ? map['slots'].map((e) => SlotModel.fromMap(e)).toList()
+          ? (map['slots'] as List<Map<String, dynamic>>)
+              .map((e) => SlotModel.fromMap(e))
+              .toList()
           : [],
     );
   }

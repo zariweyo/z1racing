@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
+import 'package:flame/input.dart';
 import 'package:flutter/foundation.dart';
+import 'package:z1racing/models/z1track_races.dart';
 import 'package:z1racing/repositories/firebase_auth_repository.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository.dart';
@@ -22,10 +24,15 @@ class GameRepositoryImpl extends GameRepository {
   GameStatus status = GameStatus.none;
   Z1Track currentTrack = Z1Track.empty();
   Z1UserRace? z1UserRace;
-  List<Z1UserRace> currentZ1UserRaces = [];
-  Z1UserRace? get currentZ1UserRace => currentZ1UserRaces.firstWhereOrNull(
+  Z1TrackRaces currentZ1UserRaces = Z1TrackRaces.empty();
+  Z1UserRace? get currentZ1UserRace =>
+      currentZ1UserRaces.races.firstWhereOrNull(
         (element) => element.uid == FirebaseAuthRepository().currentUser?.uid,
       );
+
+  Vector2 startPosition = Vector2(0, 0);
+  Vector2 trackSize = Vector2(0, 0);
+  double startAngle = 0;
 
   loadTrack({required Z1Track track}) {
     currentTrack = track;
@@ -45,7 +52,7 @@ class GameRepositoryImpl extends GameRepository {
     assert(FirebaseAuthRepository().currentUser != null);
     currentZ1UserRaces = await FirebaseFirestoreRepository().getUserRaces(
         uid: FirebaseAuthRepository().currentUser!.uid,
-        raceId: currentTrack.id);
+        trackId: currentTrack.trackId);
   }
 
   _onLapUpdate() async {

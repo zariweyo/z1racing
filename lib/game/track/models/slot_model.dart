@@ -6,10 +6,13 @@ enum TrackModelType { rect, curve }
 
 enum TrackModelSensor { none, finish, sensor }
 
+enum SlotModelClosedAdded { none, start, end, both }
+
 abstract class SlotModel {
   final Vector2 size;
   final TrackModelType type;
   final TrackModelSensor sensor;
+  final SlotModelClosedAdded closedAdded;
   List<Vector2> get points1;
   List<Vector2> get points2;
   List<Vector2> get inside;
@@ -22,6 +25,7 @@ abstract class SlotModel {
   SlotModel(
       {required this.size,
       required this.type,
+      required this.closedAdded,
       this.sensor = TrackModelSensor.none});
 
   factory SlotModel.fromMap(Map<String, dynamic> map) {

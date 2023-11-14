@@ -5,12 +5,9 @@ import 'package:z1racing/game/track/models/slot_model.dart';
 
 enum CurveModelDirection { right, left }
 
-enum CurveModelClosedAdded { none, start, end, both }
-
 class CurveModel extends SlotModel {
   final double radius;
   final CurveModelDirection direction;
-  final CurveModelClosedAdded closedAdded;
   final bool added;
   final double angle;
   CurveModel(
@@ -18,7 +15,7 @@ class CurveModel extends SlotModel {
       this.added = false,
       this.angle = 90,
       super.sensor,
-      this.closedAdded = CurveModelClosedAdded.none,
+      super.closedAdded = SlotModelClosedAdded.none,
       this.direction = CurveModelDirection.right})
       : super(type: TrackModelType.curve, size: Vector2(radius, radius)) {
     calculateData();
@@ -42,10 +39,10 @@ class CurveModel extends SlotModel {
       direction: CurveModelDirection.values
           .firstWhere((element) => element.name == map['direction']),
       closedAdded: map['closedAdded'] != null
-          ? CurveModelClosedAdded.values.firstWhere(
+          ? SlotModelClosedAdded.values.firstWhere(
               (element) => element.name == map['closedAdded'],
-              orElse: () => CurveModelClosedAdded.none)
-          : CurveModelClosedAdded.none,
+              orElse: () => SlotModelClosedAdded.none)
+          : SlotModelClosedAdded.none,
     );
   }
 
@@ -79,7 +76,7 @@ class CurveModel extends SlotModel {
   late List<Vector2> _masterPoints;
 
   calculateData() {
-    int addedExtend = 2;
+    int addedExtend = 5;
 
     Vector2 center =
         _centerOfMedium(pointA: Vector2.zero(), pointB: size, radius: radius);
@@ -109,30 +106,30 @@ class CurveModel extends SlotModel {
       int limitStart = 0;
       int limitEnd = 0;
       switch (closedAdded) {
-        case CurveModelClosedAdded.none:
+        case SlotModelClosedAdded.none:
           limitStart = 0;
           limitEnd = 0;
           break;
-        case CurveModelClosedAdded.start:
+        case SlotModelClosedAdded.start:
           limitStart = pointsAddedBase.length > 10 ? addedExtend : 0;
           limitEnd = 0;
           break;
-        case CurveModelClosedAdded.end:
+        case SlotModelClosedAdded.end:
           limitStart = 0;
           limitEnd = pointsAddedBase.length > 10 ? addedExtend : 0;
           break;
-        case CurveModelClosedAdded.both:
+        case SlotModelClosedAdded.both:
           limitStart = pointsAddedBase.length > 10 ? addedExtend : 0;
           limitEnd = pointsAddedBase.length > 10 ? addedExtend : 0;
           break;
       }
-      if ([CurveModelClosedAdded.start, CurveModelClosedAdded.both]
+      if ([SlotModelClosedAdded.start, SlotModelClosedAdded.both]
           .contains(closedAdded)) {
         pointsAdded.add(pointsAddedPlus.first);
       }
       pointsAdded.addAll(pointsAddedBase.sublist(
           limitStart, pointsAddedBase.length - limitEnd));
-      if ([CurveModelClosedAdded.end, CurveModelClosedAdded.both]
+      if ([SlotModelClosedAdded.end, SlotModelClosedAdded.both]
           .contains(closedAdded)) {
         pointsAdded.add(pointsAddedPlus.last);
       }
@@ -182,7 +179,7 @@ class CurveModel extends SlotModel {
 
       double ang = Math.acos((x.abs() + center.x.abs()) / radius);
 
-      if (angMin < ang && angMax > ang) vertices.add(Vector2(x, y));
+      if (angMin <= ang && angMax >= ang) vertices.add(Vector2(x, y));
     }
 
     if (direction == CurveModelDirection.left) {

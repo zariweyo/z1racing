@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
 import 'package:z1racing/repositories/firebase_auth_repository.dart';
@@ -15,6 +16,7 @@ class RaceTimeUserList extends StatefulWidget {
 
 class _RaceTimeUserListState extends State<RaceTimeUserList> {
   List<Z1UserRace> currentZ1UserRaces = [];
+  int firstPosition = 0;
   bool initiated = false;
   late Z1Track currentTrack;
 
@@ -36,17 +38,18 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
     FirebaseFirestoreRepository()
         .getUserRaces(
             uid: FirebaseAuthRepository().currentUser!.uid,
-            raceId: currentTrack.id)
-        .then((raceList) {
+            trackId: currentTrack.trackId)
+        .then((trackRace) {
       if (mounted)
         setState(() {
           initiated = true;
-          currentZ1UserRaces = raceList;
+          currentZ1UserRaces = trackRace.races;
+          firstPosition = trackRace.firstPosition;
         });
     });
   }
 
-  Widget dataRow(Z1UserRace race) {
+  Widget dataRow(int index, Z1UserRace race) {
     final textTheme = Theme.of(context).textTheme;
     Color? color;
     if (FirebaseAuthRepository().currentUser?.uid == race.uid) {
@@ -59,21 +62,28 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         Expanded(
-            flex: 3,
+            flex: 1,
+            child: Text(
+              (firstPosition + index).toString(),
+              style: bodyMedium,
+              textAlign: TextAlign.start,
+            )),
+        Expanded(
+            flex: 5,
             child: Text(
               race.metadata.displayName,
               style: bodyMedium,
               textAlign: TextAlign.start,
             )),
         Expanded(
-            flex: 2,
+            flex: 3,
             child: Text(
               race.time.toChronoString(),
               style: bodyMedium,
               textAlign: TextAlign.end,
             )),
         Expanded(
-            flex: 2,
+            flex: 3,
             child: Text(
               race.bestLapTime.toChronoString(),
               style: bodyMedium,
@@ -107,7 +117,9 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
 
   Widget showList() {
     return ListView(
-      children: currentZ1UserRaces.map((e) => dataRow(e)).toList(),
+      children: currentZ1UserRaces
+          .mapIndexed((index, userRace) => dataRow(index, userRace))
+          .toList(),
     );
   }
 

@@ -6,14 +6,12 @@ import 'package:flame/extensions.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
 
-import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class SubLapList extends PositionComponent with HasGameRef<Z1RacingGame> {
-  SubLapList({required this.car}) : super(position: Vector2(80, 80));
+  SubLapList() : super(position: Vector2(80, 80));
 
-  final Car car;
   List<TextComponent> textComponents = [];
 
   @override

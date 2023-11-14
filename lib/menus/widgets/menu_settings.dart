@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:z1racing/base/components/common_textfield.dart';
 import 'package:z1racing/repositories/firebase_auth_repository.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class MenuSettings extends StatefulWidget {
   static Future open({required BuildContext context}) {
@@ -26,10 +27,15 @@ class _MenuSettingsState extends State<MenuSettings> {
     if (newName.length > 3 &&
         newName.length <= 15 &&
         FirebaseFirestoreRepository().currentUser?.displayName != newName) {
-      setState(() {
-        loading = true;
-      });
-      await FirebaseFirestoreRepository().updateName(newName);
+      try {
+        setState(() {
+          loading = true;
+        });
+        await FirebaseFirestoreRepository().updateName(newName);
+        GameRepositoryImpl().reset();
+      } catch (exc) {
+        print(exc);
+      }
       setState(() {
         loading = false;
       });

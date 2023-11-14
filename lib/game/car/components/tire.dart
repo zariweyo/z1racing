@@ -20,9 +20,9 @@ class Tire extends BodyComponent<Z1RacingGame> {
     this.isTurnableTire = false,
   }) : super(
           paint: Paint()
-            ..color = Color.fromARGB(207, 144, 10, 10)
+            ..color = Color.fromARGB(256, 3, 0, 0)
             ..strokeWidth = 0.5
-            ..style = PaintingStyle.stroke,
+            ..style = PaintingStyle.fill,
           priority: 2,
         );
 
@@ -83,6 +83,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
     final def = BodyDef()
       ..type = BodyType.dynamic
+      ..angle = car.body.angle
       ..position = car.body.position + jointAnchor;
     final body = world.createBody(def)..userData = this;
 

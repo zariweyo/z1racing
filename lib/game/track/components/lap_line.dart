@@ -10,13 +10,19 @@ import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class LapLine extends BodyComponent with ContactCallbacks {
-  LapLine(this.id, this.position, this.size,
-      {required this.isFinish, this.angle = 0})
+  LapLine(
+      {required this.id,
+      required this.position,
+      required this.size,
+      required this.offsetPotition,
+      required this.isFinish,
+      this.angle = 0})
       : super(priority: 1);
 
   final int id;
   final bool isFinish;
   final Vector2 position;
+  final Vector2 offsetPotition;
   final Vector2 size;
   final double angle;
   late final Rect rect = size.toRect();
@@ -48,11 +54,12 @@ class LapLine extends BodyComponent with ContactCallbacks {
 
     final groundBody = world.createBody(
       BodyDef(
-        position: position,
+        position: position.clone()..add(offsetPotition..rotate(angle)),
         angle: angle,
         userData: this,
       ),
     );
+
     final shape = PolygonShape()..setAsBoxXY(size.x / 2, size.y / 2);
     final fixtureDef = FixtureDef(shape, isSensor: true);
     return groundBody..createFixture(fixtureDef);
