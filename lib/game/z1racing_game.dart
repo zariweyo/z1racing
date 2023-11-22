@@ -18,6 +18,7 @@ import 'package:z1racing/game/panel/components/sublap_list.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/track/track.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
   {
@@ -49,6 +50,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
 
   static const double playZoom = 3.0;
 
+  late AudioPool pool;
   late final World cameraWorld;
   late CameraComponent startCamera;
   late List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> activeKeyMaps;
@@ -76,10 +78,24 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
 
     countdownText = CountdownText();
 
+    startBgmMusic();
+
     openMenu();
   }
 
+  void startBgmMusic() async {
+    try {
+      if (!FlameAudio.bgm.isPlaying) {
+        FlameAudio.bgm.initialize();
+        FlameAudio.bgm.play('background_sound1.mp3');
+      }
+    } catch (ex) {
+      //
+    }
+  }
+
   void openMenu() {
+    FlameAudio.bgm.resume();
     Vector2 trackSize = GameRepositoryImpl().trackSize;
     overlays.add('menu');
     overlays.add('timeList');
@@ -93,7 +109,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     )
       ..viewfinder.position = trackSize / 2
       ..viewfinder.anchor = Anchor.center
-      ..viewfinder.zoom = zoomLevel - 0.5;
+      ..viewfinder.zoom = zoomLevel - 0.3;
     add(startCamera);
   }
 
@@ -120,6 +136,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   }
 
   void start({required int numberOfPlayers}) {
+    FlameAudio.bgm.pause();
     isGameOver = false;
     overlays.remove('menu');
     overlays.remove('timeList');
@@ -207,6 +224,9 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         remove(countdownText);
       }
     });
+
+    add(FpsTextComponent(
+        position: Vector2(size.x - 124, 20), scale: Vector2.all(0.8)));
 
     pressedKeySets = List.generate(numberOfPlayers, (_) => {});
     activeKeyMaps = List.generate(numberOfPlayers, (i) => playersKeys[i]);

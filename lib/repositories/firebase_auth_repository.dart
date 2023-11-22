@@ -1,44 +1,37 @@
 import 'dart:async';
-import 'dart:math';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:z1racing/models/z1user.dart';
+import 'package:z1racing/repositories/firebase_auth_repository_impl.dart';
+import 'package:z1racing/repositories/firebase_auth_repository_mock.dart';
 
-class FirebaseAuthRepository {
-  static final FirebaseAuthRepository _instance =
-      FirebaseAuthRepository._internal();
+abstract class FirebaseAuthRepository {
+  static final FirebaseAuthRepository _instanceImpl =
+      FirebaseAuthRepositoryImpl();
+  static final FirebaseAuthRepository _instanceMock =
+      FirebaseAuthRepositoryMock();
 
-  factory FirebaseAuthRepository() {
-    return _instance;
-  }
+  static FirebaseAuthRepository? _instance;
 
-  FirebaseAuthRepository._internal();
-
-  User? get currentUser => FirebaseAuth.instance.currentUser;
-  late PackageInfo packageInfo;
-  ValueNotifier<User?> currentUserNotifier = ValueNotifier<User?>(null);
-
-  Future init() async {
-    changeUserSubscription =
-        FirebaseAuth.instance.userChanges().listen(_userChange);
-    if (currentUser == null) {
-      await FirebaseAuth.instance.signInAnonymously();
-    }
-    if ((currentUser?.displayName ?? "").isEmpty) {
-      await FirebaseAuth.instance.currentUser
-          ?.updateDisplayName("USER_" + Random().nextInt(100000000).toString());
+  factory FirebaseAuthRepository._({bool useMock = false}) {
+    if (useMock) {
+      _instance = _instanceMock;
+    } else {
+      _instance = _instanceImpl;
     }
 
-    packageInfo = await PackageInfo.fromPlatform();
+    return _instance!;
   }
 
-  StreamSubscription<User?>? changeUserSubscription;
+  static FirebaseAuthRepository get instance =>
+      _instance ?? FirebaseAuthRepository._();
 
-  void dispose() {
-    changeUserSubscription?.cancel();
-  }
+  static FirebaseAuthRepository get initInMockMode =>
+      _instance ?? FirebaseAuthRepository._(useMock: true);
 
-  _userChange(User? userModified) {
-    currentUserNotifier.value = userModified;
-  }
+  PackageInfo get packageInfo;
+  Z1User? get currentUser;
+  ValueNotifier<Z1User?> currentUserNotifier = ValueNotifier<Z1User?>(null);
+
+  Future init();
 }

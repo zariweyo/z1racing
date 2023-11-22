@@ -8,7 +8,7 @@ import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class UpdateButton extends StatelessWidget {
   _linkUpdate(BuildContext context) {
-    Z1Version z1Version = FirebaseFirestoreRepository().z1version;
+    Z1Version z1Version = FirebaseFirestoreRepository.instance.z1version;
     return ElevatedButton(
         onPressed: () {
           String url = "";
@@ -31,9 +31,8 @@ class UpdateButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (FirebaseFirestoreRepository()
-            .z1version
-            .check(FirebaseAuthRepository().packageInfo) ==
+    if (FirebaseFirestoreRepository.instance.z1version
+            .check(FirebaseAuthRepository.instance.packageInfo) ==
         Z1VersionState.updateAvailable) {
       return _linkUpdate(context);
     }

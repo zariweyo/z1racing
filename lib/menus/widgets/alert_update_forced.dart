@@ -9,7 +9,7 @@ class AlertUpdateForced extends StatelessWidget {
   AlertUpdateForced();
 
   _linkUpdate(BuildContext context) {
-    Z1Version z1Version = FirebaseFirestoreRepository().z1version;
+    Z1Version z1Version = FirebaseFirestoreRepository.instance.z1version;
     return ElevatedButton(
         onPressed: () {
           String url = "";

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:z1racing/base/components/update_button.dart';
 import 'package:z1racing/repositories/firebase_auth_repository.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
@@ -7,8 +8,7 @@ import 'package:z1racing/menus/widgets/menu_settings.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class Menu extends StatefulWidget {
-  final Function()? changeTrack;
-  const Menu(this.game, {super.key, this.changeTrack});
+  const Menu(this.game, {super.key});
 
   final Z1RacingGame game;
 
@@ -21,8 +21,7 @@ class _MenuState extends State<Menu> {
 
   @override
   void initState() {
-    FirebaseAuthRepository()
-        .currentUserNotifier
+    FirebaseAuthRepository.instance.currentUserNotifier
         .addListener(_currentUserModified);
     super.initState();
   }
@@ -30,8 +29,7 @@ class _MenuState extends State<Menu> {
   @override
   dispose() {
     super.dispose();
-    FirebaseAuthRepository()
-        .currentUserNotifier
+    FirebaseAuthRepository.instance.currentUserNotifier
         .removeListener(_currentUserModified);
   }
 
@@ -44,7 +42,7 @@ class _MenuState extends State<Menu> {
     final textTheme = Theme.of(context).textTheme;
     final numLaps = GameRepositoryImpl().currentTrack.numLaps;
     final String name =
-        FirebaseFirestoreRepository().currentUser?.displayName ?? "";
+        FirebaseFirestoreRepository.instance.currentUser?.name ?? "";
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -77,7 +75,24 @@ class _MenuState extends State<Menu> {
                           ),
                           const SizedBox(height: 5),
                           ElevatedButton(
-                            child: const Text('Play'),
+                            autofocus: true,
+                            focusNode: FocusNode(
+                              onKey: (node, event) {
+                                switch (event.logicalKey) {
+                                  case LogicalKeyboardKey.enter:
+                                    node.unfocus();
+                                    widget.game
+                                        .prepareStart(numberOfPlayers: 1);
+                                    break;
+                                }
+                                return KeyEventResult.ignored;
+                              },
+                            ),
+                            child: Text(
+                              'Play',
+                              style: textTheme.bodyLarge
+                                  ?.copyWith(color: Colors.white),
+                            ),
                             onPressed: () {
                               widget.game.prepareStart(numberOfPlayers: 1);
                             },
@@ -91,7 +106,23 @@ class _MenuState extends State<Menu> {
                             style: textTheme.bodySmall,
                           ),
                           ElevatedButton(
-                            child: const Text('Settings'),
+                            autofocus: false,
+                            focusNode: FocusNode(
+                              onKey: (node, event) {
+                                switch (event.logicalKey) {
+                                  case LogicalKeyboardKey.enter:
+                                    node.unfocus();
+                                    MenuSettings.open(context: context);
+                                    break;
+                                }
+                                return KeyEventResult.ignored;
+                              },
+                            ),
+                            child: Text(
+                              'Settings',
+                              style: textTheme.bodyLarge
+                                  ?.copyWith(color: Colors.white),
+                            ),
                             onPressed: () {
                               MenuSettings.open(context: context);
                             },

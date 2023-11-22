@@ -12,7 +12,7 @@ class Track {
   final Vector2 position;
   final double size;
 
-  List<Component> _tracks = [];
+  List<Component> _slots = [];
   Z1Track z1track;
   Vector2 initPosition = Vector2.zero();
 
@@ -26,9 +26,10 @@ class Track {
     double currentAngle = z1track.slots.first.inputAngle - Math.pi;
     SlotModel currentTrack = z1track.slots.first;
     Vector2 currentPosition = initPosition;
+    bool startPositionSetted = false;
     z1track.slots.forEachIndexed((index, trackModel) {
       if (index == 0) {
-        _tracks.add(TrackSlot(
+        _slots.add(TrackSlot(
             position: initPosition.clone(),
             slotModel: trackModel,
             angle: currentAngle));
@@ -40,34 +41,38 @@ class Track {
             (currentTrack.masterPoints.last.clone()..rotate(currentAngle)) +
             ((-trackModel.masterPoints.first.clone())..rotate(nextAngle));
 
-        _tracks.add(TrackSlot(
+        _slots.add(TrackSlot(
             position: nextPosition, slotModel: trackModel, angle: nextAngle));
 
         if (trackModel.sensor == TrackModelSensor.finish) {
-          _tracks.add(LapLine(
+          _slots.add(LapLine(
               id: 1,
               position: nextPosition.clone(),
               size: Vector2(1, 40),
               angle: nextAngle,
               offsetPotition: Vector2(40, 25),
               isFinish: false));
-          _tracks.add(LapLine(
+          _slots.add(LapLine(
               id: 2,
               position: nextPosition.clone(),
               size: Vector2(1, 40),
               angle: nextAngle,
               offsetPotition: Vector2(60, 25),
               isFinish: false));
-          _tracks.add(LapLine(
+          _slots.add(LapLine(
               id: 3,
               position: nextPosition.clone(),
               size: Vector2(3, 40),
               angle: nextAngle,
               offsetPotition: Vector2(20, 25),
               isFinish: true));
-          GameRepositoryImpl().startPosition = nextPosition.clone()
-            ..add(Vector2(10, 25)..rotate(nextAngle));
-          GameRepositoryImpl().startAngle = nextAngle - Math.pi / 2;
+          if (!startPositionSetted) {
+            GameRepositoryImpl().startPosition = nextPosition.clone()
+              ..add(Vector2(10, 25)..rotate(nextAngle));
+            GameRepositoryImpl().startAngle =
+                currentTrack.outputAngle - trackModel.inputAngle;
+            startPositionSetted = true;
+          }
         }
 
         currentTrack = trackModel;
@@ -83,13 +88,9 @@ class Track {
         }
       }
     });
-
-    /* print("--> " + initPosition.toString());
-    print("--> " + currentPosition.toString());
-    print("--> " + (initPosition - currentPosition).toString()); */
   }
 
   Iterable<Component> getComponents() {
-    return _tracks;
+    return _slots;
   }
 }

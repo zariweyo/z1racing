@@ -16,11 +16,12 @@ class RectModel extends SlotModel {
 
   factory RectModel.fromMap(Map<String, dynamic> map) {
     assert(map['size'] != null);
-    assert(map['size']['x'] != null && map['size']['x'] is double);
-    assert(map['size']['y'] != null && map['size']['y'] is double);
+    assert(map['size']['x'] != null && map['size']['x'] is num);
+    assert(map['size']['y'] != null && map['size']['y'] is num);
 
     return RectModel(
-      size: Vector2(map['size']['x'], map['size']['y']),
+      size: Vector2(double.tryParse(map['size']['x'].toString()) ?? 0,
+          double.tryParse(map['size']['y'].toString()) ?? 0),
       closedSide: map['closedSide'] != null
           ? RectModelClosedSide.values.firstWhereOrNull(
                   (element) => element.name == map['closedSide']) ??

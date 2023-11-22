@@ -32,7 +32,7 @@ jobs:
       - run: flutter --version
       - run: flutter pub get
       - run: flutter analyze
-      #- run: flutter test
+      - run: flutter test
       - run: flutter build web --base-href=/z1racing/
       - name: Setup Pages
         uses: actions/configure-pages@v3

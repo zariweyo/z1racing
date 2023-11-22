@@ -1,10 +1,8 @@
-import 'package:z1racing/models/z1track.dart';
-import 'package:z1racing/repositories/track_repository.dart';
+part of 'mock_track.dart';
 
-class TrackRepositoryMock extends TrackRepository {
-  @override
-  Future<Z1Track> getTrack() async {
-    Map<String, dynamic> map = {
+class MockTrack1 extends MockTrack {
+  Z1Track getTrack() {
+    return Z1Track.fromMap({
       "slots": [
         {
           "type": "rect",
@@ -181,9 +179,10 @@ class TrackRepositoryMock extends TrackRepository {
         },
       ],
       "trackId": "Mock2TrackId_b1",
-      "name": "The Mock 2 Track",
+      "name": "The Mock 1 Track",
       "numLaps": 5,
-    };
-    return Z1Track.fromMap(map);
+      "initialDatetime": "2023-11-23T12:00:00Z",
+      "version": 1
+    });
   }
 }

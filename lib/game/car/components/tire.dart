@@ -51,7 +51,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   // Make mutable if ice or something should be implemented
   late double _currentTraction = car.traction;
-  final double _currentInertia = 0.001;
+  final double _currentInertia = 0.0005;
 
   final double _maxBackwardSpeed = -40.0;
 
@@ -71,7 +71,9 @@ class Tire extends BodyComponent<Z1RacingGame> {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    game.cameraWorld.add(Trail(car: car, tire: this));
+    if (!isFrontTire) {
+      game.cameraWorld.add(Trail(car: car, tire: this));
+    }
   }
 
   @override
@@ -88,7 +90,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
     final body = world.createBody(def)..userData = this;
 
     final polygonShape = PolygonShape()..setAsBoxXY(0.5, 1.25);
-    body.createFixtureFromShape(polygonShape, 1.0).userData = this;
+    body.createFixtureFromShape(polygonShape, density: 1.0).userData = this;
 
     jointDef.bodyB = body;
     jointDef.localAnchorA.setFrom(jointAnchor);
@@ -104,7 +106,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
             pressedKeys.isNotEmpty ||
             controlsData.hasHorizontal() ||
             controlsData.hasVertical())) {
-      _updateTurn(dt);
+      _updateTurn();
       _updateFriction();
       if (!game.isGameOver) {
         _updateDrive();
@@ -125,7 +127,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
       ..scale(_currentTraction);
     body.applyLinearImpulse(impulse);
     body.applyAngularImpulse(
-      0.1 * _currentTraction * body.getInertia() * -body.angularVelocity,
+      0.01 * _currentTraction * body.getInertia() * -body.angularVelocity,
     );
 
     final currentForwardNormal = _forwardVelocity;
@@ -139,12 +141,14 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   void _updateDrive() {
     var desiredSpeed = 0.0;
+    bool brake = false;
 
     if (controlsData.upValue > 0) {
       desiredSpeed = car.speed * controlsData.upValue;
     }
     if (controlsData.downValue > 0) {
       desiredSpeed += _maxBackwardSpeed * controlsData.downValue;
+      brake = true;
     }
 
     if (pressedKeys.contains(LogicalKeyboardKey.arrowUp)) {
@@ -152,21 +156,23 @@ class Tire extends BodyComponent<Z1RacingGame> {
     }
     if (pressedKeys.contains(LogicalKeyboardKey.arrowDown)) {
       desiredSpeed += _maxBackwardSpeed;
+      brake = true;
     }
 
     final currentForwardNormal = body.worldVector(Vector2(0.0, 1.0));
     currentSpeed = _forwardVelocity.dot(currentForwardNormal);
+
     var force = 0.0;
     var traction = _currentTraction;
 
-    if (desiredSpeed < currentSpeed) {
+    if (brake && desiredSpeed < currentSpeed) {
       force = -_maxDriveForce;
       if (desiredSpeed < 0) {
         traction = _currentTraction;
       } else {
         traction = _currentInertia;
       }
-    } else if (desiredSpeed > currentSpeed) {
+    } else if (!brake && desiredSpeed > currentSpeed) {
       force = _maxDriveForce;
       traction = _currentTraction;
     }
@@ -176,43 +182,37 @@ class Tire extends BodyComponent<Z1RacingGame> {
     }
   }
 
-  void _updateTurn(double dt) {
+  void _updateTurn() {
     var desiredAngle = 0.0;
-    var desiredTorque = 0.0;
     var isTurning = false;
 
     if (controlsData.leftValue > 0) {
-      desiredTorque = -15.0;
       desiredAngle = -(_lockAngle * controlsData.leftValue);
       isTurning = true;
     }
     if (controlsData.rightValue > 0) {
-      desiredTorque += 15.0;
       desiredAngle += (_lockAngle * controlsData.rightValue);
       isTurning = true;
     }
 
     if (pressedKeys.contains(LogicalKeyboardKey.arrowLeft)) {
-      desiredTorque = -15.0;
       desiredAngle = -_lockAngle;
       isTurning = true;
     }
     if (pressedKeys.contains(LogicalKeyboardKey.arrowRight)) {
-      desiredTorque += 15.0;
       desiredAngle += _lockAngle;
       isTurning = true;
     }
     if (isTurnableTire && isTurning) {
-      final turnPerTimeStep = _turnSpeedPerSecond * dt;
+      final turnPerTimeStep = _turnSpeedPerSecond;
       final angleNow = joint.jointAngle();
       final angleToTurn =
           (desiredAngle - angleNow).clamp(-turnPerTimeStep, turnPerTimeStep);
       final angle = angleNow + angleToTurn;
       joint.setLimits(angle, angle);
-    } else {
+    } else if (joint.lowerLimit != 0 || joint.upperLimit != 0) {
       joint.setLimits(0, 0);
     }
-    body.applyTorque(desiredTorque);
   }
 
   // Cached Vectors to reduce unnecessary object creation.

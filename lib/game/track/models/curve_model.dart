@@ -22,14 +22,14 @@ class CurveModel extends SlotModel {
   }
 
   factory CurveModel.fromMap(Map<String, dynamic> map) {
-    assert(map['radius'] != null && map['radius'] is double);
+    assert(map['radius'] != null && map['radius'] is num);
     assert(CurveModelDirection.values
         .map((e) => e.name)
         .contains(map['direction']));
 
     return CurveModel(
-      angle: map['angle'] ?? 90,
-      radius: map['radius'] ?? 20,
+      angle: double.tryParse(map['angle'].toString()) ?? 90,
+      radius: double.tryParse(map['radius'].toString()) ?? 20,
       sensor: map['sensor'] != null
           ? TrackModelSensor.values.firstWhereOrNull(
                   (element) => element.name == map['sensor']) ??

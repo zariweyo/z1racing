@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 class LoadingWidget extends StatefulWidget {
+  LoadingWidget({super.key});
   @override
   State<LoadingWidget> createState() => _LoadingWidgetState();
 }
@@ -13,9 +14,11 @@ class _LoadingWidgetState extends State<LoadingWidget> {
   @override
   initState() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        width = 100;
-      });
+      if (mounted) {
+        setState(() {
+          width = 100;
+        });
+      }
     });
     super.initState();
   }

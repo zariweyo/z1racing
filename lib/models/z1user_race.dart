@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
+import 'package:z1racing/extensions/string_extension.dart';
 
 class Z1UserRace {
   final String uid;
@@ -54,8 +55,13 @@ class Z1UserRace {
   }
 
   Duration get bestLapTime => bestLap != Duration.zero ? bestLap : lapTimes.min;
-  int get positionHash =>
-      time.inMilliseconds * 1000000 + bestLapTime.inMilliseconds;
+
+  int get secondsSinceEpoch => updated.millisecondsSinceEpoch;
+
+  String get positionHash =>
+      time.inMilliseconds.toString().toLimitHash(8) +
+      bestLapTime.inMilliseconds.toString().toLimitHash(8) +
+      secondsSinceEpoch.toString().toLimitHash(11);
 
   factory Z1UserRace.init(
       {required String uid,
@@ -96,6 +102,23 @@ class Z1UserRace {
       "lapTimes": lapTimes.toMap(),
       "updated": updated.millisecondsSinceEpoch,
       "metadata": metadata.toJson(),
+      "positionHash": positionHash
+    };
+  }
+
+  Map<String, dynamic> toUpdateTimeAndBestLapJson() {
+    return {
+      "time": time.toMap(),
+      "bestLap": bestLap.toMap(),
+      "updated": updated.millisecondsSinceEpoch,
+      "positionHash": positionHash
+    };
+  }
+
+  Map<String, dynamic> toUpdateTimeJson() {
+    return {
+      "time": time.toMap(),
+      "updated": updated.millisecondsSinceEpoch,
       "positionHash": positionHash
     };
   }

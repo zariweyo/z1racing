@@ -20,18 +20,18 @@ class _MenuSettingsState extends State<MenuSettings> {
   @override
   initState() {
     super.initState();
-    displayName = FirebaseAuthRepository().currentUser?.displayName ?? "";
+    displayName = FirebaseAuthRepository.instance.currentUser?.name ?? "";
   }
 
   _nameUpdated(String newName) async {
     if (newName.length > 3 &&
         newName.length <= 15 &&
-        FirebaseFirestoreRepository().currentUser?.displayName != newName) {
+        FirebaseFirestoreRepository.instance.currentUser?.name != newName) {
       try {
         setState(() {
           loading = true;
         });
-        await FirebaseFirestoreRepository().updateName(newName);
+        await FirebaseFirestoreRepository.instance.updateName(newName);
         GameRepositoryImpl().reset();
       } catch (exc) {
         print(exc);
@@ -84,7 +84,7 @@ class _MenuSettingsState extends State<MenuSettings> {
   }
 
   _version() {
-    String version = FirebaseAuthRepository().packageInfo.version;
+    String version = FirebaseAuthRepository.instance.packageInfo.version;
     return Container(
         width: MediaQuery.of(context).size.width,
         child: Text(

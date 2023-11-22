@@ -2,13 +2,14 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
 import 'package:z1racing/repositories/firebase_auth_repository.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user_race.dart';
+import 'package:z1racing/repositories/track_repository_impl.dart';
 
 class RaceTimeUserList extends StatefulWidget {
-  RaceTimeUserList();
+  final Function(TrackRequestDirection)? changeTrack;
+  RaceTimeUserList({this.changeTrack});
 
   @override
   State<RaceTimeUserList> createState() => _RaceTimeUserListState();
@@ -23,7 +24,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   @override
   void initState() {
     currentTrack = GameRepositoryImpl().currentTrack;
-    FirebaseAuthRepository().currentUserNotifier.addListener(_update);
+    FirebaseAuthRepository.instance.currentUserNotifier.addListener(_update);
     _update();
     super.initState();
   }
@@ -31,13 +32,13 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   @override
   dispose() {
     super.dispose();
-    FirebaseAuthRepository().currentUserNotifier.removeListener(_update);
+    FirebaseAuthRepository.instance.currentUserNotifier.removeListener(_update);
   }
 
   _update() {
-    FirebaseFirestoreRepository()
+    TrackRepositoryImpl()
         .getUserRaces(
-            uid: FirebaseAuthRepository().currentUser!.uid,
+            uid: FirebaseAuthRepository.instance.currentUser!.uid,
             trackId: currentTrack.trackId)
         .then((trackRace) {
       if (mounted)
@@ -52,7 +53,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   Widget dataRow(int index, Z1UserRace race) {
     final textTheme = Theme.of(context).textTheme;
     Color? color;
-    if (FirebaseAuthRepository().currentUser?.uid == race.uid) {
+    if (FirebaseAuthRepository.instance.currentUser?.uid == race.uid) {
       color = Colors.green;
     }
     TextStyle? bodyMedium =
@@ -100,11 +101,35 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
     return Container(
       width: MediaQuery.of(context).size.width,
       padding: EdgeInsets.only(bottom: 10),
-      child: Text(
-        "${currentTrack.name} (${currentTrack.numLaps} laps)",
-        style: bodyMedium,
-        textAlign: TextAlign.center,
-      ),
+      child: Row(children: [
+        Flexible(
+            flex: 1,
+            child: ElevatedButton.icon(
+                onPressed: () =>
+                    widget.changeTrack?.call(TrackRequestDirection.previous),
+                icon: Icon(
+                  Icons.fast_rewind,
+                  color: textTheme.bodyMedium?.color ?? Colors.white54,
+                ),
+                label: Text(""))),
+        Expanded(
+            flex: 3,
+            child: Text(
+              "${currentTrack.name} (${currentTrack.numLaps} laps)",
+              style: bodyMedium,
+              textAlign: TextAlign.center,
+            )),
+        Flexible(
+            flex: 1,
+            child: ElevatedButton.icon(
+                onPressed: () =>
+                    widget.changeTrack?.call(TrackRequestDirection.next),
+                icon: Icon(
+                  Icons.fast_forward,
+                  color: textTheme.bodyMedium?.color ?? Colors.white54,
+                ),
+                label: Text(""))),
+      ]),
     );
   }
 
@@ -129,8 +154,8 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
         color: Colors.transparent,
         child: Container(
           height: MediaQuery.of(context).size.height - 50,
-          width: MediaQuery.of(context).size.width / 2.5,
-          padding: EdgeInsets.all(20),
+          width: MediaQuery.of(context).size.width / 2.2,
+          padding: EdgeInsets.all(10),
           margin: EdgeInsets.all(20),
           decoration: BoxDecoration(
               color: Colors.black54,

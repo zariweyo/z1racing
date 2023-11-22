@@ -13,6 +13,8 @@ class Z1TrackRaces {
     return Z1TrackRaces(races: [], firstPosition: 0);
   }
 
-  int get fisrtPositionHash => races.isNotEmpty ? races.first.positionHash : 0;
-  int get lastPositionHash => races.isNotEmpty ? races.last.positionHash : 0;
+  String get fisrtPositionHash =>
+      races.isNotEmpty ? races.first.positionHash : "";
+  String get lastPositionHash =>
+      races.isNotEmpty ? races.last.positionHash : "";
 }
