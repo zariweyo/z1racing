@@ -6,10 +6,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [main]
-    paths-ignore:
-      - "**/README.md"
+  #push:
+  #  branches: [main]
+  #  paths-ignore:
+  #    - "**/README.md"
 
   # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       JAVA_VERSION: "11.0"
-      FLUTTER_VERSION: "3.13.9"
+      FLUTTER_VERSION: "3.16.0"
       KEY_JKS: ${{ secrets.KEY_JKS }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       GOOGLE_SERVICE_ANDROID: ${{ secrets.GOOGLE_SERVICE_ANDROID }}
