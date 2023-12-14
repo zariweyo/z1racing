@@ -7,19 +7,28 @@ class Z1Track {
   final List<SlotModel> slots;
   final DateTime initialDatetime;
   final int version;
+  final double carInitAngle;
 
   String get id => "${trackId}_${numLaps}";
 
-  Z1Track(
-      {required this.trackId,
-      required this.name,
-      required this.numLaps,
-      required this.slots,
-      required this.initialDatetime,
-      required this.version});
+  Z1Track({
+    required this.trackId,
+    required this.name,
+    required this.numLaps,
+    required this.slots,
+    required this.initialDatetime,
+    required this.version,
+    this.carInitAngle = 0,
+  });
 
-  Z1Track copyWith(String? trackId, String? name, int? numLaps,
-      List<SlotModel>? slots, DateTime? initialDatetime, int? version) {
+  Z1Track copyWith(
+      String? trackId,
+      String? name,
+      int? numLaps,
+      List<SlotModel>? slots,
+      DateTime? initialDatetime,
+      int? version,
+      double? carInitAngle) {
     return Z1Track(
       trackId: trackId ?? this.trackId,
       name: name ?? this.name,
@@ -27,6 +36,7 @@ class Z1Track {
       slots: slots ?? this.slots,
       initialDatetime: initialDatetime ?? this.initialDatetime,
       version: version ?? this.version,
+      carInitAngle: carInitAngle ?? this.carInitAngle,
     );
   }
 
@@ -44,6 +54,9 @@ class Z1Track {
               .toList()
           : [],
       version: map['version'] ?? 0,
+      carInitAngle: map['carInitAngle'] != null && map['carInitAngle'] is double
+          ? map['carInitAngle'] ?? 0.0
+          : 0.0,
     );
   }
 
@@ -54,7 +67,8 @@ class Z1Track {
         numLaps: 0,
         slots: [],
         initialDatetime: DateTime.now().toUtc(),
-        version: 0);
+        version: 0,
+        carInitAngle: 0);
   }
 
   bool get isActive => DateTime.now().difference(initialDatetime).inSeconds > 0;

@@ -107,9 +107,10 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     startCamera = CameraComponent(
       world: cameraWorld,
     )
-      ..viewfinder.position = trackSize / 2
+      ..viewfinder.position =
+          Vector2(canvasSize.x / 3, canvasSize.y - trackSize.y / 2)
       ..viewfinder.anchor = Anchor.center
-      ..viewfinder.zoom = zoomLevel - 0.3;
+      ..viewfinder.zoom = zoomLevel;
     add(startCamera);
   }
 

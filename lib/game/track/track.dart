@@ -69,8 +69,6 @@ class Track {
           if (!startPositionSetted) {
             GameRepositoryImpl().startPosition = nextPosition.clone()
               ..add(Vector2(10, 25)..rotate(nextAngle));
-            GameRepositoryImpl().startAngle =
-                currentTrack.outputAngle - trackModel.inputAngle;
             startPositionSetted = true;
           }
         }
@@ -78,14 +76,6 @@ class Track {
         currentTrack = trackModel;
         currentAngle = nextAngle;
         currentPosition = nextPosition;
-
-        if (currentPosition.x > GameRepositoryImpl().trackSize.x) {
-          GameRepositoryImpl().trackSize.x = currentPosition.x;
-        }
-
-        if (currentPosition.y > GameRepositoryImpl().trackSize.y) {
-          GameRepositoryImpl().trackSize.y = currentPosition.y;
-        }
       }
     });
   }

@@ -182,6 +182,7 @@ class MockTrack1 extends MockTrack {
       "name": "The Mock 1 Track",
       "numLaps": 5,
       "initialDatetime": "2023-11-23T12:00:00Z",
+      "carInitAngle": 2.83,
       "version": 1
     });
   }

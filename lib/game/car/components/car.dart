@@ -42,6 +42,8 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
   late double _traction;
   late double _speed;
 
+  bool initiated = false;
+
   double get traction => _traction;
   double get speed => _speed;
 
@@ -61,10 +63,10 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
   @override
   Body createBody() {
     final startPosition = GameRepositoryImpl().startPosition;
-    final startAngle = GameRepositoryImpl().startAngle;
+    final startAngle = GameRepositoryImpl().currentTrack.carInitAngle;
     final def = BodyDef()
       ..type = BodyType.dynamic
-      ..angle = startAngle / 3.03
+      ..angle = startAngle
       ..position = startPosition;
     final body = world.createBody(def)
       ..userData = this

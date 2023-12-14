@@ -15,13 +15,17 @@ class RectModel extends SlotModel {
   }) : super(type: TrackModelType.rect);
 
   factory RectModel.fromMap(Map<String, dynamic> map) {
-    assert(map['size'] != null);
-    assert(map['size']['x'] != null && map['size']['x'] is num);
-    assert(map['size']['y'] != null && map['size']['y'] is num);
+    assert(map['length'] != null || map['size'] != null);
+    assert((map['length'] != null && map['length'] is num) ||
+        (map['size']['x'] != null && map['size']['x'] is num));
+    assert((map['length'] != null && map['length'] is num) ||
+        (map['size']['y'] != null && map['size']['y'] is num));
 
     return RectModel(
-      size: Vector2(double.tryParse(map['size']['x'].toString()) ?? 0,
-          double.tryParse(map['size']['y'].toString()) ?? 0),
+      size: map['length'] != null
+          ? Vector2(double.tryParse(map['length'].toString()) ?? 0, 60)
+          : Vector2(double.tryParse(map['size']['x'].toString()) ?? 0,
+              double.tryParse(map['size']['y'].toString()) ?? 0),
       closedSide: map['closedSide'] != null
           ? RectModelClosedSide.values.firstWhereOrNull(
                   (element) => element.name == map['closedSide']) ??

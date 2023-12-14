@@ -33,8 +33,18 @@ class GameRepositoryImpl extends GameRepository {
       );
 
   Vector2 startPosition = Vector2(0, 0);
-  Vector2 trackSize = Vector2(0, 0);
-  double startAngle = 0;
+
+  Vector2 get trackSize {
+    List<Vector2> points =
+        currentTrack.slots.map((slot) => slot.points1).flattened.toList();
+
+    double width =
+        (points.map((e) => e.x).max - points.map((e) => e.x).min).abs();
+    double height =
+        (points.map((e) => e.y).max - points.map((e) => e.y).min).abs();
+
+    return Vector2(width * 4, height * 6);
+  }
 
   loadTrack({required Z1Track track}) {
     currentTrack = track;

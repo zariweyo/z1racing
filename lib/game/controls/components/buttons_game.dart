@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/foundation.dart';
@@ -13,7 +14,7 @@ import 'package:z1racing/game/z1racing_game.dart';
 
 enum ButtonGameType { left, right, up, down }
 
-class ButtonsGame extends PositionComponent {
+class ButtonsGame extends PositionComponent with DragCallbacks {
   static Future<ButtonsGame> create(
       {required game, required Images images}) async {
     return ButtonsGame(game: game, images: images);
@@ -42,6 +43,8 @@ class ButtonsGame extends PositionComponent {
   }
 
   final Map<ButtonGameType, Vector2> _currentPressed = {};
+  final Map<int, ButtonGameType> _currentDragged = {};
+  ButtonGameType? buttonCancelled;
 
   _updatePressed() {
     const gearStep = 0.02;
@@ -76,6 +79,27 @@ class ButtonsGame extends PositionComponent {
 
   _onReleased(ButtonGameType type) {
     _currentPressed.remove(type);
+  }
+
+  _onCancelled(ButtonGameType type) {
+    buttonCancelled = type;
+  }
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    if (buttonCancelled != null) {
+      _currentDragged[event.pointerId] = buttonCancelled!;
+    }
+    super.onDragStart(event);
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    if (_currentDragged[event.pointerId] != null) {
+      _currentPressed.remove(_currentDragged[event.pointerId]);
+      _currentDragged.remove(event.pointerId);
+    }
+    super.onDragEnd(event);
   }
 
   JoystickDirection get direction {
@@ -115,7 +139,7 @@ class ButtonsGame extends PositionComponent {
       margin: margin,
       onPressed: () => _onPressed(type),
       onReleased: () => _onReleased(type),
-      onCancelled: () => _onReleased(type),
+      onCancelled: () => _onCancelled(type),
     );
   }
 
@@ -171,8 +195,8 @@ class ActionButton extends PositionComponent {
       this.rotate = 0})
       : _radius = radius,
         _paint = Paint()
-          ..color = Color(0xFF80C080)
-          ..style = PaintingStyle.stroke
+          ..color = Color(0x5580C080)
+          ..style = PaintingStyle.fill
           ..strokeWidth = 5,
         super(
             position: Vector2(move, move),
@@ -182,16 +206,17 @@ class ActionButton extends PositionComponent {
   double _radius;
   Paint _paint;
 
+  late final RRect _renderRect = RRect.fromRectAndCorners(
+    Rect.fromCircle(center: Offset(_radius * 2, _radius * 2), radius: _radius),
+    topLeft: Radius.circular(20),
+    topRight: Radius.circular(20),
+    bottomLeft: Radius.circular(20),
+    bottomRight: Radius.circular(20),
+  );
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    canvas.drawOval(
-        Rect.fromCircle(
-            center: Offset(_radius * 2, _radius * 2), radius: _radius),
-        _paint);
-    //canvas.translate(-_radius, -_radius);
-    //canvas.translate(image.size.x / 2, image.size.y / 2);
-    //canvas.rotate(rotate);
-    //canvas.drawImage(image, Offset(0, 0), _paint);
+    canvas.drawRRect(_renderRect, _paint);
   }
 }
