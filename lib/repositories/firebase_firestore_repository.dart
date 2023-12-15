@@ -1,3 +1,7 @@
+// ignore_for_file: prefer_constructors_over_static_methods
+
+import 'dart:async';
+
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/models/z1user_race.dart';
@@ -36,21 +40,30 @@ abstract class FirebaseFirestoreRepository {
   Future updateTimeUserRace(Z1UserRace z1userRace);
   Future updateBestLapUserRace(Z1UserRace z1userRace);
   Future<Z1UserRace?> getUserRaceFromRemote(Z1UserRace z1userRace);
-  Future<Z1UserRace?> getUserRaceByTrackId(
-      {required String uid, required String trackId});
+  Future<Z1UserRace?> getUserRaceByTrackId({
+    required String uid,
+    required String trackId,
+  });
   Future<void> updateName(String newName);
-  Future<int> getUserRacePositionByTime(
-      {required String positionHash, required String trackId});
+  Future<void> addZ1Coins(int z1Coins);
+  Future<void> removeZ1Coins(int z1Coins);
+  Future<int> getUserRacePositionByTime({
+    required String positionHash,
+    required String trackId,
+  });
   Future<Z1Track> getTrackById({required String trackId});
-  Future<Z1Track?> getTrackByActivedDate(
-      {required DateTime dateTime,
-      TrackRequestDirection direction = TrackRequestDirection.next});
-  Future<List<Z1UserRace>> getUserRacesByTime(
-      {required String positionHash,
-      required String trackId,
-      bool descending = false,
-      int limit = 10});
+  Future<Z1Track?> getTrackByActivedDate({
+    required DateTime dateTime,
+    TrackRequestDirection direction = TrackRequestDirection.next,
+  });
+  Future<List<Z1UserRace>> getUserRacesByTime({
+    required String positionHash,
+    required String trackId,
+    bool descending = false,
+    int limit = 10,
+  });
   Future<Z1Version> getVersion();
   Z1Version get z1version;
   Z1User? get currentUser;
+  Stream<Z1User?> get z1UserStream;
 }

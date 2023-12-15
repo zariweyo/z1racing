@@ -1,20 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class GameControl extends StatelessWidget {
   final Z1RacingGame gameRef;
+  final Function()? onRestart;
   final Function()? onReset;
-  GameControl({required this.gameRef, this.onReset});
+  const GameControl({
+    required this.gameRef,
+    super.key,
+    this.onRestart,
+    this.onReset,
+  });
 
-  _onPressed(BuildContext context) {
+  void _onPressed(BuildContext context) {
     gameRef.paused = !gameRef.paused;
     if (gameRef.paused) {
       _buildPopupDialog(context);
     }
   }
 
-  _menuItem(BuildContext context,
-      {required String text, required Function() onTap}) {
+  Widget _menuItem(
+    BuildContext context, {
+    required String text,
+    required Function() onTap,
+  }) {
     final textTheme = Theme.of(context).textTheme;
 
     return Container(
@@ -30,70 +40,91 @@ class GameControl extends StatelessWidget {
     );
   }
 
-  _buildPopupDialog(BuildContext context) {
+  void _buildPopupDialog(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     showDialog(
-        context: context,
-        builder: (BuildContext context) => new AlertDialog(
-              title: const Text('Menu'),
-              backgroundColor: Colors.black54,
-              content: Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        'MENU',
-                        style: textTheme.bodyLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(
-                        height: 30,
-                      ),
-                      _menuItem(context, text: 'END RACE', onTap: () {
-                        Navigator.of(context).pop();
-                        onReset?.call();
-                      }),
-                      _menuItem(context, text: 'CLOSE', onTap: () {
-                        Navigator.of(context).pop();
-                        gameRef.paused = false;
-                      }),
-                    ],
-                  )),
-            )).then((value) => gameRef.paused = false);
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.menu),
+        backgroundColor: Colors.black54,
+        content: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: <Widget>[
+              Text(
+                AppLocalizations.of(context)!.menu.toUpperCase(),
+                style: textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(
+                height: 30,
+              ),
+              _menuItem(
+                context,
+                text: AppLocalizations.of(context)!.restart.toUpperCase(),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onRestart?.call();
+                },
+              ),
+              _menuItem(
+                context,
+                text: AppLocalizations.of(context)!.endRace.toUpperCase(),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onReset?.call();
+                },
+              ),
+              _menuItem(
+                context,
+                text: AppLocalizations.of(context)!.close.toUpperCase(),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  gameRef.paused = false;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).then((value) => gameRef.paused = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Material(
-        color: Colors.transparent,
-        child: Container(
-            width: MediaQuery.of(context).size.width,
-            child: Wrap(
-                alignment: WrapAlignment.end,
-                crossAxisAlignment: WrapCrossAlignment.end,
+      color: Colors.transparent,
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        child: Wrap(
+          alignment: WrapAlignment.end,
+          crossAxisAlignment: WrapCrossAlignment.end,
+          children: [
+            Container(
+              margin: const EdgeInsets.all(10),
+              width: 50,
+              child: Row(
                 children: [
-                  Container(
-                    margin: EdgeInsets.all(10),
-                    width: 50,
-                    child: Row(
-                      children: [
-                        IconButton(
-                            highlightColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                            splashColor: Colors.transparent,
-                            onPressed: () => _onPressed(context),
-                            icon: Icon(
-                              Icons.menu,
-                              color: Colors.white,
-                            ))
-                      ],
+                  IconButton(
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    onPressed: () => _onPressed(context),
+                    icon: const Icon(
+                      Icons.menu,
+                      color: Colors.white,
                     ),
-                  )
-                ])));
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

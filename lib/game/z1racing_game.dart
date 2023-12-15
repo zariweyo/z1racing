@@ -11,14 +11,15 @@ import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
 import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/controls/components/buttons_game.dart';
+import 'package:z1racing/game/controls/controllers/game_music.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
 import 'package:z1racing/game/panel/components/countdown_text.dart';
 import 'package:z1racing/game/panel/components/lap_text.dart';
+import 'package:z1racing/game/panel/components/reference_time_text.dart';
 import 'package:z1racing/game/panel/components/sublap_list.dart';
+import 'package:z1racing/game/track/track.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
-import 'package:z1racing/game/track/track.dart';
-import 'package:flame_audio/flame_audio.dart';
 
 final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
   {
@@ -36,21 +37,12 @@ final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
 ];
 
 class Z1RacingGame extends Forge2DGame with KeyboardEvents {
-  static const String description = '''
-     This is an example game that uses Forge2D to handle the physics.
-     In this game you should finish 3 laps in as little time as possible, it can
-     be played as single player or with two players (on the same keyboard).
-     Watch out for the balls, they make your car spin.
-  ''';
-
   Z1RacingGame() : super(gravity: Vector2.zero(), zoom: 1);
 
   @override
   Color backgroundColor() => Colors.black;
 
   static const double playZoom = 3.0;
-
-  late AudioPool pool;
   late final World cameraWorld;
   late CameraComponent startCamera;
   late List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> activeKeyMaps;
@@ -60,61 +52,47 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   final cars = <Car>[];
   bool isGameOver = true;
   Car? winner;
-  late CountdownText countdownText;
-  GameRepository _gameRepository = GameRepositoryImpl();
+  late CountDownText countdownText;
+  final GameRepository _gameRepository = GameRepositoryImpl();
+  late GameMusic gameMusic;
+  ReferenceTimeText? referenceTimeText;
 
   @override
   Future<void> onLoad() async {
+    gameMusic = GameMusic();
     _gameRepository.reset();
     children.register<CameraComponent>();
     cameraWorld = World();
     add(cameraWorld);
 
-    cameraWorld.addAll(Track(
-            position: Vector2(200, 200),
-            size: 30,
-            z1track: GameRepositoryImpl().currentTrack)
-        .getComponents());
+    cameraWorld.addAll(
+      Track(
+        position: Vector2(200, 200),
+        size: 30,
+        z1track: GameRepositoryImpl().currentTrack,
+      ).getComponents(),
+    );
 
-    countdownText = CountdownText();
+    countdownText = CountDownText();
 
-    startBgmMusic();
-
-    openMenu();
+    prepareStart(numberOfPlayers: 1);
   }
 
-  void startBgmMusic() async {
-    try {
-      if (!FlameAudio.bgm.isPlaying) {
-        FlameAudio.bgm.initialize();
-        FlameAudio.bgm.play('background_sound1.mp3');
-      }
-    } catch (ex) {
-      //
-    }
-  }
-
-  void openMenu() {
-    FlameAudio.bgm.resume();
-    Vector2 trackSize = GameRepositoryImpl().trackSize;
-    overlays.add('menu');
-    overlays.add('timeList');
-    overlays.remove('game_control');
+  void prepareStart({required int numberOfPlayers}) {
+    final currentTrack = GameRepositoryImpl().currentTrack;
     final zoomLevel = min(
-      canvasSize.x / trackSize.x,
-      canvasSize.y / trackSize.y,
+      currentTrack.width / canvasSize.x,
+      currentTrack.height / canvasSize.y,
     );
     startCamera = CameraComponent(
       world: cameraWorld,
     )
       ..viewfinder.position =
-          Vector2(canvasSize.x / 3, canvasSize.y - trackSize.y / 2)
+          Vector2(canvasSize.x / 3, canvasSize.y - currentTrack.height / 2)
       ..viewfinder.anchor = Anchor.center
       ..viewfinder.zoom = zoomLevel;
     add(startCamera);
-  }
 
-  void prepareStart({required int numberOfPlayers}) {
     startCamera.viewfinder
       ..add(
         ScaleEffect.to(
@@ -129,6 +107,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
           EffectController(duration: 1.0),
         ),
       );
+    gameMusic.start();
   }
 
   Future<void> initJoystick() async {
@@ -137,10 +116,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   }
 
   void start({required int numberOfPlayers}) {
-    FlameAudio.bgm.pause();
     isGameOver = false;
-    overlays.remove('menu');
-    overlays.remove('timeList');
     overlays.add('game_control');
     startCamera.removeFromParent();
     final isHorizontal = canvasSize.x > canvasSize.y;
@@ -173,22 +149,6 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         ..viewfinder.zoom = playZoom;
     });
 
-    // Disabled for performance issues in some devices
-    /* final mapCameraSize = Vector2.all(500);
-    const mapCameraZoom = 0.3;
-    final mapCameras = List.generate(numberOfPlayers, (i) {
-      return CameraComponent(
-        world: cameraWorld,
-        viewport: FixedSizeViewport(mapCameraSize.x, mapCameraSize.y)
-          ..position = Vector2(
-            viewportSize.x - mapCameraSize.x * mapCameraZoom - 10,
-            10,
-          ),
-      )
-        ..viewfinder.anchor = Anchor.topLeft
-        ..viewfinder.zoom = mapCameraZoom;
-    }); */
-
     addAll(cameras);
 
     for (var i = 0; i < numberOfPlayers; i++) {
@@ -203,16 +163,14 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
           isGameOver = true;
           winner = car;
           overlays.add('game_over');
+        } else {
+          Future.delayed(const Duration(milliseconds: 100), addReferenceTime);
         }
       });
 
       cars.add(car);
       cameraWorld.add(car);
-      cameras[i].viewport.addAll([
-        lapText,
-        sublapText,
-        /*mapCameras[i] disabled by performance issue*/
-      ]);
+      cameras[i].viewport.addAll([lapText, sublapText]);
     }
 
     initJoystick().then((_) {
@@ -226,12 +184,28 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       }
     });
 
-    add(FpsTextComponent(
-        position: Vector2(size.x - 124, 20), scale: Vector2.all(0.8)));
+    add(
+      FpsTextComponent(
+        position: Vector2(size.x - 124, 20),
+        scale: Vector2.all(0.8),
+      ),
+    );
 
     pressedKeySets = List.generate(numberOfPlayers, (_) => {});
     activeKeyMaps = List.generate(numberOfPlayers, (i) => playersKeys[i]);
     controlsDatas = List.generate(numberOfPlayers, (_) => ControlsData.zero());
+  }
+
+  void addReferenceTime() {
+    final lap = _gameRepository.getLapNotifier().value - 1;
+    final durationLapDiff = _gameRepository.getReferenceDelayLap(lap: lap);
+    referenceTimeText = ReferenceTimeText(duration: durationLapDiff);
+    add(referenceTimeText!);
+    Future.delayed(const Duration(seconds: 3), () {
+      if (referenceTimeText != null) {
+        remove(referenceTimeText!);
+      }
+    });
   }
 
   @override
@@ -278,5 +252,14 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     for (final pressedKeySet in pressedKeySets) {
       pressedKeySet.clear();
     }
+  }
+
+  @override
+  void onDispose() {
+    gameMusic.stop();
+    cars.forEach((car) {
+      car.onRemove();
+    });
+    return;
   }
 }

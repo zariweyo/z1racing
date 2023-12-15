@@ -3,19 +3,20 @@ import 'package:flame/effects.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:z1racing/game/z1racing_game.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
-import 'package:z1racing/game/z1racing_game.dart';
-
-class CountdownText extends PositionComponent with HasGameRef<Z1RacingGame> {
-  CountdownText({this.seconds = 5}) : super();
+class CountDownText extends PositionComponent with HasGameRef<Z1RacingGame> {
+  CountDownText({this.seconds = 5}) : super();
 
   late final TextComponent _timePassedComponent;
   double totalTime = 0;
   final int seconds;
   int currentValue = 0;
-  ValueNotifier onFinish = ValueNotifier<bool>(false);
+  ValueNotifier<bool> onFinish = ValueNotifier<bool>(false);
+  late final Paint _backgroundPaint;
+  late final RRect _backgroundRect;
 
   @override
   Future<void> onLoad() async {
@@ -23,7 +24,7 @@ class CountdownText extends PositionComponent with HasGameRef<Z1RacingGame> {
     position = Vector2(gameRef.size.x / 2, gameRef.size.y / 4);
     final textStyle = GoogleFonts.rubikMonoOne(
       fontSize: 70,
-      color: Color.fromARGB(235, 248, 248, 248),
+      color: const Color.fromARGB(235, 248, 248, 248),
     );
     final defaultRenderer = TextPaint(style: textStyle);
 
@@ -34,11 +35,11 @@ class CountdownText extends PositionComponent with HasGameRef<Z1RacingGame> {
     add(_timePassedComponent);
 
     _backgroundPaint = Paint()
-      ..color = Color.fromARGB(235, 248, 248, 248)
+      ..color = const Color.fromARGB(235, 248, 248, 248)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
     _backgroundRect = RRect.fromRectAndRadius(
-      Rect.fromCircle(center: Offset(0, 0), radius: 50),
+      Rect.fromCircle(center: Offset.zero, radius: 50),
       const Radius.circular(10),
     );
   }
@@ -49,7 +50,7 @@ class CountdownText extends PositionComponent with HasGameRef<Z1RacingGame> {
       return;
     }
     totalTime += dt;
-    int value = (5 - totalTime.toInt());
+    final value = 5 - totalTime.toInt();
     if (currentValue != value) {
       currentValue = value;
       add(
@@ -66,8 +67,6 @@ class CountdownText extends PositionComponent with HasGameRef<Z1RacingGame> {
     }
   }
 
-  late final Paint _backgroundPaint;
-  late final RRect _backgroundRect;
   @override
   void render(Canvas canvas) {
     canvas.drawRRect(_backgroundRect, _backgroundPaint);

@@ -3,26 +3,28 @@ import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:z1racing/game/track/models/slot_model.dart';
-import 'package:z1racing/game/z1racing_game.dart';
 
-class TrackSlot extends BodyComponent<Z1RacingGame> {
-  TrackSlot(
-      {required this.slotModel,
-      required this.position,
-      required this.angle,
-      this.backgroundColor = const Color.fromARGB(0, 0, 0, 0)}) {}
+class TrackSlot extends BodyComponent<Forge2DGame> {
+  TrackSlot({
+    required this.slotModel,
+    required this.position,
+    required this.angle,
+    this.backgroundColor = const Color.fromARGB(0, 0, 0, 0),
+  });
 
   final Color backgroundColor;
   final SlotModel slotModel;
 
   late final Image _image;
 
+  @override
   final Vector2 position;
 
   final scale = 10.0;
   late final _scaledRect = (slotModel.size * scale).toRect();
-  late final _renderRect = Offset(0, 0) & slotModel.size.toSize();
+  late final _renderRect = Offset.zero & slotModel.size.toSize();
 
+  @override
   final double angle;
 
   @override
@@ -37,7 +39,7 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
     paint.color = ColorExtension.fromRGBHexString('#cccccc');
     paint.color = paint.color.darken(0.4);
 
-    Path path = Path();
+    final path = Path();
 
     paint.style = PaintingStyle.fill;
     paint.color = ColorExtension.fromRGBHexString('#883438');
@@ -131,9 +133,11 @@ class TrackSlot extends BodyComponent<Z1RacingGame> {
 
     final shapeExternal = ChainShape()..createChain(slotModel.points1);
     final shapeInternal = ChainShape()
-      ..createChain(slotModel.pointsAdded.isNotEmpty
-          ? slotModel.pointsAdded
-          : slotModel.points2);
+      ..createChain(
+        slotModel.pointsAdded.isNotEmpty
+            ? slotModel.pointsAdded
+            : slotModel.points2,
+      );
 
     final fixtureDefExternal = FixtureDef(shapeExternal)
       ..restitution = 0.5

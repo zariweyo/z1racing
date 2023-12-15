@@ -9,22 +9,22 @@ class Z1Version {
   final String ios;
 
   Z1Version(
-      {this.last = "0.0.0",
-      this.forced = "0.0.0",
-      this.android = "",
-      this.ios = ""});
+      {this.last = '0.0.0',
+      this.forced = '0.0.0',
+      this.android = '',
+      this.ios = '',});
 
   factory Z1Version.fromMap(Map<String, dynamic> map) {
     return Z1Version(
-      last: map["last"] ?? "",
-      forced: map["forced"] ?? "",
-      android: map["android"] ?? "",
-      ios: map["ios"] ?? "",
+      last: map['last']?.toString() ?? '',
+      forced: map['forced']?.toString() ?? '',
+      android: map['android']?.toString() ?? '',
+      ios: map['ios']?.toString() ?? '',
     );
   }
 
   Z1VersionState check(PackageInfo pInfo) {
-    String localVersion = pInfo.version;
+    final localVersion = pInfo.version;
     if (localVersion.compareTo(forced) < 0) {
       return Z1VersionState.updateForced;
     }

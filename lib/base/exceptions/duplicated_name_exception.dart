@@ -1,0 +1,1 @@
+class DuplicatedNameException implements Exception {}

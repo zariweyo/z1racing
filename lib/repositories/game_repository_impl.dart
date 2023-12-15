@@ -1,12 +1,10 @@
-import 'package:collection/collection.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/foundation.dart';
-import 'package:z1racing/models/z1track_races.dart';
+import 'package:z1racing/models/z1track.dart';
+import 'package:z1racing/models/z1user_race.dart';
 import 'package:z1racing/repositories/firebase_auth_repository.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository.dart';
-import 'package:z1racing/models/z1track.dart';
-import 'package:z1racing/models/z1user_race.dart';
 import 'package:z1racing/repositories/track_repository_impl.dart';
 
 class GameRepositoryImpl extends GameRepository {
@@ -25,49 +23,44 @@ class GameRepositoryImpl extends GameRepository {
   GameStatus status = GameStatus.none;
   Z1Track currentTrack = Z1Track.empty();
   Z1UserRace? z1UserRace;
-  Z1TrackRaces currentZ1UserRaces = Z1TrackRaces.empty();
-  Z1UserRace? get currentZ1UserRace =>
-      currentZ1UserRaces.races.firstWhereOrNull(
-        (element) =>
-            element.uid == FirebaseAuthRepository.instance.currentUser?.uid,
-      );
+  Z1UserRace? z1UserRaceRef;
 
   Vector2 startPosition = Vector2(0, 0);
 
-  Vector2 get trackSize {
-    List<Vector2> points =
-        currentTrack.slots.map((slot) => slot.points1).flattened.toList();
+  Vector2 get trackSize => Vector2(currentTrack.width, currentTrack.height);
 
-    double width =
-        (points.map((e) => e.x).max - points.map((e) => e.x).min).abs();
-    double height =
-        (points.map((e) => e.y).max - points.map((e) => e.y).min).abs();
-
-    return Vector2(width * 4, height * 6);
-  }
-
-  loadTrack({required Z1Track track}) {
-    currentTrack = track;
-  }
-
-  resetUserRace() {
+  void initRaceData() {
     assert(FirebaseAuthRepository.instance.currentUser != null);
     z1UserRace = Z1UserRace.init(
-        uid: FirebaseAuthRepository.instance.currentUser!.uid,
-        trackId: currentTrack.trackId,
-        displayName: FirebaseAuthRepository.instance.currentUser!.name);
+      uid: FirebaseAuthRepository.instance.currentUser!.uid,
+      trackId: currentTrack.trackId,
+      displayName: FirebaseAuthRepository.instance.currentUser!.name,
+    );
     lapNotifier.removeListener(_onLapUpdate);
     lapNotifier.addListener(_onLapUpdate);
   }
 
-  Future loadCurrentRace() async {
+  Future loadRefRace() async {
     assert(FirebaseAuthRepository.instance.currentUser != null);
-    currentZ1UserRaces = await TrackRepositoryImpl().getUserRaces(
-        uid: FirebaseAuthRepository.instance.currentUser!.uid,
-        trackId: currentTrack.trackId);
+
+    final currentZ1UserRaces = await TrackRepositoryImpl().getUserRaces(
+      uid: FirebaseAuthRepository.instance.currentUser!.uid,
+      trackId: currentTrack.trackId,
+    );
+
+    if (currentZ1UserRaces.races.isNotEmpty) {
+      final userPos = currentZ1UserRaces.races.indexWhere(
+        (race) => race.uid == FirebaseAuthRepository.instance.currentUser!.uid,
+      );
+      if (userPos <= 0) {
+        z1UserRaceRef = currentZ1UserRaces.races.first;
+      } else {
+        z1UserRaceRef = currentZ1UserRaces.races[userPos - 1];
+      }
+    }
   }
 
-  _onLapUpdate() async {
+  Future<void> _onLapUpdate() async {
     addLapTimeFromCurrent();
     if (raceIsEnd()) {
       z1UserRace =
@@ -76,49 +69,95 @@ class GameRepositoryImpl extends GameRepository {
     }
   }
 
+  @override
+  Duration getReferenceDelayLap({required int lap}) {
+    final index = lap - 1;
+    if (z1UserRace == null ||
+        z1UserRace!.lapTimes.length < lap ||
+        z1UserRaceRef == null ||
+        z1UserRaceRef!.lapTimes.length < lap) {
+      return Duration.zero;
+    }
+
+    final lastLapDuration = z1UserRace!.lapTimes[index];
+    final lastRefLapDuration = z1UserRaceRef!.lapTimes[index];
+
+    final result = Duration(
+      milliseconds:
+          lastLapDuration.inMilliseconds - lastRefLapDuration.inMilliseconds,
+    );
+    return result;
+  }
+
+  @override
+  Duration getReferenceDelayRace() {
+    if (z1UserRace == null || z1UserRaceRef == null) {
+      return Duration.zero;
+    }
+    final timeDuration = z1UserRace!.time;
+    final refTimeDuration = z1UserRaceRef!.time;
+
+    return Duration(
+      milliseconds:
+          timeDuration.inMilliseconds - refTimeDuration.inMilliseconds,
+    );
+  }
+
+  @override
   void setTime(double time) {
     _time = time;
   }
 
+  @override
   void addTime(double time) {
     _time += time;
   }
 
+  @override
   double getTime() => _time * 1000;
 
+  @override
   ValueNotifier<int> getLapNotifier() => lapNotifier;
 
   void addLap() => lapNotifier.value++;
 
+  @override
   int getCurrentLap() => lapNotifier.value;
 
+  @override
   bool raceIsEnd() => lapNotifier.value > currentTrack.numLaps;
 
+  @override
   int getTotalLaps() => currentTrack.numLaps;
 
+  @override
   GameStatus getStatus() => status;
 
-  void setStatus(GameStatus _status) {
-    status = _status;
+  @override
+  void setStatus(GameStatus status) {
+    this.status = status;
   }
 
+  @override
   void addLapTimeFromCurrent() {
     assert(z1UserRace != null);
-    Duration timeMod = Duration(milliseconds: getTime().toInt());
-    if (!z1UserRace!.lapTimes.isEmpty) {
+    var timeMod = Duration(milliseconds: getTime().toInt());
+    if (z1UserRace!.lapTimes.isNotEmpty) {
       timeMod = timeMod -
           z1UserRace!.lapTimes.reduce((value, element) => value + element);
     }
     z1UserRace!.addLaptime(timeMod);
   }
 
+  @override
   List<Duration> getLapTimes() => z1UserRace?.lapTimes ?? [];
 
+  @override
   Future saveRace() async {
     if (z1UserRace == null) {
       return;
     }
-    Z1UserRace? currentUserRace = await FirebaseFirestoreRepository.instance
+    var currentUserRace = await FirebaseFirestoreRepository.instance
         .getUserRaceFromRemote(z1UserRace!);
 
     if (currentUserRace == null) {
@@ -126,13 +165,16 @@ class GameRepositoryImpl extends GameRepository {
           .saveCompleteUserRace(z1UserRace!);
     }
 
-    bool timeHasImproved = currentUserRace.time.compareTo(z1UserRace!.time) > 0;
-    bool bestLapHasImproved =
+    final timeHasImproved =
+        currentUserRace.time.compareTo(z1UserRace!.time) > 0;
+    final bestLapHasImproved =
         currentUserRace.bestLap.compareTo(z1UserRace!.bestLap) > 0;
 
     if (timeHasImproved && bestLapHasImproved) {
       currentUserRace = currentUserRace.copyWith(
-          time: z1UserRace!.time, bestLap: z1UserRace!.bestLap);
+        time: z1UserRace!.time,
+        bestLap: z1UserRace!.bestLap,
+      );
       return FirebaseFirestoreRepository.instance
           .updateTimeAndBestLapUserRace(currentUserRace);
     }
@@ -150,11 +192,19 @@ class GameRepositoryImpl extends GameRepository {
     }
   }
 
+  @override
   void reset() {
     lapNotifier.dispose();
     lapNotifier = ValueNotifier<int>(1);
     setTime(0);
     setStatus(GameStatus.gameover);
-    resetUserRace();
+    initRaceData();
+  }
+
+  @override
+  void restart() {
+    lapNotifier.value = 1;
+    setTime(0);
+    initRaceData();
   }
 }

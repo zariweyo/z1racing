@@ -3,11 +3,11 @@ import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
 import 'package:z1racing/game/car/components/car.dart';
+import 'package:z1racing/game/car/components/trail.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
+import 'package:z1racing/game/z1racing_game.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
-import 'package:z1racing/game/z1racing_game.dart';
-import 'package:z1racing/game/car/components/trail.dart';
 
 class Tire extends BodyComponent<Z1RacingGame> {
   Tire({
@@ -20,7 +20,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
     this.isTurnableTire = false,
   }) : super(
           paint: Paint()
-            ..color = Color.fromARGB(256, 3, 0, 0)
+            ..color = const Color.fromARGB(256, 3, 0, 0)
             ..strokeWidth = 0.5
             ..style = PaintingStyle.fill,
           priority: 2,
@@ -50,7 +50,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
       isFrontTire ? _frontTireMaxLateralImpulse : _backTireMaxLateralImpulse;
 
   // Make mutable if ice or something should be implemented
-  late double _currentTraction = car.traction;
+  late final double _currentTraction = car.traction;
   final double _currentInertia = 0.0005;
 
   final double _maxBackwardSpeed = -40.0;
@@ -64,7 +64,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
   final bool isLeftTire;
 
   final double _lockAngle = 0.6;
-  final double _turnSpeedPerSecond = 4;
+  final double _turnSpeedPerSecond = 0.05;
 
   final Paint _black = BasicPalette.black.paint();
 
@@ -90,7 +90,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
     final body = world.createBody(def)..userData = this;
 
     final polygonShape = PolygonShape()..setAsBoxXY(0.5, 1.25);
-    body.createFixtureFromShape(polygonShape, density: 1.0).userData = this;
+    body.createFixtureFromShape(polygonShape).userData = this;
 
     jointDef.bodyB = body;
     jointDef.localAnchorA.setFrom(jointAnchor);
@@ -141,7 +141,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   void _updateDrive() {
     var desiredSpeed = 0.0;
-    bool brake = false;
+    var brake = false;
 
     if (controlsData.upValue > 0) {
       desiredSpeed = car.speed * controlsData.upValue;
@@ -191,7 +191,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
       isTurning = true;
     }
     if (controlsData.rightValue > 0) {
-      desiredAngle += (_lockAngle * controlsData.rightValue);
+      desiredAngle += _lockAngle * controlsData.rightValue;
       isTurning = true;
     }
 
@@ -210,7 +210,8 @@ class Tire extends BodyComponent<Z1RacingGame> {
           (desiredAngle - angleNow).clamp(-turnPerTimeStep, turnPerTimeStep);
       final angle = angleNow + angleToTurn;
       joint.setLimits(angle, angle);
-    } else if (joint.lowerLimit != 0 || joint.upperLimit != 0) {
+    } else if (isTurnableTire &&
+        (joint.lowerLimit != 0 || joint.upperLimit != 0)) {
       joint.setLimits(0, 0);
     }
   }

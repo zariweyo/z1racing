@@ -6,9 +6,8 @@ import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
-
-import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/game/z1racing_game.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
   LapText() : super(position: Vector2(70, 50));
@@ -19,12 +18,12 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    final TextStyle textStyle = GoogleFonts.rubikMonoOne(
+    final textStyle = GoogleFonts.rubikMonoOne(
       fontSize: 12,
-      color: Color.fromARGB(235, 248, 248, 248),
+      color: const Color.fromARGB(235, 248, 248, 248),
     );
     final defaultRenderer = TextPaint(style: textStyle);
-    TextPaint lapCountRenderer = TextPaint(
+    final lapCountRenderer = TextPaint(
       style: textStyle.copyWith(fontSize: 25, fontWeight: FontWeight.bold),
     );
     add(
@@ -58,7 +57,7 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
     add(_timePassedComponent);
 
     _backgroundPaint = Paint()
-      ..color = Color.fromARGB(235, 248, 248, 248)
+      ..color = const Color.fromARGB(235, 248, 248, 248)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 

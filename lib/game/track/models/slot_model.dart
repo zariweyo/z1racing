@@ -22,15 +22,17 @@ abstract class SlotModel {
   double get inputAngle;
   double get outputAngle;
 
-  SlotModel(
-      {required this.size,
-      required this.type,
-      required this.closedAdded,
-      this.sensor = TrackModelSensor.none});
+  SlotModel({
+    required this.size,
+    required this.type,
+    required this.closedAdded,
+    this.sensor = TrackModelSensor.none,
+  });
 
-  factory SlotModel.fromMap(Map<String, dynamic> map) {
+  factory SlotModel.fromMap(dynamic mapDyn) {
+    final map = mapDyn as Map<String, dynamic>;
     assert(TrackModelType.values.map((e) => e.name).contains(map['type']));
-    TrackModelType type = TrackModelType.values
+    final type = TrackModelType.values
         .firstWhere((element) => element.name == map['type']);
     switch (type) {
       case TrackModelType.curve:

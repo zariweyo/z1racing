@@ -13,6 +13,9 @@ abstract class GameRepository {
   GameStatus getStatus();
   void setStatus(GameStatus status);
   void reset();
+  void restart();
+  Duration getReferenceDelayLap({required int lap});
+  Duration getReferenceDelayRace();
   void addLapTimeFromCurrent();
   List<Duration> getLapTimes();
   Future<void> saveRace();

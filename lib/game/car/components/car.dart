@@ -1,22 +1,21 @@
 import 'dart:ui';
-
 import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
+import 'package:z1racing/game/car/components/tire.dart';
 import 'package:z1racing/game/game_colors.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
 import 'package:z1racing/game/z1racing_game.dart';
-import 'package:z1racing/game/car/components/tire.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
-  Car(
-      {required this.images,
-      required this.playerNumber,
-      required this.cameraComponent})
-      : super(
+  Car({
+    required this.images,
+    required this.playerNumber,
+    required this.cameraComponent,
+  }) : super(
           priority: 3,
           paint: Paint()..color = colors[playerNumber],
         );

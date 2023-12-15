@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:z1racing/base/exceptions/duplicated_name_exception.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/models/z1user_race.dart';
@@ -10,10 +13,13 @@ import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/track_repository_impl.dart';
 
 class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
-  static const String USERCOL = "users";
-  static const String RACESCOL = "races";
-  static const String TRACKDATACOL = "trackData";
-  static const String VERSIONDOC = "settings/version";
+  static const String userCol = 'users';
+  static const String racesCol = 'races';
+  static const String trackDataCollection = 'trackData';
+  static const String versionDocument = 'settings/version';
+
+  final _currentUserNotifier = ValueNotifier<Z1User?>(null);
+  final _streamChangeController = StreamController<Z1User?>.broadcast();
 
   static final FirebaseFirestoreRepositoryImpl _instance =
       FirebaseFirestoreRepositoryImpl._internal();
@@ -22,67 +28,82 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     return _instance;
   }
 
-  FirebaseFirestoreRepositoryImpl._internal();
+  FirebaseFirestoreRepositoryImpl._internal() {
+    _currentUserNotifier.addListener(() {
+      _streamChangeController.add(_currentUserNotifier.value);
+    });
+  }
 
   late Z1Version _z1version;
+  @override
   Z1Version get z1version => _z1version;
 
   @override
-  Z1User? get currentUser => FirebaseAuth.instance.currentUser != null
-      ? Z1User.fromUser(FirebaseAuth.instance.currentUser!)
-      : null;
+  Z1User? get currentUser {
+    if (_currentUserNotifier.value != null) {
+      return _currentUserNotifier.value;
+    } else if (FirebaseAuth.instance.currentUser != null) {
+      return Z1User.fromUser(FirebaseAuth.instance.currentUser!);
+    }
+    return null;
+  }
 
   CollectionReference<Map<String, dynamic>> get usersCol =>
-      FirebaseFirestore.instance.collection(USERCOL);
+      FirebaseFirestore.instance.collection(userCol);
   DocumentReference<Map<String, dynamic>> get userDoc =>
       usersCol.doc(currentUser?.uid);
   DocumentReference<Map<String, dynamic>> get versionDoc =>
-      FirebaseFirestore.instance.doc(VERSIONDOC);
+      FirebaseFirestore.instance.doc(versionDocument);
   CollectionReference<Map<String, dynamic>> get trackDataCol =>
-      FirebaseFirestore.instance.collection(TRACKDATACOL);
+      FirebaseFirestore.instance.collection(trackDataCollection);
 
   Query<Map<String, dynamic>> get raceGroupCol =>
-      FirebaseFirestore.instance.collectionGroup(RACESCOL);
+      FirebaseFirestore.instance.collectionGroup(racesCol);
 
+  @override
   Future init() async {
     assert(currentUser != null);
-
-    Z1User z1user = currentUser!;
+    await _loadUser(baseUser: currentUser!);
+    final z1user = currentUser!;
     _z1version = await getVersion();
+    _currentUserNotifier.value = z1user;
     return userDoc.set(z1user.toJson());
   }
 
+  @override
   Future saveCompleteUserRace(Z1UserRace z1userRace) async {
-    DocumentReference<Map<String, dynamic>> raceDoc = trackDataCol
+    final raceDoc = trackDataCol
         .doc(z1userRace.trackId)
-        .collection(RACESCOL)
+        .collection(racesCol)
         .doc(z1userRace.id);
     return raceDoc.set(z1userRace.toJson());
   }
 
   @override
   Future updateTimeAndBestLapUserRace(Z1UserRace z1userRace) async {
-    DocumentReference<Map<String, dynamic>> raceDoc = trackDataCol
+    final raceDoc = trackDataCol
         .doc(z1userRace.trackId)
-        .collection(RACESCOL)
+        .collection(racesCol)
         .doc(z1userRace.id);
 
     return raceDoc.update(z1userRace.toUpdateTimeAndBestLapJson());
   }
 
+  @override
   Future updateTimeUserRace(Z1UserRace z1userRace) async {
-    DocumentReference<Map<String, dynamic>> raceDoc = trackDataCol
+    final raceDoc = trackDataCol
         .doc(z1userRace.trackId)
-        .collection(RACESCOL)
+        .collection(racesCol)
         .doc(z1userRace.id);
 
     return raceDoc.update(z1userRace.toUpdateTimeJson());
   }
 
+  @override
   Future updateBestLapUserRace(Z1UserRace z1userRace) async {
-    DocumentReference<Map<String, dynamic>> raceDoc = trackDataCol
+    final raceDoc = trackDataCol
         .doc(z1userRace.trackId)
-        .collection(RACESCOL)
+        .collection(racesCol)
         .doc(z1userRace.id);
 
     return raceDoc.update(z1userRace.toUpdateBestLapJson());
@@ -90,9 +111,9 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
 
   @override
   Future<Z1UserRace?> getUserRaceFromRemote(Z1UserRace z1userRace) async {
-    DocumentSnapshot<Map<String, dynamic>> raceDoc = await trackDataCol
+    final raceDoc = await trackDataCol
         .doc(z1userRace.trackId)
-        .collection(RACESCOL)
+        .collection(racesCol)
         .doc(z1userRace.id)
         .get();
     if (!raceDoc.exists || raceDoc.data() == null) {
@@ -101,51 +122,99 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     return Z1UserRace.fromMap(raceDoc.data()!);
   }
 
-  Future<Z1UserRace?> getUserRaceByTrackId(
-      {required String uid, required String trackId}) async {
-    Query<Map<String, dynamic>> raceDoc = trackDataCol
+  @override
+  Future<Z1UserRace?> getUserRaceByTrackId({
+    required String uid,
+    required String trackId,
+  }) async {
+    if (trackId.isEmpty) {
+      return null;
+    }
+
+    final raceDoc = trackDataCol
         .doc(trackId)
-        .collection(RACESCOL)
-        .where("uid", isEqualTo: uid)
+        .collection(racesCol)
+        .where('uid', isEqualTo: uid)
         .limit(1);
-    QuerySnapshot<Map<String, dynamic>> qSnap = await raceDoc.get();
-    if (qSnap.docs.length > 0) {
+    final qSnap = await raceDoc.get();
+    if (qSnap.docs.isNotEmpty) {
       return Z1UserRace.fromMap(qSnap.docs.first.data());
     }
 
     return null;
   }
 
+  @override
   Future<void> updateName(String newName) async {
-    WriteBatch _batch = FirebaseFirestore.instance.batch();
-    _batch.update(userDoc, {"name": newName});
-    (await raceGroupCol.where("uid", isEqualTo: currentUser?.uid).get())
+    final query = await FirebaseFirestore.instance
+        .collection(userCol)
+        .where('name', isEqualTo: newName)
+        .get();
+    if (query.docs.isNotEmpty) {
+      throw DuplicatedNameException();
+    }
+
+    final batch = FirebaseFirestore.instance.batch();
+    batch.update(userDoc, {'name': newName});
+    _currentUserNotifier.value =
+        _currentUserNotifier.value?.copyWith(name: newName);
+    (await raceGroupCol.where('uid', isEqualTo: currentUser?.uid).get())
         .docs
         .forEach((docSnap) {
-      Z1UserRace userRace = Z1UserRace.fromMap(docSnap.data());
+      final userRace = Z1UserRace.fromMap(docSnap.data());
       userRace.metadata = userRace.metadata.copyWith(displayName: newName);
-      _batch.update(docSnap.reference, userRace.toUpdateMetadataJson());
+      batch.update(docSnap.reference, userRace.toUpdateMetadataJson());
     });
-    await _batch.commit();
+    await batch.commit();
     return FirebaseAuth.instance.currentUser?.updateDisplayName(newName);
   }
 
-  Future<int> getUserRacePositionByTime(
-      {required String positionHash, required String trackId}) async {
-    CollectionReference raceCol =
-        trackDataCol.doc(trackId).collection(RACESCOL);
-    AggregateQuery aggQuery = raceCol
-        .where("positionHash", isLessThanOrEqualTo: positionHash)
+  Future<void> _loadUser({required Z1User baseUser}) async {
+    final docSnap = await userDoc.get();
+    if (docSnap.exists) {
+      _currentUserNotifier.value = Z1User.fromMap(docSnap.data()!);
+    } else {
+      _currentUserNotifier.value = baseUser.copyWith(z1Coins: 5);
+    }
+  }
+
+  @override
+  Future<void> addZ1Coins(int z1Coins) async {
+    _currentUserNotifier.value = _currentUserNotifier.value?.copyWith(
+      z1Coins: (_currentUserNotifier.value?.z1Coins ?? 0) + z1Coins,
+    );
+    return userDoc
+        .update({'z1Coins': _currentUserNotifier.value?.z1Coins ?? 0});
+  }
+
+  @override
+  Future<void> removeZ1Coins(int z1Coins) async {
+    _currentUserNotifier.value = _currentUserNotifier.value?.copyWith(
+      z1Coins: max((_currentUserNotifier.value?.z1Coins ?? 0) - z1Coins, 0),
+    );
+    return userDoc
+        .update({'z1Coins': _currentUserNotifier.value?.z1Coins ?? 0});
+  }
+
+  @override
+  Future<int> getUserRacePositionByTime({
+    required String positionHash,
+    required String trackId,
+  }) async {
+    final CollectionReference raceCol =
+        trackDataCol.doc(trackId).collection(racesCol);
+    final aggQuery = raceCol
+        .where('positionHash', isLessThanOrEqualTo: positionHash)
         .count();
 
-    AggregateQuerySnapshot asnap = await aggQuery.get();
+    final asnap = await aggQuery.get();
 
     return asnap.count;
   }
 
+  @override
   Future<Z1Track> getTrackById({required String trackId}) async {
-    DocumentSnapshot<Map<String, dynamic>> docSnap =
-        await trackDataCol.doc(trackId).get();
+    final docSnap = await trackDataCol.doc(trackId).get();
 
     if (!docSnap.exists || docSnap.data() == null) {
       return Z1Track.empty();
@@ -153,63 +222,76 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     return Z1Track.fromMap(docSnap.data()!);
   }
 
-  Future<Z1Track?> getTrackByActivedDate(
-      {required DateTime dateTime,
-      TrackRequestDirection direction = TrackRequestDirection.next}) async {
-    Query<Map<String, dynamic>> query = trackDataCol.orderBy("initialDatetime",
-        descending: direction == TrackRequestDirection.previous);
+  @override
+  Future<Z1Track?> getTrackByActivedDate({
+    required DateTime dateTime,
+    TrackRequestDirection direction = TrackRequestDirection.next,
+  }) async {
+    var query = trackDataCol.orderBy(
+      'initialDatetime',
+      descending: direction == TrackRequestDirection.previous,
+    );
 
     switch (direction) {
       case TrackRequestDirection.previous:
-        query = query.where("initialDatetime",
-            isLessThanOrEqualTo: dateTime.toIso8601String());
+        query = query.where(
+          'initialDatetime',
+          isLessThanOrEqualTo: dateTime.toIso8601String(),
+        );
         break;
       case TrackRequestDirection.next:
-        query = query.where("initialDatetime",
-            isGreaterThanOrEqualTo:
-                dateTime.add(Duration(minutes: 1)).toIso8601String());
+        query = query.where(
+          'initialDatetime',
+          isGreaterThanOrEqualTo:
+              dateTime.add(const Duration(minutes: 1)).toIso8601String(),
+        );
         break;
     }
 
-    QuerySnapshot<Map<String, dynamic>> qSnap = await query.limit(1).get();
+    final qSnap = await query.limit(1).get();
     if (qSnap.docs.isNotEmpty) {
       return Z1Track.fromMap(qSnap.docs.first.data());
     }
     return null;
   }
 
-  Future<List<Z1UserRace>> getUserRacesByTime(
-      {required String positionHash,
-      required String trackId,
-      bool descending = false,
-      int limit = 10}) async {
+  @override
+  Future<List<Z1UserRace>> getUserRacesByTime({
+    required String positionHash,
+    required String trackId,
+    bool descending = false,
+    int limit = 10,
+  }) async {
     try {
-      CollectionReference<Map<String, dynamic>> raceCol =
-          trackDataCol.doc(trackId).collection(RACESCOL);
-      Query<Map<String, dynamic>> query =
-          raceCol.orderBy("positionHash", descending: descending).limit(limit);
+      final raceCol = trackDataCol.doc(trackId).collection(racesCol);
+      var query =
+          raceCol.orderBy('positionHash', descending: descending).limit(limit);
 
       if (descending) {
-        query = query.where("positionHash", isLessThanOrEqualTo: positionHash);
+        query = query.where('positionHash', isLessThanOrEqualTo: positionHash);
       } else {
-        query = query.where("positionHash", isGreaterThan: positionHash);
+        query = query.where('positionHash', isGreaterThan: positionHash);
       }
 
-      QuerySnapshot<Map<String, dynamic>> qsnap = await query.get();
+      final qsnap = await query.get();
       return qsnap.docs
           .map((snapDoc) => Z1UserRace.fromMap(snapDoc.data()))
           .toList();
-    } catch (ex) {
-      throw ex;
+    } on Exception catch (_) {
+      rethrow;
     }
   }
 
+  @override
   Future<Z1Version> getVersion() async {
-    DocumentSnapshot<Map<String, dynamic>> docSnap = await versionDoc.get();
+    final docSnap = await versionDoc.get();
     if (!docSnap.exists) {
       return Z1Version();
     }
 
     return Z1Version.fromMap(docSnap.data() ?? {});
   }
+
+  @override
+  Stream<Z1User?> get z1UserStream => _streamChangeController.stream;
 }

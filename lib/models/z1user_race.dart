@@ -11,37 +11,38 @@ class Z1UserRace {
   final DateTime updated;
   Z1UserRaceMetadata metadata;
 
-  String get id => "${trackId}_${uid}_${metadata.numLaps}";
+  String get id => '${trackId}_${uid}_${metadata.numLaps}';
 
-  Z1UserRace(
-      {required this.uid,
-      required this.trackId,
-      required this.time,
-      required this.updated,
-      required this.lapTimes,
-      required this.bestLap,
-      this.metadata = const Z1UserRaceMetadata()});
+  Z1UserRace({
+    required this.uid,
+    required this.trackId,
+    required this.time,
+    required this.updated,
+    required this.lapTimes,
+    required this.bestLap,
+    this.metadata = const Z1UserRaceMetadata(),
+  });
 
-  Z1UserRace copyWith(
-      {String? uid,
-      String? trackId,
-      Duration? time,
-      Duration? bestLap,
-      List<Duration>? lapTimes,
-      DateTime? updated}) {
+  Z1UserRace copyWith({
+    String? uid,
+    String? trackId,
+    Duration? time,
+    Duration? bestLap,
+    List<Duration>? lapTimes,
+    DateTime? updated,
+  }) {
     return Z1UserRace(
-        uid: uid ?? this.uid,
-        trackId: trackId ?? this.trackId,
-        time: time ?? this.time,
-        bestLap: bestLap ?? this.bestLap,
-        updated: updated ?? this.updated,
-        lapTimes: lapTimes ?? this.lapTimes,
-        metadata: this
-            .metadata
-            .copyWith(numLaps: (lapTimes ?? this.lapTimes).length));
+      uid: uid ?? this.uid,
+      trackId: trackId ?? this.trackId,
+      time: time ?? this.time,
+      bestLap: bestLap ?? this.bestLap,
+      updated: updated ?? this.updated,
+      lapTimes: lapTimes ?? this.lapTimes,
+      metadata: metadata.copyWith(numLaps: (lapTimes ?? this.lapTimes).length),
+    );
   }
 
-  addLaptime(Duration laptime) {
+  void addLaptime(Duration laptime) {
     if (lapTimes.isEmpty) {
       bestLap = laptime;
     } else {
@@ -63,77 +64,88 @@ class Z1UserRace {
       bestLapTime.inMilliseconds.toString().toLimitHash(8) +
       secondsSinceEpoch.toString().toLimitHash(11);
 
-  factory Z1UserRace.init(
-      {required String uid,
-      required String trackId,
-      required String displayName}) {
+  factory Z1UserRace.init({
+    required String uid,
+    required String trackId,
+    required String displayName,
+  }) {
     return Z1UserRace(
-        uid: uid,
-        trackId: trackId,
-        time: Duration(),
-        bestLap: Duration(),
-        updated: DateTime.now(),
-        lapTimes: [],
-        metadata: Z1UserRaceMetadata(displayName: displayName));
+      uid: uid,
+      trackId: trackId,
+      time: Duration.zero,
+      bestLap: Duration.zero,
+      updated: DateTime.now(),
+      lapTimes: [],
+      metadata: Z1UserRaceMetadata(displayName: displayName),
+    );
   }
 
   factory Z1UserRace.fromMap(Map<String, dynamic> map) {
     return Z1UserRace(
-        uid: map['uid'] ?? "",
-        trackId: map['trackId'] ?? "",
-        time: DurationExtension.fromMap(map['time']),
-        bestLap: DurationExtension.fromMap(map['bestLap']),
-        updated: map['updated'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(map['updated'], isUtc: true)
-            : DateTime.now().toUtc(),
-        lapTimes: DurationListExtension.fromMap(map['lapTimes']),
-        metadata: map['metadata'] != null
-            ? Z1UserRaceMetadata.fromMap(map['metadata'])
-            : Z1UserRaceMetadata());
+      uid: map['uid']?.toString() ?? '',
+      trackId: map['trackId']?.toString() ?? '',
+      time: DurationExtension.fromMap(map['time']),
+      bestLap: DurationExtension.fromMap(map['bestLap']),
+      updated: map['updated'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              int.tryParse(map['updated'].toString()) ?? 0,
+              isUtc: true,
+            )
+          : DateTime.now().toUtc(),
+      lapTimes: map['lapTimes'] is List<dynamic>
+          ? DurationListExtension.fromMap(map['lapTimes'] as List<dynamic>)
+          : [],
+      metadata: map['metadata'] != null &&
+              map['metadata'] is Map<String, dynamic>
+          ? Z1UserRaceMetadata.fromMap(map['metadata'] as Map<String, dynamic>)
+          : const Z1UserRaceMetadata(),
+    );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "id": id,
-      "uid": uid,
-      "trackId": trackId,
-      "time": time.toMap(),
-      "bestLap": bestLap.toMap(),
-      "lapTimes": lapTimes.toMap(),
-      "updated": updated.millisecondsSinceEpoch,
-      "metadata": metadata.toJson(),
-      "positionHash": positionHash
+      'id': id,
+      'uid': uid,
+      'trackId': trackId,
+      'time': time.toMap(),
+      'bestLap': bestLap.toMap(),
+      'lapTimes': lapTimes.toMap(),
+      'updated': updated.millisecondsSinceEpoch,
+      'metadata': metadata.toJson(),
+      'positionHash': positionHash,
     };
   }
 
   Map<String, dynamic> toUpdateTimeAndBestLapJson() {
     return {
-      "time": time.toMap(),
-      "bestLap": bestLap.toMap(),
-      "updated": updated.millisecondsSinceEpoch,
-      "positionHash": positionHash
+      'time': time.toMap(),
+      'lapTimes': lapTimes.toMap(),
+      'bestLap': bestLap.toMap(),
+      'updated': updated.millisecondsSinceEpoch,
+      'positionHash': positionHash,
     };
   }
 
   Map<String, dynamic> toUpdateTimeJson() {
     return {
-      "time": time.toMap(),
-      "updated": updated.millisecondsSinceEpoch,
-      "positionHash": positionHash
+      'time': time.toMap(),
+      'lapTimes': lapTimes.toMap(),
+      'updated': updated.millisecondsSinceEpoch,
+      'positionHash': positionHash,
     };
   }
 
   Map<String, dynamic> toUpdateBestLapJson() {
     return {
-      "bestLap": bestLap.toMap(),
-      "updated": updated.millisecondsSinceEpoch,
-      "positionHash": positionHash
+      'bestLap': bestLap.toMap(),
+      'updated': updated.millisecondsSinceEpoch,
+      'positionHash': positionHash,
     };
   }
 
   Map<String, dynamic> toUpdateMetadataJson() {
     return {
-      "metadata": metadata.toJson(),
+      'metadata': metadata.toJson(),
     };
   }
 }
@@ -143,18 +155,25 @@ class Z1UserRaceMetadata {
   final String displayName;
   final String carId;
 
-  const Z1UserRaceMetadata(
-      {this.numLaps = 0, this.displayName = "", this.carId = ""});
+  const Z1UserRaceMetadata({
+    this.numLaps = 0,
+    this.displayName = '',
+    this.carId = '',
+  });
 
   factory Z1UserRaceMetadata.fromMap(Map<String, dynamic> map) {
     return Z1UserRaceMetadata(
-        carId: map['carId'] ?? "",
-        displayName: map['displayName'] ?? "",
-        numLaps: map['numLaps'] ?? 0);
+      carId: map['carId']?.toString() ?? '',
+      displayName: map['displayName']?.toString() ?? '',
+      numLaps: int.tryParse(map['numLaps']?.toString() ?? '0') ?? 0,
+    );
   }
 
-  Z1UserRaceMetadata copyWith(
-      {int? numLaps, String? carId, String? displayName}) {
+  Z1UserRaceMetadata copyWith({
+    int? numLaps,
+    String? carId,
+    String? displayName,
+  }) {
     return Z1UserRaceMetadata(
       numLaps: numLaps ?? this.numLaps,
       carId: carId ?? this.carId,
@@ -164,9 +183,9 @@ class Z1UserRaceMetadata {
 
   dynamic toJson() {
     return {
-      "numLaps": numLaps,
-      "carId": carId,
-      "displayName": displayName,
+      'numLaps': numLaps,
+      'carId': carId,
+      'displayName': displayName,
     };
   }
 }

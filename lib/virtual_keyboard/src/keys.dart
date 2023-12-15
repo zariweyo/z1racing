@@ -1,103 +1,103 @@
-part of "../vk.dart";
+part of '../vk.dart';
 
 /// US keyboard layout
 List<List<VirtualKeyboardKey>> usLayout = [
   // Row 1
   [
     TextKey(
-      "q",
+      'q',
     ),
     TextKey(
-      "w",
+      'w',
     ),
     TextKey(
-      "e",
+      'e',
     ),
     TextKey(
-      "r",
+      'r',
     ),
     TextKey(
-      "t",
+      't',
     ),
     TextKey(
-      "y",
+      'y',
     ),
     TextKey(
-      "u",
+      'u',
     ),
     TextKey(
-      "i",
+      'i',
     ),
     TextKey(
-      "o",
+      'o',
     ),
     TextKey(
-      "p",
+      'p',
     ),
   ],
   // Row 2
   [
     TextKey(
-      "a",
+      'a',
     ),
     TextKey(
-      "s",
+      's',
     ),
     TextKey(
-      "d",
+      'd',
     ),
     TextKey(
-      "f",
+      'f',
     ),
     TextKey(
-      "g",
+      'g',
     ),
     TextKey(
-      "h",
+      'h',
     ),
     TextKey(
-      "j",
+      'j',
     ),
     TextKey(
-      "k",
+      'k',
     ),
     TextKey(
-      "l",
+      'l',
     ),
   ],
   // Row 3
   [
-    ActionKey(VirtualKeyboardKeyAction.Shift),
+    ActionKey(VirtualKeyboardKeyAction.shift),
     TextKey(
-      "z",
+      'z',
     ),
     TextKey(
-      "x",
+      'x',
     ),
     TextKey(
-      "c",
+      'c',
     ),
     TextKey(
-      "v",
+      'v',
     ),
     TextKey(
-      "b",
+      'b',
     ),
     TextKey(
-      "n",
+      'n',
     ),
     TextKey(
-      "m",
+      'm',
     ),
-    ActionKey(VirtualKeyboardKeyAction.Backspace),
+    ActionKey(VirtualKeyboardKeyAction.backspace),
   ],
   // Row 4
   [
-    ActionKey(VirtualKeyboardKeyAction.Symbols),
+    ActionKey(VirtualKeyboardKeyAction.symbols),
     TextKey(','),
-    ActionKey(VirtualKeyboardKeyAction.Space),
+    ActionKey(VirtualKeyboardKeyAction.space),
     TextKey('.'),
-    ActionKey(VirtualKeyboardKeyAction.Return),
+    ActionKey(VirtualKeyboardKeyAction.returned),
   ]
 ];
 
@@ -106,41 +106,41 @@ List<List<VirtualKeyboardKey>> symbolLayout = [
   // Row 1
   [
     TextKey(
-      "1",
+      '1',
     ),
     TextKey(
-      "2",
+      '2',
     ),
     TextKey(
-      "3",
+      '3',
     ),
     TextKey(
-      "4",
+      '4',
     ),
     TextKey(
-      "5",
+      '5',
     ),
     TextKey(
-      "6",
+      '6',
     ),
     TextKey(
-      "7",
+      '7',
     ),
     TextKey(
-      "8",
+      '8',
     ),
     TextKey(
-      "9",
+      '9',
     ),
     TextKey(
-      "0",
+      '0',
     ),
   ],
   // Row 2
   [
     TextKey('@'),
     TextKey('#'),
-    TextKey('\$'),
+    TextKey(r'$'),
     TextKey('_'),
     TextKey('-'),
     TextKey('+'),
@@ -153,20 +153,20 @@ List<List<VirtualKeyboardKey>> symbolLayout = [
     TextKey('|'),
     TextKey('*'),
     TextKey('"'),
-    TextKey('\''),
+    TextKey("'"),
     TextKey(':'),
     TextKey(';'),
     TextKey('!'),
     TextKey('?'),
-    ActionKey(VirtualKeyboardKeyAction.Backspace),
+    ActionKey(VirtualKeyboardKeyAction.backspace),
   ],
   // Row 5
   [
-    ActionKey(VirtualKeyboardKeyAction.Alpha),
+    ActionKey(VirtualKeyboardKeyAction.alpha),
     TextKey(','),
-    ActionKey(VirtualKeyboardKeyAction.Space),
+    ActionKey(VirtualKeyboardKeyAction.space),
     TextKey('.'),
-    ActionKey(VirtualKeyboardKeyAction.Return),
+    ActionKey(VirtualKeyboardKeyAction.returned),
   ]
 ];
 
@@ -191,5 +191,5 @@ List<List<VirtualKeyboardKey>> numericLayout = [
     TextKey('9'),
   ],
   // Row 1
-  [TextKey('.'), TextKey('0'), ActionKey(VirtualKeyboardKeyAction.Backspace)],
+  [TextKey('.'), TextKey('0'), ActionKey(VirtualKeyboardKeyAction.backspace)],
 ];

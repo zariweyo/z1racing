@@ -1,13 +1,13 @@
 extension StringExtension on String {
   String toLimitHash(int limit) {
-    if (this.length == limit) {
+    if (length == limit) {
       return this;
     }
 
-    if (this.length > limit) {
-      return this.substring(0, limit);
+    if (length > limit) {
+      return substring(0, limit);
     }
 
-    return List.generate(limit - this.length, (index) => "0").join() + this;
+    return List.generate(limit - length, (index) => '0').join() + this;
   }
 }

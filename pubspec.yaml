@@ -1,34 +1,38 @@
 name: z1racing
 description: A sample game featuring Flame and Forge2D for DartPad
 publish_to: "none"
-version: 01.00.08+11
+version: 01.00.09+12
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
+  cloud_firestore: ^4.13.3
   collection: ^1.18.0
+  firebase_analytics: ^10.7.2
+  firebase_auth: ^4.15.0
+  firebase_core: ^2.24.0
+  firebase_crashlytics: ^3.4.8
   flame: ^1.11.0
+  flame_audio: ^2.1.4
   flame_forge2d: ^0.16.0+1
   flutter:
     sdk: flutter
-  url_launcher: ^6.2.1
+  flutter_localizations:
+    sdk: flutter
   google_fonts: ^6.1.0
-
-  firebase_core: ^2.24.0
-  firebase_auth: ^4.15.0
-  firebase_analytics: ^10.7.2
-  cloud_firestore: ^4.13.3
-  flame_audio: ^2.1.4
-
+  google_mobile_ads: ^4.0.0
+  intl: any
   package_info_plus: ^5.0.1
+  url_launcher: ^6.2.1
+  vector_math: ^2.1.4
   vk: ^0.2.1
 
 dev_dependencies:
   flame_lint: ^1.1.2
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.13.1
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -49,6 +53,7 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/images/

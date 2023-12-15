@@ -1,11 +1,11 @@
-part of "../vk.dart";
+part of '../vk.dart';
 
 /// Type for virtual keyboard key.
 ///
 /// `Action` - Can be action key - Return, Backspace, etc.
 ///
 /// `String` - Keys that have text value - `Letters`, `Numbers`, `@` `.`
-enum VirtualKeyboardKeyType { Action, String }
+enum VirtualKeyboardKeyType { action, string }
 
 /// Virtual Keyboard key
 class VirtualKeyboardKey {
@@ -16,34 +16,39 @@ class VirtualKeyboardKey {
   final VirtualKeyboardKeyType keyType;
   final VirtualKeyboardKeyAction? action;
 
-  VirtualKeyboardKey(
-      {this.text, this.capsText, required this.keyType, this.action});
+  VirtualKeyboardKey({
+    required this.keyType,
+    this.text,
+    this.capsText,
+    this.action,
+  });
 }
 
 /// Shorthand for creating a simple text key
 class TextKey extends VirtualKeyboardKey {
   TextKey(String text, {String? capsText})
       : super(
-            text: text,
-            capsText: capsText == null ? text.toUpperCase() : capsText,
-            keyType: VirtualKeyboardKeyType.String);
+          text: text,
+          capsText: capsText ?? text.toUpperCase(),
+          keyType: VirtualKeyboardKeyType.string,
+        );
 }
 
 /// Shorthand for creating action keys
 class ActionKey extends VirtualKeyboardKey {
   ActionKey(VirtualKeyboardKeyAction action)
-      : super(keyType: VirtualKeyboardKeyType.Action, action: action) {
+      : super(keyType: VirtualKeyboardKeyType.action, action: action) {
     switch (action) {
-      case VirtualKeyboardKeyAction.Space:
+      case VirtualKeyboardKeyAction.space:
         super.text = ' ';
         super.capsText = ' ';
         super.willExpand = true;
         break;
-      case VirtualKeyboardKeyAction.Return:
+      case VirtualKeyboardKeyAction.returned:
         super.text = '\n';
         super.capsText = '\n';
         break;
-      case VirtualKeyboardKeyAction.Backspace:
+      case VirtualKeyboardKeyAction.backspace:
         super.willExpand = true;
         break;
       default:
