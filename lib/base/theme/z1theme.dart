@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class Z1Theme {
   ThemeData get themeData => ThemeData(
-        textTheme: TextTheme(
+        textTheme: const TextTheme(
             displayLarge: TextStyle(
               fontSize: 35,
               color: Colors.white,
@@ -22,7 +22,7 @@ class Z1Theme {
             bodySmall: TextStyle(
               fontSize: 14,
               color: Colors.grey,
-            )),
+            ),),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black,

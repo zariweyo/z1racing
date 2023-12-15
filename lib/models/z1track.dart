@@ -9,7 +9,7 @@ class Z1Track {
   final int version;
   final double carInitAngle;
 
-  String get id => "${trackId}_${numLaps}";
+  String get id => '${trackId}_$numLaps';
 
   Z1Track({
     required this.trackId,
@@ -28,7 +28,7 @@ class Z1Track {
       List<SlotModel>? slots,
       DateTime? initialDatetime,
       int? version,
-      double? carInitAngle) {
+      double? carInitAngle,) {
     return Z1Track(
       trackId: trackId ?? this.trackId,
       name: name ?? this.name,
@@ -42,33 +42,32 @@ class Z1Track {
 
   factory Z1Track.fromMap(Map<String, dynamic> map) {
     return Z1Track(
-      trackId: map['trackId'] ?? "",
-      name: map['name'] ?? "",
-      numLaps: map['numLaps'] ?? 0,
+      trackId: map['trackId']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
+      numLaps: int.tryParse(map['numLaps']?.toString() ?? '') ?? 0,
       initialDatetime: map['initialDatetime'] != null
-          ? DateTime.parse(map['initialDatetime'])
+          ? DateTime.parse(map['initialDatetime'].toString())
           : DateTime.utc(1900),
       slots: map['slots'] != null
           ? (map['slots'] as List<dynamic>)
-              .map((e) => SlotModel.fromMap(e))
+              .map<SlotModel>(SlotModel.fromMap)
               .toList()
           : [],
-      version: map['version'] ?? 0,
+      version: int.tryParse(map['version']?.toString() ?? '') ?? 0,
       carInitAngle: map['carInitAngle'] != null && map['carInitAngle'] is double
-          ? map['carInitAngle'] ?? 0.0
+          ? double.tryParse(map['carInitAngle'].toString()) ?? 0.0
           : 0.0,
     );
   }
 
   factory Z1Track.empty() {
     return Z1Track(
-        trackId: "",
-        name: "",
+        trackId: '',
+        name: '',
         numLaps: 0,
         slots: [],
         initialDatetime: DateTime.now().toUtc(),
-        version: 0,
-        carInitAngle: 0);
+        version: 0,);
   }
 
   bool get isActive => DateTime.now().difference(initialDatetime).inSeconds > 0;

@@ -1,0 +1,22 @@
+{
+    "loading": "Cargando",
+    "play": "Jugar",
+    "settings": "Configuración",
+    "homeHello": "Hola %%USERNAME%%",
+    "numLaps": "%%LAPS%% vueltas",
+    "infoControls": "Usa los botones para controlar el coche",
+    "version": "Versión %%VERSION%%",
+    "nickName": "Nickname",
+    "updateAvailable": "Nueva versión disponible",
+    "updateNeeded": "Por favor, actualiza Z1Racing para continuar jugando, gracias",
+    "update": "Actualizar",
+    "menu": "Menu",
+    "endRace": "Terminar carrera",
+    "close": "Cerrar",
+    "finish": "Fin",
+    "time": "Tiempo",
+    "bestLap": "Mejor vuelta",
+    "restart": "Reiniciar",
+    "errorDuplicateName": "Este nombre de usuario ya se esta usando, por favor, elije otro.",
+    "errorlengthName": "Nombre de usuario tiene que tener entre 3 y 15 caracteres"
+}

@@ -6,7 +6,7 @@ class Z1User {
 
   Z1User({required this.uid, required this.name});
 
-  Z1User copyWith(String? uid, String? name) {
+  Z1User copyWith({String? uid, String? name}) {
     return Z1User(
       uid: uid ?? this.uid,
       name: name ?? this.name,
@@ -15,22 +15,22 @@ class Z1User {
 
   factory Z1User.fromMap(Map<String, dynamic> map) {
     return Z1User(
-      uid: map['uid'] ?? "",
-      name: map['name'] ?? "",
+      uid: map['uid']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
     );
   }
 
   factory Z1User.fromUser(User user) {
     return Z1User(
       uid: user.uid,
-      name: user.displayName ?? "",
+      name: user.displayName ?? '',
     );
   }
 
-  dynamic toJson() {
+  Map<String, dynamic> toJson() {
     return {
-      "uid": uid,
-      "name": name,
+      'uid': uid,
+      'name': name,
     };
   }
 }

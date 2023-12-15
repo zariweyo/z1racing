@@ -1,4 +1,4 @@
-import 'dart:math' as Math;
+import 'dart:math' as math;
 import 'package:collection/collection.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'package:z1racing/game/track/models/slot_model.dart';
@@ -14,41 +14,59 @@ class RectModel extends SlotModel {
     super.closedAdded = SlotModelClosedAdded.none,
   }) : super(type: TrackModelType.rect);
 
-  factory RectModel.fromMap(Map<String, dynamic> map) {
+  factory RectModel.fromMap(dynamic mapDyn) {
+    final map = mapDyn as Map<String, dynamic>;
     assert(map['length'] != null || map['size'] != null);
-    assert((map['length'] != null && map['length'] is num) ||
-        (map['size']['x'] != null && map['size']['x'] is num));
-    assert((map['length'] != null && map['length'] is num) ||
-        (map['size']['y'] != null && map['size']['y'] is num));
+    assert(
+      (map['length'] != null && map['length'] is num) ||
+          ((map['size'] as Map<String, dynamic>)['x'] != null &&
+              (map['size'] as Map<String, dynamic>)['x'] is num),
+    );
+    assert(
+      (map['length'] != null && map['length'] is num) ||
+          ((map['size'] as Map<String, dynamic>)['y'] != null &&
+              (map['size'] as Map<String, dynamic>)['y'] is num),
+    );
 
     return RectModel(
       size: map['length'] != null
           ? Vector2(double.tryParse(map['length'].toString()) ?? 0, 60)
-          : Vector2(double.tryParse(map['size']['x'].toString()) ?? 0,
-              double.tryParse(map['size']['y'].toString()) ?? 0),
+          : Vector2(
+              double.tryParse(
+                    (map['size'] as Map<String, dynamic>)['x'].toString(),
+                  ) ??
+                  0,
+              double.tryParse(
+                    (map['size'] as Map<String, dynamic>)['y'].toString(),
+                  ) ??
+                  0,
+            ),
       closedSide: map['closedSide'] != null
           ? RectModelClosedSide.values.firstWhereOrNull(
-                  (element) => element.name == map['closedSide']) ??
+                (element) => element.name == map['closedSide'],
+              ) ??
               RectModelClosedSide.none
           : RectModelClosedSide.none,
       closedAdded: map['closedAdded'] != null
           ? SlotModelClosedAdded.values.firstWhere(
               (element) => element.name == map['closedAdded'],
-              orElse: () => SlotModelClosedAdded.none)
+              orElse: () => SlotModelClosedAdded.none,
+            )
           : SlotModelClosedAdded.none,
       sensor: map['sensor'] != null
           ? TrackModelSensor.values.firstWhereOrNull(
-                  (element) => element.name == map['sensor']) ??
+                (element) => element.name == map['sensor'],
+              ) ??
               TrackModelSensor.none
           : TrackModelSensor.none,
     );
   }
 
   @override
-  double get inputAngle => -Math.pi / 2;
+  double get inputAngle => -math.pi / 2;
 
   @override
-  double get outputAngle => -Math.pi / 2;
+  double get outputAngle => -math.pi / 2;
 
   @override
   List<Vector2> get masterPoints => [Vector2(0, 5), Vector2(size.x, 5)];
@@ -69,10 +87,10 @@ class RectModel extends SlotModel {
         Vector2(0, 45),
         Vector2(size.x, 45),
         Vector2(size.x, 5),
-        Vector2(0, 5)
+        Vector2(0, 5),
       ];
 
-  _generatePoint(int num) {
+  List<Vector2> _generatePoint(int num) {
     if (num == 1) {
       return [
         Vector2(0, 5),
@@ -94,10 +112,10 @@ class RectModel extends SlotModel {
 
   @override
   List<Vector2> get pointsAdded {
-    List<Vector2> _points = [];
+    var points = <Vector2>[];
 
-    double addedStart = 0;
-    double addedEnd = 0;
+    var addedStart = 0.0;
+    var addedEnd = 0.0;
 
     if ([SlotModelClosedAdded.start, SlotModelClosedAdded.both]
         .contains(closedAdded)) {
@@ -111,36 +129,36 @@ class RectModel extends SlotModel {
 
     switch (closedSide) {
       case RectModelClosedSide.none:
-        return _points;
+        return points;
       case RectModelClosedSide.left:
-        _points = [
+        points = [
           Vector2(0, 7),
           Vector2(addedStart, 0),
           Vector2(size.x - addedEnd, 0),
-          Vector2(size.x, 7)
+          Vector2(size.x, 7),
         ];
         break;
       case RectModelClosedSide.right:
-        _points = [
+        points = [
           Vector2(0, 43),
           Vector2(addedStart, 50),
           Vector2(size.x - addedEnd, 50),
-          Vector2(size.x, 43)
+          Vector2(size.x, 43),
         ];
         break;
     }
 
     if ([SlotModelClosedAdded.none, SlotModelClosedAdded.end]
         .contains(closedAdded)) {
-      _points.remove(_points.first);
+      points.remove(points.first);
     }
 
     if ([SlotModelClosedAdded.none, SlotModelClosedAdded.start]
         .contains(closedAdded)) {
-      _points.remove(_points.last);
+      points.remove(points.last);
     }
 
-    return _points;
+    return points;
   }
 
   @override

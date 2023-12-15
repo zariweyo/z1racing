@@ -1,11 +1,11 @@
-part of "../vk.dart";
+part of '../vk.dart';
 
 /// Virtual keyboard actions.
 enum VirtualKeyboardKeyAction {
-  Backspace,
-  Return,
-  Shift,
-  Space,
-  Symbols,
-  Alpha
+  backspace,
+  returned,
+  shift,
+  space,
+  symbols,
+  alpha
 }

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math' as Math;
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flame/cache.dart';
@@ -15,74 +15,76 @@ import 'package:z1racing/game/z1racing_game.dart';
 enum ButtonGameType { left, right, up, down }
 
 class ButtonsGame extends PositionComponent with DragCallbacks {
-  static Future<ButtonsGame> create(
-      {required game, required Images images}) async {
+  static Future<ButtonsGame> create({
+    required Z1RacingGame game,
+    required Images images,
+  }) async {
     return ButtonsGame(game: game, images: images);
   }
 
   StreamSubscription? _valueChangeSubscription;
-  var _streamChangeController = StreamController<ControlsData>.broadcast();
+  final _streamChangeController = StreamController<ControlsData>.broadcast();
   final _notifier = ValueNotifier<ControlsData>(ControlsData.zero());
   final Images images;
 
   ButtonsGame({required Z1RacingGame game, required this.images}) {
     position = Vector2(0, 100);
     size = game.size;
-    this._notifier.addListener(_listener);
+    _notifier.addListener(_listener);
   }
 
   Stream<ControlsData> get stream => _streamChangeController.stream;
 
-  _listener() {
+  void _listener() {
     _streamChangeController.add(_notifier.value);
   }
 
   void dispose() {
     _valueChangeSubscription?.cancel();
-    this._notifier.removeListener(_listener);
+    _notifier.removeListener(_listener);
   }
 
   final Map<ButtonGameType, Vector2> _currentPressed = {};
   final Map<int, ButtonGameType> _currentDragged = {};
   ButtonGameType? buttonCancelled;
 
-  _updatePressed() {
+  void _updatePressed() {
     const gearStep = 0.02;
     const movementStep = 0.06;
     _currentPressed.forEach((type, value) {
       switch (type) {
         case ButtonGameType.left:
-          if (_currentPressed[type]!.x > -1)
+          if (_currentPressed[type]!.x > -1) {
             _currentPressed[type]!.x -= gearStep;
+          }
           break;
         case ButtonGameType.right:
-          if (_currentPressed[type]!.x < 1)
+          if (_currentPressed[type]!.x < 1) {
             _currentPressed[type]!.x += gearStep;
+          }
           break;
         case ButtonGameType.down:
-          if (_currentPressed[type]!.y < 1)
+          if (_currentPressed[type]!.y < 1) {
             _currentPressed[type]!.y += movementStep;
+          }
           break;
         case ButtonGameType.up:
-          if (_currentPressed[type]!.y > -1)
+          if (_currentPressed[type]!.y > -1) {
             _currentPressed[type]!.y -= movementStep;
+          }
           break;
       }
     });
   }
 
-  _onPressed(ButtonGameType type) {
+  void _onPressed(ButtonGameType type) {
     if (_currentPressed[type] == null) {
       _currentPressed[type] = Vector2.zero();
     }
   }
 
-  _onReleased(ButtonGameType type) {
+  void _onReleased(ButtonGameType type) {
     _currentPressed.remove(type);
-  }
-
-  _onCancelled(ButtonGameType type) {
-    buttonCancelled = type;
   }
 
   @override
@@ -125,47 +127,53 @@ class ButtonsGame extends PositionComponent with DragCallbacks {
       ? Vector2.zero()
       : _currentPressed.values.reduce((value, element) => value + element);
 
-  HudButtonComponent _createButton(
-      {required Image image,
-      required ButtonGameType type,
-      double radius = 40,
-      EdgeInsets? margin}) {
+  HudButtonComponent _createButton({
+    required Image image,
+    required ButtonGameType type,
+    double radius = 40,
+    EdgeInsets? margin,
+  }) {
     return HudButtonComponent(
       button: ActionButton(
-          image: image,
-          radius: radius,
-          rotate: type == ButtonGameType.left ? 0 : Math.pi / 2),
+        image: image,
+        radius: radius,
+        rotate: type == ButtonGameType.left ? 0 : math.pi / 2,
+      ),
       buttonDown: ActionButton(image: image, radius: radius - 10, move: 10),
       margin: margin,
       onPressed: () => _onPressed(type),
       onReleased: () => _onReleased(type),
-      onCancelled: () => _onCancelled(type),
+      onCancelled: () => buttonCancelled = type,
     );
   }
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    final Image image = await images.load('arrow.png');
+    final image = await images.load('arrow.png');
 
     final bottonLeft = _createButton(
-        image: image,
-        margin: const EdgeInsets.only(left: 10, bottom: 120),
-        radius: 60,
-        type: ButtonGameType.left);
+      image: image,
+      margin: const EdgeInsets.only(left: 10, bottom: 120),
+      radius: 60,
+      type: ButtonGameType.left,
+    );
     final bottonRight = _createButton(
-        image: image,
-        margin: const EdgeInsets.only(left: 170, bottom: 120),
-        radius: 60,
-        type: ButtonGameType.right);
+      image: image,
+      margin: const EdgeInsets.only(left: 170, bottom: 120),
+      radius: 60,
+      type: ButtonGameType.right,
+    );
     final bottonUp = _createButton(
-        image: image,
-        margin: const EdgeInsets.only(right: 10, bottom: 270),
-        type: ButtonGameType.up);
+      image: image,
+      margin: const EdgeInsets.only(right: 10, bottom: 270),
+      type: ButtonGameType.up,
+    );
     final bottonDown = _createButton(
-        image: image,
-        margin: const EdgeInsets.only(right: 10, bottom: 120),
-        type: ButtonGameType.down);
+      image: image,
+      margin: const EdgeInsets.only(right: 10, bottom: 120),
+      type: ButtonGameType.down,
+    );
 
     add(bottonLeft);
     add(bottonRight);
@@ -177,7 +185,7 @@ class ButtonsGame extends PositionComponent with DragCallbacks {
   void update(double dt) {
     super.update(dt);
     _updatePressed();
-    ControlsData current =
+    final current =
         ControlsData(direction: direction, delta: delta, size: Vector2(2, 2));
     if (_notifier.value.hasChange(current)) {
       _notifier.value = current.clone();
@@ -188,30 +196,31 @@ class ButtonsGame extends PositionComponent with DragCallbacks {
 class ActionButton extends PositionComponent {
   final Image image;
   final double rotate;
-  ActionButton(
-      {required this.image,
-      double radius = 50,
-      double move = 0,
-      this.rotate = 0})
-      : _radius = radius,
+  ActionButton({
+    required this.image,
+    double radius = 50,
+    double move = 0,
+    this.rotate = 0,
+  })  : _radius = radius,
         _paint = Paint()
-          ..color = Color(0x5580C080)
+          ..color = const Color(0x5580C080)
           ..style = PaintingStyle.fill
           ..strokeWidth = 5,
         super(
-            position: Vector2(move, move),
-            size: Vector2.all(2 * radius),
-            anchor: Anchor.center);
+          position: Vector2(move, move),
+          size: Vector2.all(2 * radius),
+          anchor: Anchor.center,
+        );
 
-  double _radius;
-  Paint _paint;
+  final double _radius;
+  final Paint _paint;
 
   late final RRect _renderRect = RRect.fromRectAndCorners(
     Rect.fromCircle(center: Offset(_radius * 2, _radius * 2), radius: _radius),
-    topLeft: Radius.circular(20),
-    topRight: Radius.circular(20),
-    bottomLeft: Radius.circular(20),
-    bottomRight: Radius.circular(20),
+    topLeft: const Radius.circular(20),
+    topRight: const Radius.circular(20),
+    bottomLeft: const Radius.circular(20),
+    bottomRight: const Radius.circular(20),
   );
 
   @override

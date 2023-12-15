@@ -1,14 +1,14 @@
 import 'package:flame/input.dart';
 
-class ControlsData implements Comparable {
+class ControlsData implements Comparable<ControlsData> {
   JoystickDirection _direction = JoystickDirection.idle;
   Vector2 _delta = Vector2.zero();
   final Vector2 size;
-  ControlsData(
-      {required JoystickDirection direction,
-      required Vector2 delta,
-      required this.size}) {
-    assert(size.x > 0 && size.y > 0);
+  ControlsData({
+    required JoystickDirection direction,
+    required Vector2 delta,
+    required this.size,
+  }) {
     _direction = direction;
     _delta = Vector2(delta.x / (size.x / 2), delta.y / (size.y / 2));
   }
@@ -28,13 +28,14 @@ class ControlsData implements Comparable {
 
   factory ControlsData.zero() {
     return ControlsData(
-        direction: JoystickDirection.idle,
-        delta: Vector2.zero(),
-        size: Vector2(1, 1));
+      direction: JoystickDirection.idle,
+      delta: Vector2.zero(),
+      size: Vector2(1, 1),
+    );
   }
 
   bool hasChange(ControlsData other) {
-    return this.compareTo(other) != 0;
+    return compareTo(other) != 0;
   }
 
   bool hasHorizontal() {
@@ -46,18 +47,21 @@ class ControlsData implements Comparable {
   }
 
   @override
-  int compareTo(other) {
+  int compareTo(ControlsData other) {
     return delta.y.compareTo(other.delta.y) * 1000 +
         delta.x.compareTo(other.delta.x);
   }
 
   ControlsData clone() {
     return ControlsData(
-        direction: direction, delta: delta.clone(), size: Vector2(2, 2));
+      direction: direction,
+      delta: delta.clone(),
+      size: Vector2(2, 2),
+    );
   }
 
   @override
   String toString() {
-    return "${direction.name} ${delta}";
+    return '${direction.name} $delta';
   }
 }

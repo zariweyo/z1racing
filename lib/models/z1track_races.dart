@@ -14,7 +14,7 @@ class Z1TrackRaces {
   }
 
   String get fisrtPositionHash =>
-      races.isNotEmpty ? races.first.positionHash : "";
+      races.isNotEmpty ? races.first.positionHash : '';
   String get lastPositionHash =>
-      races.isNotEmpty ? races.last.positionHash : "";
+      races.isNotEmpty ? races.last.positionHash : '';
 }

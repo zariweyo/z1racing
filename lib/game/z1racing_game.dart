@@ -6,6 +6,7 @@ import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/input.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
@@ -15,10 +16,9 @@ import 'package:z1racing/game/controls/models/jcontrols_data.dart';
 import 'package:z1racing/game/panel/components/countdown_text.dart';
 import 'package:z1racing/game/panel/components/lap_text.dart';
 import 'package:z1racing/game/panel/components/sublap_list.dart';
+import 'package:z1racing/game/track/track.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
-import 'package:z1racing/game/track/track.dart';
-import 'package:flame_audio/flame_audio.dart';
 
 final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
   {
@@ -61,7 +61,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   bool isGameOver = true;
   Car? winner;
   late CountdownText countdownText;
-  GameRepository _gameRepository = GameRepositoryImpl();
+  final GameRepository _gameRepository = GameRepositoryImpl();
 
   @override
   Future<void> onLoad() async {
@@ -70,11 +70,13 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     cameraWorld = World();
     add(cameraWorld);
 
-    cameraWorld.addAll(Track(
-            position: Vector2(200, 200),
-            size: 30,
-            z1track: GameRepositoryImpl().currentTrack)
-        .getComponents());
+    cameraWorld.addAll(
+      Track(
+        position: Vector2(200, 200),
+        size: 30,
+        z1track: GameRepositoryImpl().currentTrack,
+      ).getComponents(),
+    );
 
     countdownText = CountdownText();
 
@@ -83,20 +85,20 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     openMenu();
   }
 
-  void startBgmMusic() async {
+  Future<void> startBgmMusic() async {
     try {
       if (!FlameAudio.bgm.isPlaying) {
         FlameAudio.bgm.initialize();
         FlameAudio.bgm.play('background_sound1.mp3');
       }
-    } catch (ex) {
+    } on Exception catch (_) {
       //
     }
   }
 
   void openMenu() {
     FlameAudio.bgm.resume();
-    Vector2 trackSize = GameRepositoryImpl().trackSize;
+    final trackSize = GameRepositoryImpl().trackSize;
     overlays.add('menu');
     overlays.add('timeList');
     overlays.remove('game_control');
@@ -226,8 +228,12 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       }
     });
 
-    add(FpsTextComponent(
-        position: Vector2(size.x - 124, 20), scale: Vector2.all(0.8)));
+    add(
+      FpsTextComponent(
+        position: Vector2(size.x - 124, 20),
+        scale: Vector2.all(0.8),
+      ),
+    );
 
     pressedKeySets = List.generate(numberOfPlayers, (_) => {});
     activeKeyMaps = List.generate(numberOfPlayers, (i) => playersKeys[i]);

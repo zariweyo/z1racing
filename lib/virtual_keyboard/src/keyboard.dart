@@ -1,4 +1,4 @@
-part of "../vk.dart";
+part of '../vk.dart';
 
 /// The default keyboard height. Can we overriden by passing
 ///  `height` argument to `VirtualKeyboard` widget.
@@ -6,7 +6,7 @@ const double _virtualKeyboardDefaultHeight = 300;
 
 const int _virtualKeyboardBackspaceEventPerioud = 250;
 
-enum VirtualKeyboardType { Numeric, Alphanumeric, Symbolic }
+enum VirtualKeyboardType { numeric, alphanumeric, symbolic }
 
 /// Virtual Keyboard widget.
 class VirtualKeyboard extends StatefulWidget {
@@ -33,17 +33,17 @@ class VirtualKeyboard extends StatefulWidget {
 
   final Function(String)? onSubmitted;
 
-  VirtualKeyboard(
-      {Key? key,
-      required this.type,
-      required this.textController,
-      this.builder,
-      this.height = _virtualKeyboardDefaultHeight,
-      this.textColor = Colors.black,
-      this.fontSize = 20,
-      this.alwaysCaps = false,
-      this.onSubmitted})
-      : super(key: key);
+  const VirtualKeyboard({
+    required this.type,
+    required this.textController,
+    super.key,
+    this.builder,
+    this.height = _virtualKeyboardDefaultHeight,
+    this.textColor = Colors.black,
+    this.fontSize = 20,
+    this.alwaysCaps = false,
+    this.onSubmitted,
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -92,11 +92,11 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   }
 
   void textControllerEvent() {
-    if (textController.selection.toString() != "TextSelection.invalid") {
+    if (textController.selection.toString() != 'TextSelection.invalid') {
       cursorPosition = textController.selection;
     } else {
       if (cursorPosition == null) {
-        cursorPosition = TextSelection(baseOffset: 0, extentOffset: 0);
+        cursorPosition = const TextSelection(baseOffset: 0, extentOffset: 0);
       } else {}
     }
   }
@@ -126,25 +126,25 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
     width = MediaQuery.of(context).size.width;
 
     switch (type) {
-      case VirtualKeyboardType.Numeric:
+      case VirtualKeyboardType.numeric:
         return _keyLayout(numericLayout);
-      case VirtualKeyboardType.Alphanumeric:
+      case VirtualKeyboardType.alphanumeric:
         return _keyLayout(usLayout);
-      case VirtualKeyboardType.Symbolic:
+      case VirtualKeyboardType.symbolic:
         return _keyLayout(symbolLayout);
       default:
-        throw new Error();
+        throw Error();
     }
   }
 
   Widget _keyLayout(List<List<VirtualKeyboardKey>> layout) {
     // arbritrary
     keySpacing = 8.0;
-    double totalSpacing = keySpacing * (layout.length + 1);
+    final totalSpacing = keySpacing * (layout.length + 1);
     keyHeight = (height - totalSpacing) / layout.length;
 
-    int maxLengthRow = 0;
-    for (var layoutRow in layout) {
+    var maxLengthRow = 0;
+    for (final layoutRow in layout) {
       if (layoutRow.length > maxLengthRow) {
         maxLengthRow = layoutRow.length;
       }
@@ -157,7 +157,6 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
       width: width,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: _rows(layout),
       ),
     );
@@ -166,31 +165,32 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   /// Returns the rows for keyboard.
   List<Widget> _rows(List<List<VirtualKeyboardKey>> layout) {
     // Generate keyboard row.
-    List<Widget> rows = [];
-    for (var rowEntry in layout.asMap().entries) {
-      int rowNum = rowEntry.key;
-      List<VirtualKeyboardKey> rowKeys = rowEntry.value;
+    final rows = <Widget>[];
+    for (final rowEntry in layout.asMap().entries) {
+      final rowNum = rowEntry.key;
+      final rowKeys = rowEntry.value;
 
-      List<Widget> cols = [];
-      for (var colEntry in rowKeys.asMap().entries) {
-        int colNum = colEntry.key;
-        VirtualKeyboardKey virtualKeyboardKey = colEntry.value;
+      final cols = <Widget>[];
+      for (final colEntry in rowKeys.asMap().entries) {
+        final colNum = colEntry.key;
+        final virtualKeyboardKey = colEntry.value;
         Widget keyWidget;
 
         if (builder == null) {
           // Check the key type.
           switch (virtualKeyboardKey.keyType) {
-            case VirtualKeyboardKeyType.String:
+            case VirtualKeyboardKeyType.string:
               // Draw String key.
               keyWidget = _keyboardDefaultKey(virtualKeyboardKey);
               break;
-            case VirtualKeyboardKeyType.Action:
+            case VirtualKeyboardKeyType.action:
               // Draw action key.
               keyWidget = _keyboardDefaultActionKey(virtualKeyboardKey);
               break;
           }
         } else {
-          // Call the builder function, so the user can specify custom UI for keys.
+          // Call the builder function,
+          // so the user can specify custom UI for keys.
           keyWidget = builder!(context, virtualKeyboardKey);
 
           throw 'builder function must return Widget';
@@ -199,26 +199,33 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
 
         // space between keys
         if (colNum != rowKeys.length - 1) {
-          cols.add(SizedBox(
-            width: keySpacing,
-          ));
+          cols.add(
+            SizedBox(
+              width: keySpacing,
+            ),
+          );
         }
       }
-      rows.add(Material(
+      rows.add(
+        Material(
           color: Colors.transparent,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxRowWidth),
             child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                // Generate keboard keys
-                children: cols),
-          )));
+              mainAxisAlignment: MainAxisAlignment.center,
+              // Generate keboard keys
+              children: cols,
+            ),
+          ),
+        ),
+      );
       // space between rows
       if (rowNum != layout.length - 1) {
-        rows.add(SizedBox(
-          height: keySpacing,
-        ));
+        rows.add(
+          SizedBox(
+            height: keySpacing,
+          ),
+        );
       }
     }
     return rows;
@@ -230,81 +237,94 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
   /// Creates default UI element for keyboard Key.
   Widget _keyboardDefaultKey(VirtualKeyboardKey key) {
     return Material(
-        color: Colors.grey,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-        child: InkWell(
-          highlightColor: Colors.blue,
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-          onTap: () {
-            _onKeyPress(key);
-          },
-          child: Container(
-            width: keyHeight,
-            height: keyHeight,
-            child: Center(
-                child: Text(
+      color: Colors.grey,
+      borderRadius: const BorderRadius.all(Radius.circular(10)),
+      child: InkWell(
+        highlightColor: Colors.blue,
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        onTap: () {
+          _onKeyPress(key);
+        },
+        child: Container(
+          width: keyHeight,
+          height: keyHeight,
+          child: Center(
+            child: Text(
               alwaysCaps
                   ? key.capsText!
                   : (isShiftEnabled ? key.capsText! : key.text!),
               style: textStyle,
-            )),
+            ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   void _onKeyPress(VirtualKeyboardKey key) {
-    if (key.keyType == VirtualKeyboardKeyType.String) {
-      String text = textController.text;
-      if (cursorPosition == null) textControllerEvent();
-      String _textBefore = text;
-      String _textAfter = "";
+    if (key.keyType == VirtualKeyboardKeyType.string) {
+      final text = textController.text;
+      if (cursorPosition == null) {
+        textControllerEvent();
+      }
+      var textBefore0 = text;
+      var textAfter0 = '';
       if (cursorPosition!.start <= text.length) {
-        _textBefore = cursorPosition!.textBefore(text);
-        _textAfter = cursorPosition!.textAfter(text);
+        textBefore0 = cursorPosition!.textBefore(text);
+        textAfter0 = cursorPosition!.textAfter(text);
       }
 
-      textController.text = _textBefore +
+      textController.text = textBefore0 +
           (isShiftEnabled ? key.capsText! : key.text!) +
-          _textAfter;
+          textAfter0;
       textController.selection = TextSelection(
-          baseOffset: _textBefore.length + 1,
-          extentOffset: _textBefore.length + 1);
-    } else if (key.keyType == VirtualKeyboardKeyType.Action) {
+        baseOffset: textBefore0.length + 1,
+        extentOffset: textBefore0.length + 1,
+      );
+    } else if (key.keyType == VirtualKeyboardKeyType.action) {
       switch (key.action) {
-        case VirtualKeyboardKeyAction.Backspace:
-          String text = textController.text;
-          if (cursorPosition == null) textControllerEvent();
-          if (textController.text.length == 0) return;
-          if (cursorPosition!.start == 0) return;
-
-          String _textBefore = text;
-          String _textAfter = "";
-          if (cursorPosition!.start <= text.length) {
-            _textBefore = text.substring(0, cursorPosition!.start - 1);
-            _textAfter = text.substring(cursorPosition!.start);
+        case VirtualKeyboardKeyAction.backspace:
+          final text = textController.text;
+          if (cursorPosition == null) {
+            textControllerEvent();
+          }
+          if (textController.text.isEmpty) {
+            return;
+          }
+          if (cursorPosition!.start == 0) {
+            return;
           }
 
-          textController.text = _textBefore + _textAfter;
+          var textBefore = text;
+          var textAfter = '';
+          if (cursorPosition!.start <= text.length) {
+            textBefore = text.substring(0, cursorPosition!.start - 1);
+            textAfter = text.substring(cursorPosition!.start);
+          }
+
+          textController.text = textBefore + textAfter;
           textController.selection = TextSelection(
-              baseOffset: _textBefore.length, extentOffset: _textBefore.length);
+            baseOffset: textBefore.length,
+            extentOffset: textBefore.length,
+          );
           break;
 
-        case VirtualKeyboardKeyAction.Return:
+        case VirtualKeyboardKeyAction.returned:
           widget.onSubmitted?.call(textController.text);
           break;
-        case VirtualKeyboardKeyAction.Space:
+        case VirtualKeyboardKeyAction.space:
           textController.text += key.text!;
           break;
-        case VirtualKeyboardKeyAction.Shift:
+        case VirtualKeyboardKeyAction.shift:
           break;
-        case VirtualKeyboardKeyAction.Alpha:
+        case VirtualKeyboardKeyAction.alpha:
           setState(() {
-            type = VirtualKeyboardType.Alphanumeric;
+            type = VirtualKeyboardType.alphanumeric;
           });
           break;
-        case VirtualKeyboardKeyAction.Symbols:
+        case VirtualKeyboardKeyAction.symbols:
           setState(() {
-            type = VirtualKeyboardType.Symbolic;
+            type = VirtualKeyboardType.symbolic;
           });
           break;
         default:
@@ -319,63 +339,67 @@ class _VirtualKeyboardState extends State<VirtualKeyboard> {
 
     // Switch the action type to build action Key widget.
     switch (key.action!) {
-      case VirtualKeyboardKeyAction.Backspace:
+      case VirtualKeyboardKeyAction.backspace:
         actionKey = GestureDetector(
-            onLongPress: () {
-              longPress = true;
-              // Start sending backspace key events while longPress is true
-              Timer.periodic(
-                  Duration(milliseconds: _virtualKeyboardBackspaceEventPerioud),
-                  (timer) {
-                if (longPress) {
-                  _onKeyPress(key);
-                } else {
-                  // Cancel timer.
-                  timer.cancel();
-                }
-              });
-            },
-            onLongPressUp: () {
-              // Cancel event loop
-              longPress = false;
-            },
-            child: Container(
-              height: double.infinity,
-              width: double.infinity,
-              child: Icon(
-                Icons.backspace,
-                color: textColor,
-              ),
-            ));
+          onLongPress: () {
+            longPress = true;
+            // Start sending backspace key events while longPress is true
+            Timer.periodic(
+                const Duration(
+                  milliseconds: _virtualKeyboardBackspaceEventPerioud,
+                ), (timer) {
+              if (longPress) {
+                _onKeyPress(key);
+              } else {
+                // Cancel timer.
+                timer.cancel();
+              }
+            });
+          },
+          onLongPressUp: () {
+            // Cancel event loop
+            longPress = false;
+          },
+          child: Container(
+            height: double.infinity,
+            width: double.infinity,
+            child: Icon(
+              Icons.backspace,
+              color: textColor,
+            ),
+          ),
+        );
         break;
-      case VirtualKeyboardKeyAction.Shift:
-        actionKey = Icon(Icons.arrow_upward,
-            color: isShiftEnabled ? Colors.lime : textColor);
+      case VirtualKeyboardKeyAction.shift:
+        actionKey = Icon(
+          Icons.arrow_upward,
+          color: isShiftEnabled ? Colors.lime : textColor,
+        );
         break;
-      case VirtualKeyboardKeyAction.Space:
+      case VirtualKeyboardKeyAction.space:
         actionKey = Icon(Icons.space_bar, color: textColor);
         break;
-      case VirtualKeyboardKeyAction.Return:
+      case VirtualKeyboardKeyAction.returned:
         actionKey = Icon(
           Icons.keyboard_return,
           color: textColor,
         );
         break;
-      case VirtualKeyboardKeyAction.Symbols:
+      case VirtualKeyboardKeyAction.symbols:
         actionKey = Icon(Icons.emoji_symbols, color: textColor);
         break;
-      case VirtualKeyboardKeyAction.Alpha:
+      case VirtualKeyboardKeyAction.alpha:
         actionKey = Icon(Icons.sort_by_alpha, color: textColor);
         break;
     }
-    var finalKey = Material(
+    final finalKey = Material(
       color: Colors.grey,
-      borderRadius: BorderRadius.all(Radius.circular(10)),
+      borderRadius: const BorderRadius.all(Radius.circular(10)),
       child: InkWell(
-        borderRadius: BorderRadius.all(Radius.circular(10)),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
         highlightColor: Colors.blue,
         onTap: () {
-          if (key.action == VirtualKeyboardKeyAction.Shift) {
+          if (key.action == VirtualKeyboardKeyAction.shift) {
             if (!alwaysCaps) {
               setState(() {
                 isShiftEnabled = !isShiftEnabled;

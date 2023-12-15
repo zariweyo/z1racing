@@ -20,7 +20,7 @@ class Trail extends Component with HasPaint {
   @override
   Future<void> onLoad() async {
     paint
-      ..color = (Color.fromARGB(40, 144, 121, 121))
+      ..color = (const Color.fromARGB(40, 144, 121, 121))
       ..strokeWidth = 2.0;
   }
 
