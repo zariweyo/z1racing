@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -37,6 +38,8 @@ class FirebaseAuthRepositoryImpl implements FirebaseAuthRepository {
       await FirebaseAuth.instance.currentUser
           ?.updateDisplayName('USER_${Random().nextInt(100000000)}');
     }
+
+    FirebaseAnalytics.instance.setUserId(id: currentUser?.uid ?? '--');
 
     _packageInfo = await PackageInfo.fromPlatform();
   }

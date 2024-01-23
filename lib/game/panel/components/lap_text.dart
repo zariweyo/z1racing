@@ -42,8 +42,10 @@ class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
     add(lapCounter);
     void updateLapText() {
       if (!GameRepositoryImpl().raceIsEnd()) {
-        final prefix = lapNotifier.value < 10 ? '0' : '';
-        lapCounter.text = '$prefix${lapNotifier.value}';
+        final lap =
+            GameRepositoryImpl().currentTrack.numLaps - lapNotifier.value + 1;
+        final prefix = lap < 10 ? '0' : '';
+        lapCounter.text = '$prefix$lap';
       } else {
         lapCounter.text = 'DONE';
       }

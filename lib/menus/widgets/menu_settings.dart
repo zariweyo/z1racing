@@ -1,3 +1,4 @@
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/base/components/common_textfield.dart';
@@ -5,6 +6,7 @@ import 'package:z1racing/base/exceptions/duplicated_name_exception.dart';
 import 'package:z1racing/repositories/firebase_auth_repository.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
+import 'package:z1racing/repositories/preferences_repository.dart';
 
 class MenuSettings extends StatefulWidget {
   const MenuSettings({super.key});
@@ -21,11 +23,13 @@ class _MenuSettingsState extends State<MenuSettings> {
   late String displayName;
   bool loading = false;
   String? errorText;
+  bool enableMusic = false;
 
   @override
   void initState() {
     super.initState();
     displayName = FirebaseAuthRepository.instance.currentUser?.name ?? '';
+    enableMusic = PreferencesRepository.instance.getEnableMusic();
   }
 
   Future<void> _nameUpdated(String newName) async {
@@ -146,6 +150,35 @@ class _MenuSettingsState extends State<MenuSettings> {
     );
   }
 
+  Widget _music() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      child: Row(
+        children: [
+          Text(
+            AppLocalizations.of(context)!.enabledMusic,
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.left,
+          ),
+          Switch(
+            value: enableMusic,
+            onChanged: (newVal) {
+              PreferencesRepository.instance.setEnableMusic(enable: newVal);
+              if (newVal) {
+                FlameAudio.bgm.resume();
+              } else {
+                FlameAudio.bgm.stop();
+              }
+              setState(() {
+                enableMusic = newVal;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -159,7 +192,12 @@ class _MenuSettingsState extends State<MenuSettings> {
             _backButton(context),
             Expanded(
               child: ListView(
-                children: [_textfield(), _errorWidget(), _loadingWidget()],
+                children: [
+                  _textfield(),
+                  _errorWidget(),
+                  _loadingWidget(),
+                  _music(),
+                ],
               ),
             ),
           ],

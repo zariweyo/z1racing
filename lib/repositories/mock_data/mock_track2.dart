@@ -80,6 +80,8 @@ class MockTrack2 extends MockTrack {
       'numLaps': 3,
       'initialDatetime': '2023-11-20T12:00:00Z',
       'version': 1,
+      'order': 2,
+      'enabled': false,
     });
   }
 }

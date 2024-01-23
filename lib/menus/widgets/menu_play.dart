@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/ads/controller/admob_controller.dart';
+import 'package:z1racing/base/components/button_action.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class MenuPlay extends StatefulWidget {
   final Function() onPressStart;
@@ -21,10 +22,12 @@ class _MenuPlayState extends State<MenuPlay> {
   int z1Coins = 0;
   bool loading = false;
   StreamSubscription<Z1User?>? streamSubscription;
+  late bool enabled;
 
   @override
   void initState() {
     super.initState();
+    enabled = GameRepositoryImpl().currentTrack.enabled;
     z1Coins = FirebaseFirestoreRepository.instance.currentUser?.z1Coins ?? 0;
     streamSubscription =
         FirebaseFirestoreRepository.instance.z1UserStream.listen((z1User) {
@@ -37,6 +40,14 @@ class _MenuPlayState extends State<MenuPlay> {
   }
 
   @override
+  void didUpdateWidget(covariant MenuPlay oldWidget) {
+    setState(() {
+      enabled = GameRepositoryImpl().currentTrack.enabled;
+    });
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   void dispose() {
     streamSubscription?.cancel();
     super.dispose();
@@ -45,22 +56,23 @@ class _MenuPlayState extends State<MenuPlay> {
   Widget text() {
     final textTheme = Theme.of(context).textTheme;
     if (!canPlay) {
-      return Text.rich(
-        TextSpan(
-          text: '',
-          children: <InlineSpan>[
-            const WidgetSpan(
-              child: Icon(
-                Icons.video_library_outlined,
-                size: 30,
-                color: Colors.red,
-              ),
+      return Container(
+        width: 110,
+        child: Row(
+          children: [
+            const Icon(
+              Icons.monetization_on,
+              size: 30,
+              color: Colors.yellow,
             ),
-            TextSpan(
-              text: ' ${AppLocalizations.of(context)!.notEnoghtCoinsToPlay}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 20,
-                    color: Colors.blue,
+            const SizedBox(
+              width: 5,
+            ),
+            Text(
+              AppLocalizations.of(context)!.play.toUpperCase(),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.bold,
                   ),
             ),
           ],
@@ -68,8 +80,9 @@ class _MenuPlayState extends State<MenuPlay> {
       );
     }
     return Text(
-      AppLocalizations.of(context)!.play,
-      style: textTheme.bodyLarge?.copyWith(color: Colors.white),
+      AppLocalizations.of(context)!.play.toUpperCase(),
+      style: textTheme.bodyLarge
+          ?.copyWith(color: Colors.pink.shade50, fontWeight: FontWeight.bold),
     );
   }
 
@@ -97,6 +110,19 @@ class _MenuPlayState extends State<MenuPlay> {
 
   @override
   Widget build(BuildContext context) {
+    if (!enabled) {
+      return Container(
+        padding: const EdgeInsets.all(8),
+        child: Text(
+          ' ${AppLocalizations.of(context)!.closed.toUpperCase()}',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 25,
+                color: Colors.blue,
+              ),
+        ),
+      );
+    }
+
     if (loading) {
       return Container(
         padding: const EdgeInsets.all(8),
@@ -106,20 +132,8 @@ class _MenuPlayState extends State<MenuPlay> {
       );
     }
 
-    return ElevatedButton(
-      autofocus: true,
-      focusNode: FocusNode(
-        onKey: (node, event) {
-          switch (event.logicalKey) {
-            case LogicalKeyboardKey.enter:
-              node.unfocus();
-              widget.onPressStart();
-              break;
-          }
-          return KeyEventResult.ignored;
-        },
-      ),
-      onPressed: onPress,
+    return ButtonActions(
+      onTap: onPress,
       child: text(),
     );
   }

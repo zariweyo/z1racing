@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flame/game.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
@@ -14,6 +15,7 @@ import 'package:z1racing/models/z1version.dart';
 import 'package:z1racing/repositories/firebase_auth_repository.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
+import 'package:z1racing/repositories/preferences_repository.dart';
 
 class Z1RacingWidget extends StatefulWidget {
   const Z1RacingWidget({super.key});
@@ -82,7 +84,11 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     try {
       if (!FlameAudio.bgm.isPlaying) {
         FlameAudio.bgm.initialize();
-        FlameAudio.bgm.play('race_background_4.mp3');
+        await FlameAudio.bgm.play('race_background_4.mp3');
+        final audioEnabled = PreferencesRepository.instance.getEnableMusic();
+        if (!audioEnabled) {
+          _stopAudio();
+        }
       }
     } on Exception catch (_) {
       //
@@ -101,21 +107,34 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     });
   }
 
+  Future<void> _resumeAudio() async {
+    final audioEnabled = PreferencesRepository.instance.getEnableMusic();
+    if (audioEnabled) {
+      await FlameAudio.bgm.play('race_background_4.mp3');
+      FlameAudio.bgm.resume();
+    }
+  }
+
+  void _stopAudio() {
+    FlameAudio.bgm.stop();
+  }
+
   Widget _getHome() {
+    FirebaseAnalytics.instance.setCurrentScreen(screenName: stateHome.name);
     switch (stateHome) {
       case _Z1RacingWidgetStateHome.home:
-        FlameAudio.bgm.resume();
+        _resumeAudio();
         return Z1RacingHome(
           onPressStart: onPressStart,
         );
       case _Z1RacingWidgetStateHome.race:
-        FlameAudio.bgm.stop();
+        _stopAudio();
         return gameWidget();
       case _Z1RacingWidgetStateHome.loading:
-        FlameAudio.bgm.stop();
+        _stopAudio();
         return const LoadingWidget();
       case _Z1RacingWidgetStateHome.update:
-        FlameAudio.bgm.stop();
+        _stopAudio();
         return const AlertUpdateForced();
     }
   }

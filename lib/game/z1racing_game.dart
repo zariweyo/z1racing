@@ -10,6 +10,7 @@ import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
 import 'package:z1racing/game/car/components/car.dart';
+import 'package:z1racing/game/car/components/shadow_car.dart';
 import 'package:z1racing/game/controls/components/buttons_game.dart';
 import 'package:z1racing/game/controls/controllers/game_music.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
@@ -70,6 +71,8 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         position: Vector2(200, 200),
         size: 30,
         z1track: GameRepositoryImpl().currentTrack,
+        floorColor: const Color.fromARGB(255, 43, 67, 70),
+        ignoreObjects: false,
       ).getComponents(),
     );
 
@@ -151,6 +154,10 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
 
     addAll(cameras);
 
+    final shadowCar = ShadowCar(images: images);
+
+    cameraWorld.add(shadowCar);
+
     for (var i = 0; i < numberOfPlayers; i++) {
       final car =
           Car(images: images, playerNumber: i, cameraComponent: cameras[i]);
@@ -216,6 +223,10 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     }
     if (countdownText.onFinish.value) {
       _gameRepository.addTime(dt);
+      _gameRepository.addNewShadowPosition(
+        cars.first.body.position,
+        cars.first.body.angle,
+      );
     }
   }
 

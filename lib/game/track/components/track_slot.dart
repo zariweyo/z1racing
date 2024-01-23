@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:z1racing/game/track/models/slot_model.dart';
+import 'package:z1racing/models/slot/slot_model.dart';
 
 class TrackSlot extends BodyComponent<Forge2DGame> {
   TrackSlot({
@@ -10,10 +10,12 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
     required this.position,
     required this.angle,
     this.backgroundColor = const Color.fromARGB(0, 0, 0, 0),
+    this.floorColor = const Color.fromARGB(255, 74, 59, 74),
   });
 
   final Color backgroundColor;
   final SlotModel slotModel;
+  final Color floorColor;
 
   late final Image _image;
 
@@ -36,13 +38,11 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
 
     paint.style = PaintingStyle.fill;
     paint.strokeWidth = 7.0;
-    paint.color = ColorExtension.fromRGBHexString('#cccccc');
-    paint.color = paint.color.darken(0.4);
 
     final path = Path();
 
     paint.style = PaintingStyle.fill;
-    paint.color = ColorExtension.fromRGBHexString('#883438');
+    paint.color = floorColor;
     paint.color = paint.color.darken(0.4);
 
     slotModel.inside.forEachIndexed((index, element) {
@@ -58,7 +58,7 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
 
     path.reset();
     paint.style = PaintingStyle.fill;
-    paint.color = ColorExtension.fromRGBHexString('#cccccc');
+    paint.color = const Color.fromARGB(255, 246, 67, 234);
     paint.color = paint.color.darken(0.4);
 
     slotModel.points1.forEachIndexed((index, element) {

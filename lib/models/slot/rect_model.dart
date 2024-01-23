@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:collection/collection.dart';
 import 'package:vector_math/vector_math_64.dart';
-import 'package:z1racing/game/track/models/slot_model.dart';
+import 'package:z1racing/models/slot/slot_model.dart';
 
 enum RectModelClosedSide { none, left, right }
 

@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/models/z1user_race.dart';
@@ -13,6 +15,7 @@ import 'package:z1racing/repositories/track_repository_impl.dart';
 
 class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   List<Z1UserRace> dataMockUserRaces = [];
+  List<Z1CarShadow> dataMockCarShadows = [];
   final _currentUserNotifier = ValueNotifier<Z1User?>(null);
   final _streamChangeController = StreamController<Z1User?>.broadcast();
 
@@ -42,17 +45,17 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   }
 
   @override
-  Future<Z1Track?> getTrackByActivedDate({
-    required DateTime dateTime,
+  Future<Z1Track?> getTrackByOrder({
+    required int order,
     TrackRequestDirection direction = TrackRequestDirection.next,
   }) async {
     final tracks = (await DataRepositoryMock.getTracks())
-        .sorted((a, b) => a.initialDatetime.compareTo(b.initialDatetime));
+        .sorted((a, b) => a.order.compareTo(b.order));
     if (tracks.isEmpty) {
       return null;
     }
     var index = tracks.indexWhere(
-      (track) => track.initialDatetime.difference(dateTime).inSeconds >= 0,
+      (track) => track.order >= order,
     );
     if (direction == TrackRequestDirection.previous) {
       index--;
@@ -99,6 +102,13 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   }
 
   @override
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object?>? parameters,
+    AnalyticsCallOptions? callOptions,
+  }) async {}
+
+  @override
   Future<List<Z1UserRace>> getUserRacesByTime({
     required String positionHash,
     required String trackId,
@@ -110,13 +120,15 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
         .sorted((a, b) => a.positionHash.compareTo(b.positionHash));
     if (descending) {
       list = list.reversed
-          .where((element) => element.positionHash.compareTo(positionHash) <= 0)
+          .where((element) => element.positionHash.compareTo(positionHash) < 0)
           .toList();
     } else {
       list = list
           .where((element) => element.positionHash.compareTo(positionHash) > 0)
           .toList();
     }
+
+    await Future.delayed(const Duration(seconds: 1));
 
     return list.sublist(0, min(list.length, limit));
   }
@@ -130,29 +142,70 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   Future init() async {}
 
   @override
-  Future saveCompleteUserRace(Z1UserRace z1userRace) async {
+  Future saveCompleteUserRace(
+    Z1UserRace z1userRace,
+    Z1CarShadow? z1carShadow,
+  ) async {
     dataMockUserRaces.add(z1userRace);
+    if (z1carShadow != null) {
+      dataMockCarShadows.add(z1carShadow);
+    }
   }
 
-  @override
-  Future updateTimeAndBestLapUserRace(Z1UserRace z1userRace) async {
-    final index = dataMockUserRaces.indexWhere(
-      (element) =>
-          element.id == z1userRace.id && element.trackId == z1userRace.trackId,
-    );
-    if (index >= 0) {
-      dataMockUserRaces[index] = z1userRace;
+  void _updateCarShadow(Z1CarShadow? z1carShadow) {
+    if (z1carShadow != null) {
+      final index = dataMockCarShadows.indexWhere(
+        (element) =>
+            element.id == z1carShadow.id &&
+            element.z1UserRaceId == z1carShadow.z1UserRaceId,
+      );
+      if (index >= 0) {
+        dataMockCarShadows[index] = z1carShadow;
+      }
     }
   }
 
   @override
-  Future updateTimeUserRace(Z1UserRace z1userRace) async {
+  Future<Z1CarShadow?> getCarShadowByTrackAndUid({
+    required String uid,
+    required String trackId,
+  }) async {
+    final z1UserRace = await getUserRaceByTrackId(uid: uid, trackId: trackId);
+    if (z1UserRace == null) {
+      return null;
+    }
+    return dataMockCarShadows.firstWhereOrNull(
+      (element) => element.z1UserRaceId == z1UserRace.id,
+    );
+  }
+
+  @override
+  Future updateTimeAndBestLapUserRace(
+    Z1UserRace z1userRace,
+    Z1CarShadow? z1carShadow,
+  ) async {
     final index = dataMockUserRaces.indexWhere(
       (element) =>
           element.id == z1userRace.id && element.trackId == z1userRace.trackId,
     );
     if (index >= 0) {
       dataMockUserRaces[index] = z1userRace;
+      _updateCarShadow(z1carShadow);
+    }
+  }
+
+  @override
+  Future updateTimeUserRace(
+    Z1UserRace z1userRace,
+    Z1CarShadow? z1carShadow,
+  ) async {
+    final index = dataMockUserRaces.indexWhere(
+      (element) =>
+          element.id == z1userRace.id && element.trackId == z1userRace.trackId,
+    );
+    if (index >= 0) {
+      dataMockUserRaces[index] = z1userRace;
+      _updateCarShadow(z1carShadow);
     }
   }
 

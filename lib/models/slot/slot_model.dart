@@ -1,6 +1,6 @@
 import 'package:flame/extensions.dart';
-import 'package:z1racing/game/track/models/curve_model.dart';
-import 'package:z1racing/game/track/models/rect_model.dart';
+import 'package:z1racing/models/slot/curve_model.dart';
+import 'package:z1racing/models/slot/rect_model.dart';
 
 enum TrackModelType { rect, curve }
 

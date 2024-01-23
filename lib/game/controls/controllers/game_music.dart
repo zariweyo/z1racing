@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flame_audio/flame_audio.dart';
+import 'package:z1racing/repositories/preferences_repository.dart';
 
 class GameMusic {
-  AudioPlayer? player;
   List<String> musics = [
     'race_background_1.mp3',
     'race_background_2.mp3',
@@ -12,11 +12,13 @@ class GameMusic {
   GameMusic();
 
   Future<void> start() async {
-    player =
-        await FlameAudio.loopLongAudio(musics[Random().nextInt(musics.length)]);
+    final audioEnabled = PreferencesRepository.instance.getEnableMusic();
+    if (audioEnabled) {
+      await FlameAudio.bgm.play(musics[Random().nextInt(musics.length)]);
+    }
   }
 
   Future<void> stop() async {
-    player?.dispose();
+    FlameAudio.bgm.stop();
   }
 }

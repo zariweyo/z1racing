@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/ads/components/admob_reward_button.dart';
 import 'package:z1racing/base/components/update_button.dart';
@@ -38,70 +37,81 @@ class _MenuState extends State<Menu> {
     setState(() {});
   }
 
+  Widget titleName() {
+    final textTheme = Theme.of(context).textTheme;
+    final name = FirebaseFirestoreRepository.instance.currentUser?.name ?? '';
+    return Container(
+      margin: const EdgeInsets.all(10),
+      child: Text(
+        AppLocalizations.of(context)!
+            .homeHello
+            .replaceAll('%%USERNAME%%', name.toUpperCase()),
+        style: textTheme.bodyLarge
+            ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final numLaps = GameRepositoryImpl().currentTrack.numLaps;
-    final name = FirebaseFirestoreRepository.instance.currentUser?.name ?? '';
+
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(5),
           margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 20),
           decoration: BoxDecoration(
             color: Colors.black54,
-            border: Border.all(color: Colors.white38),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             children: [
-              Image.asset(
-                'assets/images/logo_alpha.png',
-                height: 50,
-                fit: BoxFit.contain,
+              titleName(),
+              Row(
+                children: [
+                  Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo_alpha.png',
+                        height: 80,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(height: 5),
+                      MenuPlay(
+                        onPressStart: widget.onPressStart,
+                      ),
+                      Text(
+                        AppLocalizations.of(context)!
+                            .numLaps
+                            .replaceAll('%%LAPS%%', numLaps.toString()),
+                        style: textTheme.bodyMedium,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          MenuSettings.open(context: context);
+                        },
+                        child: Text(
+                          AppLocalizations.of(context)!.settings,
+                          style: textTheme.bodyLarge
+                              ?.copyWith(color: Colors.white),
+                        ),
+                      ),
+                      const AdmobRewardButton(),
+                      const UpdateButton(),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Container(
+                        height: 200,
+                        child: Image.asset('assets/images/woman_racer_1.png'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              Text(
-                AppLocalizations.of(context)!
-                    .homeHello
-                    .replaceAll('%%USERNAME%%', name),
-                style: textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 5),
-              MenuPlay(
-                onPressStart: widget.onPressStart,
-              ),
-              Text(
-                AppLocalizations.of(context)!
-                    .numLaps
-                    .replaceAll('%%LAPS%%', numLaps.toString()),
-                style: textTheme.bodySmall,
-              ),
-              Text(
-                AppLocalizations.of(context)!.infoControls,
-                style: textTheme.bodySmall,
-              ),
-              ElevatedButton(
-                focusNode: FocusNode(
-                  onKey: (node, event) {
-                    switch (event.logicalKey) {
-                      case LogicalKeyboardKey.enter:
-                        node.unfocus();
-                        MenuSettings.open(context: context);
-                        break;
-                    }
-                    return KeyEventResult.ignored;
-                  },
-                ),
-                onPressed: () {
-                  MenuSettings.open(context: context);
-                },
-                child: Text(
-                  AppLocalizations.of(context)!.settings,
-                  style: textTheme.bodyLarge?.copyWith(color: Colors.white),
-                ),
-              ),
-              const AdmobRewardButton(),
-              const UpdateButton(),
             ],
           ),
         ),

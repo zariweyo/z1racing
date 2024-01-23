@@ -15,7 +15,6 @@
     "endRace": "End race",
     "close": "Close",
     "finish": "Finish",
-    "time": "Time",
     "bestLap": "Best lap",
     "restart": "Restart",
     "errorDuplicateName": "This username are in use, please use other.",
@@ -29,5 +28,7 @@
     "notEnoghtCoinsToPlay": "You need Z1Coins to play. Press here to see a video and earn Z1Coins.",
     "name": "Name",
     "time": "Time",
-    "fastLap": "Fast lap"
+    "fastLap": "Fast lap",
+    "closed": "Closed",
+    "enabledMusic": "Background music"
 }

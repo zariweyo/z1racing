@@ -5,17 +5,19 @@ import 'package:z1racing/extensions/string_extension.dart';
 class Z1UserRace {
   final String uid;
   final String trackId;
+  final int numLaps;
   final Duration time;
   Duration bestLap;
   final List<Duration> lapTimes;
   final DateTime updated;
   Z1UserRaceMetadata metadata;
 
-  String get id => '${trackId}_${uid}_${metadata.numLaps}';
+  String get id => '${trackId}_${uid}_$numLaps';
 
   Z1UserRace({
     required this.uid,
     required this.trackId,
+    required this.numLaps,
     required this.time,
     required this.updated,
     required this.lapTimes,
@@ -26,6 +28,7 @@ class Z1UserRace {
   Z1UserRace copyWith({
     String? uid,
     String? trackId,
+    int? numLaps,
     Duration? time,
     Duration? bestLap,
     List<Duration>? lapTimes,
@@ -34,6 +37,7 @@ class Z1UserRace {
     return Z1UserRace(
       uid: uid ?? this.uid,
       trackId: trackId ?? this.trackId,
+      numLaps: numLaps ?? this.numLaps,
       time: time ?? this.time,
       bestLap: bestLap ?? this.bestLap,
       updated: updated ?? this.updated,
@@ -67,11 +71,13 @@ class Z1UserRace {
   factory Z1UserRace.init({
     required String uid,
     required String trackId,
+    required int numLaps,
     required String displayName,
   }) {
     return Z1UserRace(
       uid: uid,
       trackId: trackId,
+      numLaps: numLaps,
       time: Duration.zero,
       bestLap: Duration.zero,
       updated: DateTime.now(),
@@ -84,6 +90,9 @@ class Z1UserRace {
     return Z1UserRace(
       uid: map['uid']?.toString() ?? '',
       trackId: map['trackId']?.toString() ?? '',
+      numLaps: map['lapTimes'] is List<dynamic>
+          ? (map['lapTimes'] as List).length
+          : 0,
       time: DurationExtension.fromMap(map['time']),
       bestLap: DurationExtension.fromMap(map['bestLap']),
       updated: map['updated'] != null
@@ -107,6 +116,7 @@ class Z1UserRace {
       'id': id,
       'uid': uid,
       'trackId': trackId,
+      'numLaps': numLaps,
       'time': time.toMap(),
       'bestLap': bestLap.toMap(),
       'lapTimes': lapTimes.toMap(),

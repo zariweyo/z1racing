@@ -50,6 +50,7 @@ class _Z1RacingMap extends Forge2DGame {
         position: Vector2(0, 0),
         size: 30,
         z1track: GameRepositoryImpl().currentTrack,
+        floorColor: const Color.fromARGB(255, 255, 255, 255),
       ).getComponents(),
     );
 

@@ -4,7 +4,6 @@ import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:z1racing/game/car/components/tire.dart';
-import 'package:z1racing/game/game_colors.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
 import 'package:z1racing/game/z1racing_game.dart';
@@ -17,13 +16,8 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     required this.cameraComponent,
   }) : super(
           priority: 3,
-          paint: Paint()..color = colors[playerNumber],
+          paint: Paint(),
         );
-
-  static final colors = [
-    GameColors.green.color,
-    GameColors.blue.color,
-  ];
 
   final Images images;
   late final List<Tire> tires;
@@ -51,7 +45,7 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     await super.onLoad();
 
     // These params should be loaded from car model
-    final image = await images.load('ford_mini.png');
+    final image = await images.load('pink_car.png');
     _traction = 0.9;
     _maxSpeed = 250;
     _speed = _maxSpeed;

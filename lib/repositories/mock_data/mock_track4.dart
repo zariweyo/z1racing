@@ -41,9 +41,11 @@ class MockTrack4 extends MockTrack {
       ],
       'trackId': 'Mock2TrackId_b4',
       'name': 'The Mock 4 Track',
-      'numLaps': 3,
+      'numLaps': 1,
       'initialDatetime': '2023-11-10T12:00:00Z',
       'version': 1,
+      'order': 4,
+      'enabled': true,
     });
   }
 }

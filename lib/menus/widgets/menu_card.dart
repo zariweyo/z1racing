@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart' hide Image, Gradient;
 
-import 'package:z1racing/game/game_colors.dart';
-
 class MenuCard extends StatelessWidget {
   const MenuCard({required this.children, super.key});
 
@@ -10,8 +8,7 @@ class MenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.black,
-      shadowColor: GameColors.green.color,
+      color: Colors.black45,
       elevation: 10,
       margin: const EdgeInsets.only(bottom: 20),
       child: Container(

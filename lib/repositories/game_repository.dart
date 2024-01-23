@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 enum GameStatus { none, gameover, start }
 
@@ -8,6 +9,7 @@ abstract class GameRepository {
   ValueNotifier<int> getLapNotifier();
   void setTime(double time);
   void addTime(double time);
+  void addNewShadowPosition(Vector2 position, double angle);
   double getTime();
   bool raceIsEnd();
   GameStatus getStatus();

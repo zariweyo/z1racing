@@ -2,6 +2,8 @@
 
 import 'dart:async';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/models/z1user_race.dart';
@@ -35,9 +37,12 @@ abstract class FirebaseFirestoreRepository {
       _instance ?? FirebaseFirestoreRepository._(useMock: true);
 
   Future init();
-  Future saveCompleteUserRace(Z1UserRace z1userRace);
-  Future updateTimeAndBestLapUserRace(Z1UserRace z1userRace);
-  Future updateTimeUserRace(Z1UserRace z1userRace);
+  Future saveCompleteUserRace(Z1UserRace z1userRace, Z1CarShadow? z1carShadow);
+  Future updateTimeAndBestLapUserRace(
+    Z1UserRace z1userRace,
+    Z1CarShadow? z1carShadow,
+  );
+  Future updateTimeUserRace(Z1UserRace z1userRace, Z1CarShadow? z1carShadow);
   Future updateBestLapUserRace(Z1UserRace z1userRace);
   Future<Z1UserRace?> getUserRaceFromRemote(Z1UserRace z1userRace);
   Future<Z1UserRace?> getUserRaceByTrackId({
@@ -52,8 +57,12 @@ abstract class FirebaseFirestoreRepository {
     required String trackId,
   });
   Future<Z1Track> getTrackById({required String trackId});
-  Future<Z1Track?> getTrackByActivedDate({
-    required DateTime dateTime,
+  Future<Z1CarShadow?> getCarShadowByTrackAndUid({
+    required String uid,
+    required String trackId,
+  });
+  Future<Z1Track?> getTrackByOrder({
+    required int order,
     TrackRequestDirection direction = TrackRequestDirection.next,
   });
   Future<List<Z1UserRace>> getUserRacesByTime({
@@ -61,6 +70,11 @@ abstract class FirebaseFirestoreRepository {
     required String trackId,
     bool descending = false,
     int limit = 10,
+  });
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object?>? parameters,
+    AnalyticsCallOptions? callOptions,
   });
   Future<Z1Version> getVersion();
   Z1Version get z1version;

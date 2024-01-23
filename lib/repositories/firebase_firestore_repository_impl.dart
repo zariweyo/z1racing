@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:z1racing/base/exceptions/duplicated_name_exception.dart';
+import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/models/z1user_race.dart';
@@ -15,6 +17,7 @@ import 'package:z1racing/repositories/track_repository_impl.dart';
 class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
   static const String userCol = 'users';
   static const String racesCol = 'races';
+  static const String shadowRacesCol = 'shadowRaces';
   static const String trackDataCollection = 'trackData';
   static const String versionDocument = 'settings/version';
 
@@ -57,6 +60,18 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
   CollectionReference<Map<String, dynamic>> get trackDataCol =>
       FirebaseFirestore.instance.collection(trackDataCollection);
 
+  DocumentReference<Map<String, dynamic>> shadowDoc({
+    required String raceId,
+    required String trackId,
+    required String shadowId,
+  }) =>
+      trackDataCol
+          .doc(trackId)
+          .collection(racesCol)
+          .doc(raceId)
+          .collection(shadowRacesCol)
+          .doc(shadowId);
+
   Query<Map<String, dynamic>> get raceGroupCol =>
       FirebaseFirestore.instance.collectionGroup(racesCol);
 
@@ -71,32 +86,65 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
   }
 
   @override
-  Future saveCompleteUserRace(Z1UserRace z1userRace) async {
+  Future saveCompleteUserRace(
+    Z1UserRace z1userRace,
+    Z1CarShadow? z1carShadow,
+  ) async {
     final raceDoc = trackDataCol
         .doc(z1userRace.trackId)
         .collection(racesCol)
         .doc(z1userRace.id);
-    return raceDoc.set(z1userRace.toJson());
+    await raceDoc.set(z1userRace.toJson());
+
+    if (z1carShadow != null) {
+      return shadowDoc(
+        raceId: z1userRace.id,
+        trackId: z1userRace.trackId,
+        shadowId: z1userRace.id,
+      ).set(z1carShadow.toJson());
+    }
   }
 
   @override
-  Future updateTimeAndBestLapUserRace(Z1UserRace z1userRace) async {
+  Future updateTimeAndBestLapUserRace(
+    Z1UserRace z1userRace,
+    Z1CarShadow? z1carShadow,
+  ) async {
     final raceDoc = trackDataCol
         .doc(z1userRace.trackId)
         .collection(racesCol)
         .doc(z1userRace.id);
 
-    return raceDoc.update(z1userRace.toUpdateTimeAndBestLapJson());
+    await raceDoc.update(z1userRace.toUpdateTimeAndBestLapJson());
+
+    if (z1carShadow != null) {
+      return shadowDoc(
+        raceId: z1userRace.id,
+        trackId: z1userRace.trackId,
+        shadowId: z1userRace.id,
+      ).set(z1carShadow.toJson());
+    }
   }
 
   @override
-  Future updateTimeUserRace(Z1UserRace z1userRace) async {
+  Future updateTimeUserRace(
+    Z1UserRace z1userRace,
+    Z1CarShadow? z1carShadow,
+  ) async {
     final raceDoc = trackDataCol
         .doc(z1userRace.trackId)
         .collection(racesCol)
         .doc(z1userRace.id);
 
-    return raceDoc.update(z1userRace.toUpdateTimeJson());
+    await raceDoc.update(z1userRace.toUpdateTimeJson());
+
+    if (z1carShadow != null) {
+      return shadowDoc(
+        raceId: z1userRace.id,
+        trackId: z1userRace.trackId,
+        shadowId: z1userRace.id,
+      ).set(z1carShadow.toJson());
+    }
   }
 
   @override
@@ -120,6 +168,29 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
       return null;
     }
     return Z1UserRace.fromMap(raceDoc.data()!);
+  }
+
+  @override
+  Future<Z1CarShadow?> getCarShadowByTrackAndUid({
+    required String uid,
+    required String trackId,
+  }) async {
+    final z1UserRace = await getUserRaceByTrackId(uid: uid, trackId: trackId);
+    if (z1UserRace == null) {
+      return null;
+    }
+
+    final shadowDocSnap = await shadowDoc(
+      raceId: z1UserRace.id,
+      trackId: trackId,
+      shadowId: z1UserRace.id,
+    ).get();
+
+    if (shadowDocSnap.exists && shadowDocSnap.data() != null) {
+      return Z1CarShadow.fromMap(shadowDocSnap.data()!);
+    }
+
+    return null;
   }
 
   @override
@@ -169,6 +240,18 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     return FirebaseAuth.instance.currentUser?.updateDisplayName(newName);
   }
 
+  @override
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object?>? parameters,
+    AnalyticsCallOptions? callOptions,
+  }) =>
+      FirebaseAnalytics.instance.logEvent(
+        name: name,
+        parameters: parameters,
+        callOptions: callOptions,
+      );
+
   Future<void> _loadUser({required Z1User baseUser}) async {
     final docSnap = await userDoc.get();
     if (docSnap.exists) {
@@ -201,6 +284,9 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     required String positionHash,
     required String trackId,
   }) async {
+    if (trackId.isEmpty) {
+      return 0;
+    }
     final CollectionReference raceCol =
         trackDataCol.doc(trackId).collection(racesCol);
     final aggQuery = raceCol
@@ -223,27 +309,29 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
   }
 
   @override
-  Future<Z1Track?> getTrackByActivedDate({
-    required DateTime dateTime,
+  Future<Z1Track?> getTrackByOrder({
+    required int order,
     TrackRequestDirection direction = TrackRequestDirection.next,
   }) async {
     var query = trackDataCol.orderBy(
-      'initialDatetime',
-      descending: direction == TrackRequestDirection.previous,
+      'order',
+      descending: [TrackRequestDirection.previous, TrackRequestDirection.last]
+          .contains(direction),
     );
 
     switch (direction) {
+      case TrackRequestDirection.last:
+        break;
       case TrackRequestDirection.previous:
         query = query.where(
-          'initialDatetime',
-          isLessThanOrEqualTo: dateTime.toIso8601String(),
+          'order',
+          isLessThan: order,
         );
         break;
       case TrackRequestDirection.next:
         query = query.where(
-          'initialDatetime',
-          isGreaterThanOrEqualTo:
-              dateTime.add(const Duration(minutes: 1)).toIso8601String(),
+          'order',
+          isGreaterThan: order,
         );
         break;
     }
@@ -262,13 +350,16 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     bool descending = false,
     int limit = 10,
   }) async {
+    if (trackId.isEmpty) {
+      return [];
+    }
     try {
       final raceCol = trackDataCol.doc(trackId).collection(racesCol);
       var query =
           raceCol.orderBy('positionHash', descending: descending).limit(limit);
 
       if (descending) {
-        query = query.where('positionHash', isLessThanOrEqualTo: positionHash);
+        query = query.where('positionHash', isLessThan: positionHash);
       } else {
         query = query.where('positionHash', isGreaterThan: positionHash);
       }

@@ -15,7 +15,6 @@
     "endRace": "Terminar carrera",
     "close": "Cerrar",
     "finish": "Fin",
-    "time": "Tiempo",
     "bestLap": "Mejor vuelta",
     "restart": "Reiniciar",
     "errorDuplicateName": "Este nombre de usuario ya se esta usando, por favor, elije otro.",
@@ -29,5 +28,7 @@
     "notEnoghtCoinsToPlay": "Necesitas Z1Coins para jugar. Pulsa aquí para ver un video y conseguir Z1Coins.",
     "name": "Nombre",
     "time": "Tiempo",
-    "fastLap": "Vuelta rápida"
+    "fastLap": "Vuelta rápida",
+    "closed": "Cerrado",
+    "enabledMusic": "Música ed fondo"
 }

@@ -3,9 +3,11 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:z1racing/repositories/preferences_repository.dart';
 
 class AdmobController {
   static AdmobController get instance {
@@ -73,7 +75,15 @@ class AdmobController {
     return completer.future;
   }
 
+  void _resumeAudio() {
+    final audioEnabled = PreferencesRepository.instance.getEnableMusic();
+    if (audioEnabled) {
+      FlameAudio.bgm.resume();
+    }
+  }
+
   Future<RewardItem?> showRewardedInterstitialAd() async {
+    FirebaseAnalytics.instance.logEvent(name: 'show_reward_ads');
     final completer = Completer<RewardItem?>();
     FlameAudio.bgm.pause();
     final createdReward = await _createRewardedInterstitialAd();
@@ -85,7 +95,7 @@ class AdmobController {
       debugPrint(
         '--> Warning: attempt to show rewarded interstitial before loaded.',
       );
-      FlameAudio.bgm.resume();
+      _resumeAudio();
       completer.complete(null);
     }
     _rewardedInterstitialAd!.fullScreenContentCallback =
@@ -101,7 +111,7 @@ class AdmobController {
           (RewardedInterstitialAd ad, AdError error) {
         debugPrint('--> $ad onAdFailedToShowFullScreenContent: $error');
         ad.dispose();
-        FlameAudio.bgm.resume();
+        _resumeAudio();
         completer.complete(null);
       },
     );

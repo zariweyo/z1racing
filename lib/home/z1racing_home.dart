@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:z1racing/game/z1racing_map.dart';
 import 'package:z1racing/menus/widgets/menu.dart';
-import 'package:z1racing/menus/widgets/race_time_user_list.dart';
+import 'package:z1racing/menus/widgets/score/race_time_user_list.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/repositories/track_repository_impl.dart';
 
@@ -19,7 +19,7 @@ class _Z1HomeState extends State<Z1RacingHome> {
   @override
   void initState() {
     if (GameRepositoryImpl().currentTrack.isEmpty) {
-      _changeTrack(TrackRequestDirection.next);
+      _changeTrack(TrackRequestDirection.last);
     }
     super.initState();
   }
@@ -29,17 +29,22 @@ class _Z1HomeState extends State<Z1RacingHome> {
     return Row(
       children: [
         Expanded(
+          flex: 5,
           child: Stack(
             alignment: AlignmentDirectional.center,
             children: [
               Z1RacingMap(
                 key: GlobalKey(),
               ),
-              RaceTimeUserList(changeTrack: _changeTrack),
+              RaceTimeUserList(
+                key: const ValueKey('RaceTimeUserList'),
+                changeTrack: _changeTrack,
+              ),
             ],
           ),
         ),
         Expanded(
+          flex: 3,
           child: ListView(
             children: [
               Menu(
@@ -56,10 +61,9 @@ class _Z1HomeState extends State<Z1RacingHome> {
     setState(() {
       loading = true;
     });
-    final currentTrackDateTime =
-        GameRepositoryImpl().currentTrack.initialDatetime;
+    final order = GameRepositoryImpl().currentTrack.order;
     final track = await TrackRepositoryImpl()
-        .getTrack(dateTime: currentTrackDateTime, direction: direction);
+        .getTrack(order: order, direction: direction);
     if (track != null) {
       GameRepositoryImpl().currentTrack = track;
     }

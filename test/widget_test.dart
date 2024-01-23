@@ -11,7 +11,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
 import 'package:z1racing/extensions/string_extension.dart';
-import 'package:z1racing/menus/widgets/race_time_user_list.dart';
+import 'package:z1racing/menus/widgets/score/race_time_user_list.dart';
+import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/models/z1user_race.dart';
@@ -53,7 +54,7 @@ void main() {
       ),
     );
 
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 3));
 
     expect(find.text('${track.name} (${track.numLaps} laps)'), findsOneWidget);
     expect(find.text(currentAuthUser?.name ?? '--'), findsOneWidget);
@@ -75,7 +76,7 @@ void main() {
 
   test('Test Mock Track', () async {
     final tracks = (await DataRepositoryMock.getTracks())
-        .sorted((a, b) => a.initialDatetime.compareTo(b.initialDatetime));
+        .sorted((a, b) => a.order.compareTo(b.order));
     expect(tracks.length >= 3, true);
 
     Z1Track? currentTrack = tracks.first;
@@ -84,9 +85,8 @@ void main() {
       required TrackRequestDirection direction,
       required int indexExpected,
     }) async {
-      currentTrack =
-          await FirebaseFirestoreRepository.instance.getTrackByActivedDate(
-        dateTime: currentTrack!.initialDatetime,
+      currentTrack = await FirebaseFirestoreRepository.instance.getTrackByOrder(
+        order: currentTrack!.order,
         direction: direction,
       );
       expect(currentTrack != null, true);
@@ -224,6 +224,38 @@ void main() {
       trackRaces.races.map((e) => e.uid).toSet().join(','),
       trackRaces.races.map((e) => e.uid).join(','),
     );
+  });
+
+  test('Mapping Z1CArShadow empty', () {
+    final map = {
+      'id': 'idShadow1',
+      'z1UserRaceId': 'raceId1',
+      'positions': [],
+    };
+
+    final z1CarShadowResult = Z1CarShadow.fromMap(map);
+
+    expect(z1CarShadowResult.id, map['id']);
+    expect(z1CarShadowResult.positions.length, 0);
+  });
+
+  test('Mapping Z1CArShadow 1 reg', () {
+    final map = {
+      'id': 'idShadow1',
+      'z1UserRaceId': 'raceId1',
+      'positions': [
+        {
+          'time': 63123,
+          'position': {'x': 20, 'y': 30},
+        },
+      ],
+    };
+
+    final z1CarShadowResult = Z1CarShadow.fromMap(map);
+
+    expect(z1CarShadowResult.id, map['id']);
+    expect(z1CarShadowResult.positions.first.time.inSeconds, 63);
+    expect(z1CarShadowResult.positions.first.position.y, 30);
   });
 
   test('Test Hash', () {

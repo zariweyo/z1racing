@@ -1,18 +1,12 @@
 import 'dart:ui';
 
 import 'package:flame/components.dart';
-
-import 'package:z1racing/game/car/components/car.dart';
-import 'package:z1racing/game/car/components/tire.dart';
+import 'package:flame_forge2d/flame_forge2d.dart';
 
 class Trail extends Component with HasPaint {
-  Trail({
-    required this.car,
-    required this.tire,
-  }) : super(priority: 1);
+  Trail({required this.tireBody}) : super(priority: 1);
 
-  final Car car;
-  final Tire tire;
+  final Body tireBody;
 
   final trail = <Offset>[];
   final _trailLength = 20;
@@ -20,17 +14,17 @@ class Trail extends Component with HasPaint {
   @override
   Future<void> onLoad() async {
     paint
-      ..color = (const Color.fromARGB(40, 144, 121, 121))
+      ..color = (const Color.fromARGB(50, 219, 11, 230))
       ..strokeWidth = 2.0;
   }
 
   @override
   void update(double dt) {
-    if (tire.body.linearVelocity.length2 > 100) {
+    if (tireBody.linearVelocity.length2 > 100) {
       if (trail.length > _trailLength) {
         trail.removeAt(0);
       }
-      final trailPoint = tire.body.position.toOffset();
+      final trailPoint = tireBody.position.toOffset();
       trail.add(trailPoint);
     } else if (trail.isNotEmpty) {
       trail.removeAt(0);

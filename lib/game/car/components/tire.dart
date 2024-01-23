@@ -72,7 +72,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
   Future<void> onLoad() async {
     await super.onLoad();
     if (!isFrontTire) {
-      game.cameraWorld.add(Trail(car: car, tire: this));
+      game.cameraWorld.add(Trail(tireBody: body));
     }
   }
 

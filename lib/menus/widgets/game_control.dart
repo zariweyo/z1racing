@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:z1racing/base/components/button_action.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 
 class GameControl extends StatelessWidget {
@@ -27,15 +28,12 @@ class GameControl extends StatelessWidget {
   }) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      height: 50,
-      child: ElevatedButton(
-        onPressed: onTap,
-        child: Text(
-          text,
-          style: textTheme.bodyMedium,
-          textAlign: TextAlign.center,
-        ),
+    return ButtonActions(
+      onTap: onTap,
+      child: Text(
+        text,
+        style: textTheme.bodyMedium?.copyWith(color: Colors.pink.shade50),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -50,42 +48,52 @@ class GameControl extends StatelessWidget {
         content: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
+            color: Colors.black45,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Column(
-            children: <Widget>[
-              Text(
-                AppLocalizations.of(context)!.menu.toUpperCase(),
-                style: textTheme.bodyLarge,
-                textAlign: TextAlign.center,
+          child: Row(
+            children: [
+              Container(
+                height: 200,
+                child: Image.asset('assets/images/woman_racer_1.png'),
               ),
-              const SizedBox(
-                height: 30,
-              ),
-              _menuItem(
-                context,
-                text: AppLocalizations.of(context)!.restart.toUpperCase(),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onRestart?.call();
-                },
-              ),
-              _menuItem(
-                context,
-                text: AppLocalizations.of(context)!.endRace.toUpperCase(),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onReset?.call();
-                },
-              ),
-              _menuItem(
-                context,
-                text: AppLocalizations.of(context)!.close.toUpperCase(),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  gameRef.paused = false;
-                },
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                      AppLocalizations.of(context)!.menu.toUpperCase(),
+                      style: textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(
+                      height: 30,
+                    ),
+                    _menuItem(
+                      context,
+                      text: AppLocalizations.of(context)!.restart.toUpperCase(),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        onRestart?.call();
+                      },
+                    ),
+                    _menuItem(
+                      context,
+                      text: AppLocalizations.of(context)!.endRace.toUpperCase(),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        onReset?.call();
+                      },
+                    ),
+                    _menuItem(
+                      context,
+                      text: AppLocalizations.of(context)!.close.toUpperCase(),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        gameRef.paused = false;
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

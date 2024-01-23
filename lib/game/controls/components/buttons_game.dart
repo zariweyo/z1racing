@@ -150,27 +150,30 @@ class ButtonsGame extends PositionComponent with DragCallbacks {
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    final image = await images.load('arrow.png');
+    final imageLeft = await images.load('arrow_left.png');
+    final imageRight = await images.load('arrow_right.png');
+    final imageUp = await images.load('arrow_up.png');
+    final imageBrake = await images.load('brake.png');
 
     final bottonLeft = _createButton(
-      image: image,
+      image: imageLeft,
       margin: const EdgeInsets.only(left: 10, bottom: 120),
       radius: 60,
       type: ButtonGameType.left,
     );
     final bottonRight = _createButton(
-      image: image,
+      image: imageRight,
       margin: const EdgeInsets.only(left: 170, bottom: 120),
       radius: 60,
       type: ButtonGameType.right,
     );
     final bottonUp = _createButton(
-      image: image,
+      image: imageUp,
       margin: const EdgeInsets.only(right: 10, bottom: 270),
       type: ButtonGameType.up,
     );
     final bottonDown = _createButton(
-      image: image,
+      image: imageBrake,
       margin: const EdgeInsets.only(right: 10, bottom: 120),
       type: ButtonGameType.down,
     );
@@ -203,7 +206,7 @@ class ActionButton extends PositionComponent {
     this.rotate = 0,
   })  : _radius = radius,
         _paint = Paint()
-          ..color = const Color(0x5580C080)
+          ..color = const Color.fromARGB(183, 48, 123, 48)
           ..style = PaintingStyle.fill
           ..strokeWidth = 5,
         super(
@@ -215,7 +218,7 @@ class ActionButton extends PositionComponent {
   final double _radius;
   final Paint _paint;
 
-  late final RRect _renderRect = RRect.fromRectAndCorners(
+  late final RRect _renderRRect = RRect.fromRectAndCorners(
     Rect.fromCircle(center: Offset(_radius * 2, _radius * 2), radius: _radius),
     topLeft: const Radius.circular(20),
     topRight: const Radius.circular(20),
@@ -223,9 +226,20 @@ class ActionButton extends PositionComponent {
     bottomRight: const Radius.circular(20),
   );
 
+  late final Rect _renderRect = Rect.fromCircle(
+    center: Offset(_radius * 2, _radius * 2),
+    radius: _radius,
+  );
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    canvas.drawRRect(_renderRect, _paint);
+    canvas.drawRRect(_renderRRect, _paint);
+    canvas.drawImageRect(
+      image,
+      image.size.toRect(),
+      _renderRect,
+      _paint,
+    );
   }
 }
