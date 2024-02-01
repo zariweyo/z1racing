@@ -211,13 +211,17 @@ class GameRepositoryImpl extends GameRepository {
       currentUserRace = currentUserRace.copyWith(
         time: z1UserRace!.time,
         bestLap: z1UserRace!.bestLap,
+        lapTimes: z1UserRace!.lapTimes,
       );
       return FirebaseFirestoreRepository.instance
           .updateTimeAndBestLapUserRace(currentUserRace, z1carShadow);
     }
 
     if (timeHasImproved) {
-      currentUserRace = currentUserRace.copyWith(time: z1UserRace!.time);
+      currentUserRace = currentUserRace.copyWith(
+        time: z1UserRace!.time,
+        lapTimes: z1UserRace!.lapTimes,
+      );
       return FirebaseFirestoreRepository.instance
           .updateTimeUserRace(currentUserRace, z1carShadow);
     }

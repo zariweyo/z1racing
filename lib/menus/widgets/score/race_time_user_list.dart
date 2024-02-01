@@ -34,6 +34,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
     currentTrack = GameRepositoryImpl().currentTrack;
     controller.addListener(_scrollListener);
     currentZ1UserRaces[currentTrack.trackId] = [];
+    FirebaseAuthRepository.instance.currentUserNotifier.addListener(renameUser);
     initUpdate();
     super.initState();
   }
@@ -71,7 +72,26 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   @override
   void dispose() {
     super.dispose();
+    FirebaseAuthRepository.instance.currentUserNotifier
+        .removeListener(renameUser);
     controller.removeListener(_scrollListener);
+  }
+
+  void renameUser() {
+    final index = currentZ1UserRaces[currentTrack.trackId]?.indexWhere(
+          (element) =>
+              element.uid == FirebaseAuthRepository.instance.currentUser?.uid,
+        ) ??
+        -1;
+    if (index >= 0) {
+      setState(() {
+        currentZ1UserRaces[currentTrack.trackId]![index].metadata =
+            currentZ1UserRaces[currentTrack.trackId]![index].metadata.copyWith(
+                  displayName:
+                      FirebaseAuthRepository.instance.currentUser?.name,
+                );
+      });
+    }
   }
 
   Future<void> _scrollListener() async {

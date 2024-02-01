@@ -97,15 +97,16 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     }
 
     total += dt * 1000;
-    final z1CarShadowPositionIndex =
-        positions.indexWhere((element) => element.time.inMilliseconds >= total);
-    if (z1CarShadowPositionIndex > lastIndex) {
+    final z1CarShadowPositionIndex = lastIndex + 1;
+    if (z1CarShadowPositionIndex < positions.length) {
       final z1CarShadowPosition = positions[z1CarShadowPositionIndex];
       lastIndex = z1CarShadowPositionIndex;
+
       body.setTransform(
         z1CarShadowPosition.position,
         z1CarShadowPosition.angle,
       );
+
       body.applyLinearImpulse(z1CarShadowPosition.position);
     } else if (z1CarShadowPositionIndex < 0 &&
         lastIndex >= positions.length - 2) {
