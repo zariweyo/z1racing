@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/ads/components/admob_reward_button.dart';
 import 'package:z1racing/base/components/update_button.dart';
+import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/menus/widgets/menu_play.dart';
-import 'package:z1racing/menus/widgets/menu_settings.dart';
-import 'package:z1racing/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
@@ -18,10 +18,12 @@ class Menu extends StatefulWidget {
 
 class _MenuState extends State<Menu> {
   bool initiated = false;
+  late Z1User z1User;
 
   @override
   void initState() {
-    FirebaseAuthRepository.instance.currentUserNotifier
+    z1User = FirebaseFirestoreRepository.instance.currentUser!;
+    FirebaseFirestoreRepository.instance.currentUserNotifier
         .addListener(_currentUserModified);
     super.initState();
   }
@@ -29,27 +31,14 @@ class _MenuState extends State<Menu> {
   @override
   void dispose() {
     super.dispose();
-    FirebaseAuthRepository.instance.currentUserNotifier
+    FirebaseFirestoreRepository.instance.currentUserNotifier
         .removeListener(_currentUserModified);
   }
 
   void _currentUserModified() {
-    setState(() {});
-  }
-
-  Widget titleName() {
-    final textTheme = Theme.of(context).textTheme;
-    final name = FirebaseFirestoreRepository.instance.currentUser?.name ?? '';
-    return Container(
-      margin: const EdgeInsets.all(10),
-      child: Text(
-        AppLocalizations.of(context)!
-            .homeHello
-            .replaceAll('%%USERNAME%%', name.toUpperCase()),
-        style: textTheme.bodyLarge
-            ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-    );
+    setState(() {
+      z1User = FirebaseFirestoreRepository.instance.currentUser!;
+    });
   }
 
   @override
@@ -61,54 +50,39 @@ class _MenuState extends State<Menu> {
       children: [
         Container(
           padding: const EdgeInsets.all(5),
-          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 20),
+          margin: const EdgeInsets.symmetric(horizontal: 5),
           decoration: BoxDecoration(
             color: Colors.black54,
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Column(
+          child: Row(
             children: [
-              titleName(),
-              Row(
+              Column(
                 children: [
-                  Column(
-                    children: [
-                      Image.asset(
-                        'assets/images/logo_alpha.png',
-                        height: 80,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 5),
-                      MenuPlay(
-                        onPressStart: widget.onPressStart,
-                      ),
-                      Text(
-                        AppLocalizations.of(context)!
-                            .numLaps
-                            .replaceAll('%%LAPS%%', numLaps.toString()),
-                        style: textTheme.bodyMedium,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          MenuSettings.open(context: context);
-                        },
-                        child: Text(
-                          AppLocalizations.of(context)!.settings,
-                          style: textTheme.bodyLarge
-                              ?.copyWith(color: Colors.white),
-                        ),
-                      ),
-                      const AdmobRewardButton(),
-                      const UpdateButton(),
-                    ],
+                  Image.asset(
+                    'assets/images/logo_alpha.png',
+                    height: 80,
+                    fit: BoxFit.contain,
                   ),
-                  Column(
-                    children: [
-                      Container(
-                        height: 200,
-                        child: Image.asset('assets/images/woman_racer_1.png'),
-                      ),
-                    ],
+                  const SizedBox(height: 5),
+                  MenuPlay(
+                    onPressStart: widget.onPressStart,
+                  ),
+                  Text(
+                    AppLocalizations.of(context)!
+                        .numLaps
+                        .replaceAll('%%LAPS%%', numLaps.toString()),
+                    style: textTheme.bodyMedium,
+                  ),
+                  const AdmobRewardButton(),
+                  const UpdateButton(),
+                ],
+              ),
+              Column(
+                children: [
+                  Container(
+                    height: 200,
+                    child: Image.asset(z1User.z1UserAvatar.avatarBasePath),
                   ),
                 ],
               ),

@@ -14,11 +14,14 @@ import 'package:z1racing/game/car/components/shadow_car.dart';
 import 'package:z1racing/game/controls/components/buttons_game.dart';
 import 'package:z1racing/game/controls/controllers/game_music.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
+import 'package:z1racing/game/objects/background_object.dart';
 import 'package:z1racing/game/panel/components/countdown_text.dart';
 import 'package:z1racing/game/panel/components/lap_text.dart';
 import 'package:z1racing/game/panel/components/reference_time_text.dart';
 import 'package:z1racing/game/panel/components/sublap_list.dart';
 import 'package:z1racing/game/track/track.dart';
+import 'package:z1racing/models/z1user.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
@@ -41,11 +44,13 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   Z1RacingGame() : super(gravity: Vector2.zero(), zoom: 1);
 
   @override
-  Color backgroundColor() => Colors.black;
+  Color backgroundColor() =>
+      FirebaseFirestoreRepository.instance.avatarColor.shade900;
 
   static const double playZoom = 3.0;
   late final World cameraWorld;
   late CameraComponent startCamera;
+  late CameraComponent raceCamera;
   late List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> activeKeyMaps;
   late List<Set<LogicalKeyboardKey>> pressedKeySets;
   ButtonsGame? joystick;
@@ -65,6 +70,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     children.register<CameraComponent>();
     cameraWorld = World();
     add(cameraWorld);
+    cameraWorld.add(BackgroundObject(gameSize: canvasSize));
 
     cameraWorld.addAll(
       Track(
@@ -152,15 +158,26 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         ..viewfinder.zoom = playZoom;
     });
 
+    raceCamera = cameras.first;
+    GameRepositoryImpl().raceCamera = raceCamera;
+
     addAll(cameras);
 
-    final shadowCar = ShadowCar(images: images);
+    final shadowCar = ShadowCar(
+      images: images,
+      avatar: GameRepositoryImpl().z1UserRef?.z1UserAvatar ??
+          Z1UserAvatar.values.first,
+    );
 
     cameraWorld.add(shadowCar);
 
     for (var i = 0; i < numberOfPlayers; i++) {
-      final car =
-          Car(images: images, playerNumber: i, cameraComponent: cameras[i]);
+      final car = Car(
+        images: images,
+        playerNumber: i,
+        cameraComponent: cameras[i],
+        avatar: FirebaseFirestoreRepository.instance.currentUser!.z1UserAvatar,
+      );
       final lapText = LapText();
 
       final sublapText = SubLapList();

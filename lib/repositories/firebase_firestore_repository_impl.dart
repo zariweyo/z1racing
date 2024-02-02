@@ -6,6 +6,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:z1racing/base/exceptions/duplicated_name_exception.dart';
+import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
@@ -21,8 +22,10 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
   static const String trackDataCollection = 'trackData';
   static const String versionDocument = 'settings/version';
 
-  final _currentUserNotifier = ValueNotifier<Z1User?>(null);
   final _streamChangeController = StreamController<Z1User?>.broadcast();
+
+  @override
+  ValueNotifier<Z1User?> currentUserNotifier = ValueNotifier<Z1User?>(null);
 
   static final FirebaseFirestoreRepositoryImpl _instance =
       FirebaseFirestoreRepositoryImpl._internal();
@@ -32,8 +35,8 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
   }
 
   FirebaseFirestoreRepositoryImpl._internal() {
-    _currentUserNotifier.addListener(() {
-      _streamChangeController.add(_currentUserNotifier.value);
+    currentUserNotifier.addListener(() {
+      _streamChangeController.add(currentUserNotifier.value);
     });
   }
 
@@ -43,8 +46,8 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
 
   @override
   Z1User? get currentUser {
-    if (_currentUserNotifier.value != null) {
-      return _currentUserNotifier.value;
+    if (currentUserNotifier.value != null) {
+      return currentUserNotifier.value;
     } else if (FirebaseAuth.instance.currentUser != null) {
       return Z1User.fromUser(FirebaseAuth.instance.currentUser!);
     }
@@ -81,7 +84,7 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     await _loadUser(baseUser: currentUser!);
     final z1user = currentUser!;
     _z1version = await getVersion();
-    _currentUserNotifier.value = z1user;
+    currentUserNotifier.value = z1user;
     return userDoc.set(z1user.toJson());
   }
 
@@ -227,8 +230,8 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
 
     final batch = FirebaseFirestore.instance.batch();
     batch.update(userDoc, {'name': newName});
-    _currentUserNotifier.value =
-        _currentUserNotifier.value?.copyWith(name: newName);
+    currentUserNotifier.value =
+        currentUserNotifier.value?.copyWith(name: newName);
     (await raceGroupCol.where('uid', isEqualTo: currentUser?.uid).get())
         .docs
         .forEach((docSnap) {
@@ -255,28 +258,26 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
   Future<void> _loadUser({required Z1User baseUser}) async {
     final docSnap = await userDoc.get();
     if (docSnap.exists) {
-      _currentUserNotifier.value = Z1User.fromMap(docSnap.data()!);
+      currentUserNotifier.value = Z1User.fromMap(docSnap.data()!);
     } else {
-      _currentUserNotifier.value = baseUser.copyWith(z1Coins: 5);
+      currentUserNotifier.value = baseUser.copyWith(z1Coins: 5);
     }
   }
 
   @override
   Future<void> addZ1Coins(int z1Coins) async {
-    _currentUserNotifier.value = _currentUserNotifier.value?.copyWith(
-      z1Coins: (_currentUserNotifier.value?.z1Coins ?? 0) + z1Coins,
+    currentUserNotifier.value = currentUserNotifier.value?.copyWith(
+      z1Coins: (currentUserNotifier.value?.z1Coins ?? 0) + z1Coins,
     );
-    return userDoc
-        .update({'z1Coins': _currentUserNotifier.value?.z1Coins ?? 0});
+    return userDoc.update({'z1Coins': currentUserNotifier.value?.z1Coins ?? 0});
   }
 
   @override
   Future<void> removeZ1Coins(int z1Coins) async {
-    _currentUserNotifier.value = _currentUserNotifier.value?.copyWith(
-      z1Coins: max((_currentUserNotifier.value?.z1Coins ?? 0) - z1Coins, 0),
+    currentUserNotifier.value = currentUserNotifier.value?.copyWith(
+      z1Coins: max((currentUserNotifier.value?.z1Coins ?? 0) - z1Coins, 0),
     );
-    return userDoc
-        .update({'z1Coins': _currentUserNotifier.value?.z1Coins ?? 0});
+    return userDoc.update({'z1Coins': currentUserNotifier.value?.z1Coins ?? 0});
   }
 
   @override
@@ -306,6 +307,16 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
       return Z1Track.empty();
     }
     return Z1Track.fromMap(docSnap.data()!);
+  }
+
+  @override
+  Future<Z1User?> getUserByUid({required String uid}) async {
+    final userSnap = await usersCol.doc(uid).get();
+    if (userSnap.exists) {
+      return Z1User.fromMap(userSnap.data()!);
+    }
+
+    return null;
   }
 
   @override
@@ -384,5 +395,19 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
   }
 
   @override
-  Stream<Z1User?> get z1UserStream => _streamChangeController.stream;
+  Future<void> updateAvatar(Z1UserAvatar avatar) async {
+    userDoc.update({'z1UserAvatar': avatar.name});
+    currentUserNotifier.value =
+        currentUserNotifier.value?.copyWith(z1UserAvatar: avatar);
+  }
+
+  @override
+  MaterialColor get avatarColor =>
+      currentUser?.z1UserAvatar.avatarBackgroundColor ??
+      Z1UserAvatar.values.first.avatarBackgroundColor;
+
+  @override
+  String get avatarCar =>
+      currentUser?.z1UserAvatar.avatarCar ??
+      Z1UserAvatar.values.first.avatarCar;
 }

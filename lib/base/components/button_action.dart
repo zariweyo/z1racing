@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class ButtonActions extends StatelessWidget {
   final Function()? onTap;
@@ -8,6 +9,7 @@ class ButtonActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = FirebaseFirestoreRepository.instance.avatarColor;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -16,8 +18,8 @@ class ButtonActions extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.pink.shade300,
-              Colors.pink.shade400,
+              color.shade300,
+              color.shade400,
             ], // Colores de degradado
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

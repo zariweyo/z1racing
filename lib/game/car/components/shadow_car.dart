@@ -3,22 +3,26 @@ import 'package:collection/collection.dart';
 import 'package:flame/cache.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
+import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/car/components/shadow_trail.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
+import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
   ShadowCar({
     required this.images,
+    required this.avatar,
   }) : super(
           priority: 3,
           paint: Paint(),
         );
 
+  final Z1UserAvatar avatar;
   final Images images;
 
   final Set<LapLine> passedStartControl = {};
@@ -28,14 +32,7 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
   late final _renderPosition = -size.toOffset() / 2;
   late final _renderRect = _renderPosition & size;
 
-  late double _maxSpeed;
-  late double _traction;
-  late double _speed;
-
   bool initiated = false;
-
-  double get traction => _traction;
-  double get speed => _speed;
 
   List<Z1CarShadowPosition> positions = [];
   List<ShadowTrail> shadowTrails = [];
@@ -55,34 +52,34 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
       return;
     }
 
-    shadowTrails
-        .add(ShadowTrail(tireBody: body, isFrontTire: false, isLeftTire: true));
     shadowTrails.add(
-      ShadowTrail(tireBody: body, isFrontTire: false, isLeftTire: false),
+      ShadowTrail(
+        tireBody: body,
+        isFrontTire: false,
+        isLeftTire: true,
+        color: avatar.avatarBackgroundColor,
+      ),
+    );
+    shadowTrails.add(
+      ShadowTrail(
+        tireBody: body,
+        isFrontTire: false,
+        isLeftTire: false,
+        color: avatar.avatarBackgroundColor,
+      ),
     );
     game.cameraWorld.addAll(shadowTrails);
 
     // These params should be loaded from car model
-    final image = await images.load('yellow_car.png')
-      ..darken(0.7);
-    _traction = 0.9;
-    _maxSpeed = 250;
-    _speed = _maxSpeed;
+    final image = await images.load(avatar.avatarCar);
 
-    _image = image;
+    _image = await image.darken(0.3);
   }
 
   @override
   Body createBody() {
     final def = BodyDef()..type = BodyType.dynamic;
     final body = world.createBody(def)..angularDamping = 3.0;
-
-    final shape = PolygonShape()
-      ..setAsBoxXY(_renderPosition.dx, _renderPosition.dy);
-    final fixtureDef = FixtureDef(shape, isSensor: true)
-      ..density = 0.04
-      ..restitution = 0.9;
-    body.createFixture(fixtureDef);
 
     return body;
   }
@@ -129,7 +126,6 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     if (other is! Car) {
       return;
     }
-    _speed = 50;
   }
 
   @override
@@ -137,6 +133,5 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     if (other is! Car) {
       return;
     }
-    _speed = _maxSpeed;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:z1racing/game/z1racing_map.dart';
 import 'package:z1racing/menus/widgets/menu.dart';
+import 'package:z1racing/menus/widgets/menu_header.dart';
 import 'package:z1racing/menus/widgets/score/race_time_user_list.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/repositories/track_repository_impl.dart';
@@ -45,10 +46,20 @@ class _Z1HomeState extends State<Z1RacingHome> {
         ),
         Expanded(
           flex: 3,
-          child: ListView(
+          child: Column(
             children: [
-              Menu(
-                onPressStart: widget.onPressStart,
+              Container(
+                margin: const EdgeInsets.only(top: 20, right: 15),
+                child: const MenuHeader(),
+              ),
+              Expanded(
+                child: ListView(
+                  children: [
+                    Menu(
+                      onPressStart: widget.onPressStart,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

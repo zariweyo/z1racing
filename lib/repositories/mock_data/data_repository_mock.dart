@@ -228,6 +228,29 @@ class DataRepositoryMock {
   static Z1User getUser() =>
       Z1User(uid: 'uid1', name: 'player 1', z1Coins: 100);
 
+  static List<Z1User> getUsers() => [
+        Z1User(uid: 'uid1', name: 'player 1', z1Coins: 100),
+        Z1User(uid: 'uid2', name: 'player 2', z1Coins: 100),
+        Z1User(uid: 'uid3', name: 'player 3', z1Coins: 100),
+        Z1User(uid: 'uid4', name: 'player 4', z1Coins: 100),
+        Z1User(uid: 'uid5', name: 'player 5', z1Coins: 100),
+        Z1User(uid: 'uid6', name: 'player 6', z1Coins: 100),
+        Z1User(uid: 'uid7', name: 'player 7', z1Coins: 100),
+        Z1User(uid: 'uid8', name: 'player 8', z1Coins: 100),
+        Z1User(uid: 'uid9', name: 'player 9', z1Coins: 100),
+        Z1User(uid: 'uid10', name: 'player 10', z1Coins: 100),
+        Z1User(uid: 'uid11', name: 'player 11', z1Coins: 100),
+        Z1User(uid: 'uid12', name: 'player 12', z1Coins: 100),
+        Z1User(uid: 'uid13', name: 'player 13', z1Coins: 100),
+        Z1User(uid: 'uid14', name: 'player 14', z1Coins: 100),
+        Z1User(uid: 'uid15', name: 'player 15', z1Coins: 100),
+        Z1User(uid: 'uid16', name: 'player 16', z1Coins: 100),
+        Z1User(uid: 'uid17', name: 'player 17', z1Coins: 100),
+        Z1User(uid: 'uid18', name: 'player 18', z1Coins: 100),
+        Z1User(uid: 'uid19', name: 'player 19', z1Coins: 100),
+        Z1User(uid: 'uid20', name: 'player 20', z1Coins: 100),
+      ];
+
   static Future<Z1Track> getTrack(String trackId) async {
     return (await getTracks())
         .where((element) => element.trackId == trackId)
@@ -242,6 +265,8 @@ class DataRepositoryMock {
     tracks.add(MockTrack3().getTrack());
     tracks.add(MockTrack4().getTrack());
     tracks.add(MockTrack5().getTrack());
+    tracks.add(MockTrack6().getTrack());
+    tracks.add(MockTrack7().getTrack());
     return tracks;
   }
 }

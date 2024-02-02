@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/base/components/button_action.dart';
+import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/game/z1racing_game.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class GameControl extends StatelessWidget {
   final Z1RacingGame gameRef;
@@ -27,12 +29,13 @@ class GameControl extends StatelessWidget {
     required Function() onTap,
   }) {
     final textTheme = Theme.of(context).textTheme;
+    final color = FirebaseFirestoreRepository.instance.avatarColor;
 
     return ButtonActions(
       onTap: onTap,
       child: Text(
         text,
-        style: textTheme.bodyMedium?.copyWith(color: Colors.pink.shade50),
+        style: textTheme.bodyMedium?.copyWith(color: color.shade50),
         textAlign: TextAlign.center,
       ),
     );
@@ -55,7 +58,10 @@ class GameControl extends StatelessWidget {
             children: [
               Container(
                 height: 200,
-                child: Image.asset('assets/images/woman_racer_1.png'),
+                child: Image.asset(
+                  FirebaseFirestoreRepository
+                      .instance.currentUser!.z1UserAvatar.avatarBasePath,
+                ),
               ),
               Expanded(
                 child: Column(

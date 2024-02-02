@@ -1,7 +1,7 @@
 name: z1racing
 description: A sample game featuring Flame and Forge2D for DartPad
 publish_to: "none"
-version: 01.01.02+14
+version: 01.01.03+15
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -42,12 +42,13 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   image_path: "assets/images/logo_alpha.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
-  adaptive_icon_background: "#a9d191"
+  adaptive_icon_background: "#000000"
   background_color_ios: "#ffffff"
+  adaptive_icon_foreground: "assets/images/logo_alpha.png"
   web:
     generate: true
     image_path: "assets/images/logo_app.png"
-    background_color: "#a9d191"
+    background_color: "#000000"
     theme_color: "#a9d191"
   macos:
     generate: true
@@ -59,5 +60,6 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/avatars/
     - assets/audio/
     - google_fonts/

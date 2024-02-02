@@ -15,6 +15,7 @@ class Track {
   final Vector2 position;
   final double size;
   final bool ignoreObjects;
+  final bool isMap;
 
   final List<Component> _slots = [];
   Z1Track z1track;
@@ -25,6 +26,7 @@ class Track {
     required this.position,
     required this.z1track,
     this.ignoreObjects = true,
+    this.isMap = false,
     this.size = 40,
     this.floorColor = const Color.fromARGB(255, 74, 59, 74),
   }) {
@@ -32,6 +34,7 @@ class Track {
   }
 
   void compose() {
+    final objetcOffset = isMap ? Vector2(-200, -200) : Vector2.zero();
     if (z1track.slots.isEmpty) {
       return;
     }
@@ -117,10 +120,19 @@ class Track {
         switch (objectModel.type) {
           case ObjectModelType.none:
             break;
-          case ObjectModelType.tree:
+          case ObjectModelType.tree1:
             _slots.add(
-              TreeObject(
-                position: objectModel.position,
+              Tree1Object(
+                position: objectModel.position.clone()..add(objetcOffset),
+                row: objectModel.row,
+                column: objectModel.column,
+              ),
+            );
+            break;
+          case ObjectModelType.tree2:
+            _slots.add(
+              Tree2Object(
+                position: objectModel.position.clone()..add(objetcOffset),
                 row: objectModel.row,
                 column: objectModel.column,
               ),

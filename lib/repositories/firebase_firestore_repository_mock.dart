@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
@@ -16,18 +17,22 @@ import 'package:z1racing/repositories/track_repository_impl.dart';
 class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   List<Z1UserRace> dataMockUserRaces = [];
   List<Z1CarShadow> dataMockCarShadows = [];
-  final _currentUserNotifier = ValueNotifier<Z1User?>(null);
   final _streamChangeController = StreamController<Z1User?>.broadcast();
+  late List<Z1User> userList;
+
+  @override
+  ValueNotifier<Z1User?> currentUserNotifier = ValueNotifier<Z1User?>(null);
 
   FirebaseFirestoreRepositoryMock() {
-    loadUserRacesFromMock();
-    _currentUserNotifier.addListener(() {
-      _streamChangeController.add(_currentUserNotifier.value);
+    loadFromMock();
+    currentUserNotifier.addListener(() {
+      _streamChangeController.add(currentUserNotifier.value);
     });
   }
 
-  void loadUserRacesFromMock() {
+  void loadFromMock() {
     dataMockUserRaces = DataRepositoryMock.getUserRaces();
+    userList = DataRepositoryMock.getUsers();
   }
 
   Future<List<Z1UserRace>> _mockRaces() async {
@@ -42,6 +47,11 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   @override
   Future<Z1Track> getTrackById({required String trackId}) {
     return DataRepositoryMock.getTrack(trackId);
+  }
+
+  @override
+  Future<Z1User?> getUserByUid({required String uid}) async {
+    return userList.firstWhereOrNull((element) => element.uid == uid);
   }
 
   @override
@@ -223,26 +233,44 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   @override
   Future<void> updateName(String newName) async {
     _currentUser = _currentUser.copyWith(name: newName);
-    _currentUserNotifier.value = _currentUser;
+    currentUserNotifier.value = _currentUser;
   }
 
   @override
   Future<void> addZ1Coins(int z1Coins) async {
     _currentUser =
         _currentUser.copyWith(z1Coins: _currentUser.z1Coins + z1Coins);
-    _currentUserNotifier.value = _currentUser;
+    currentUserNotifier.value = _currentUser;
   }
 
   @override
   Future<void> removeZ1Coins(int z1Coins) async {
     _currentUser =
         _currentUser.copyWith(z1Coins: max(_currentUser.z1Coins - z1Coins, 0));
-    _currentUserNotifier.value = _currentUser;
+    currentUserNotifier.value = _currentUser;
   }
 
   @override
   Z1Version get z1version => Z1Version();
 
   @override
-  Stream<Z1User?> get z1UserStream => _streamChangeController.stream;
+  Future<void> updateAvatar(Z1UserAvatar avatar) async {
+    _currentUser = _currentUser.copyWith(z1UserAvatar: avatar);
+    final index =
+        userList.indexWhere((element) => element.uid == _currentUser.uid);
+    if (index >= 0) {
+      userList[index] = _currentUser;
+    }
+    currentUserNotifier.value = _currentUser;
+  }
+
+  @override
+  MaterialColor get avatarColor =>
+      currentUser?.z1UserAvatar.avatarBackgroundColor ??
+      Z1UserAvatar.values.first.avatarBackgroundColor;
+
+  @override
+  String get avatarCar =>
+      currentUser?.z1UserAvatar.avatarCar ??
+      Z1UserAvatar.values.first.avatarCar;
 }

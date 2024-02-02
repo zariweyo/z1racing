@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:z1racing/base/components/duration_widget.dart';
 import 'package:z1racing/models/z1user_race.dart';
-import 'package:z1racing/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class ScoreUserRow extends StatelessWidget {
   final int position;
@@ -12,9 +12,10 @@ class ScoreUserRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    var color = Colors.pink[50];
-    if (FirebaseAuthRepository.instance.currentUser?.uid == race.uid) {
-      color = Colors.pink[200];
+    final colorAvatar = FirebaseFirestoreRepository.instance.avatarColor;
+    var color = colorAvatar[50];
+    if (FirebaseFirestoreRepository.instance.currentUser?.uid == race.uid) {
+      color = colorAvatar[200];
     }
     final bodyMedium =
         textTheme.bodyMedium?.copyWith(fontSize: 12, color: color);

@@ -3,6 +3,8 @@
 import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/material.dart';
+import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
@@ -49,7 +51,9 @@ abstract class FirebaseFirestoreRepository {
     required String uid,
     required String trackId,
   });
+  Future<Z1User?> getUserByUid({required String uid});
   Future<void> updateName(String newName);
+  Future<void> updateAvatar(Z1UserAvatar avatar);
   Future<void> addZ1Coins(int z1Coins);
   Future<void> removeZ1Coins(int z1Coins);
   Future<int> getUserRacePositionByTime({
@@ -79,5 +83,8 @@ abstract class FirebaseFirestoreRepository {
   Future<Z1Version> getVersion();
   Z1Version get z1version;
   Z1User? get currentUser;
-  Stream<Z1User?> get z1UserStream;
+  ValueNotifier<Z1User?> currentUserNotifier = ValueNotifier<Z1User?>(null);
+  MaterialColor get avatarColor =>
+      Z1UserAvatar.values.first.avatarBackgroundColor;
+  String get avatarCar => Z1UserAvatar.values.first.avatarCar;
 }

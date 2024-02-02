@@ -17,6 +17,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
     required this.isLeftTire,
     required this.jointDef,
     required this.controlsData,
+    required this.color,
     this.isTurnableTire = false,
   }) : super(
           paint: Paint()
@@ -43,6 +44,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   final Set<LogicalKeyboardKey> pressedKeys;
   final ControlsData controlsData;
+  final Color color;
 
   late final double _maxDriveForce =
       isFrontTire ? _frontTireMaxDriveForce : _backTireMaxDriveForce;
@@ -72,7 +74,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
   Future<void> onLoad() async {
     await super.onLoad();
     if (!isFrontTire) {
-      game.cameraWorld.add(Trail(tireBody: body));
+      game.cameraWorld.add(Trail(tireBody: body, color: color));
     }
   }
 

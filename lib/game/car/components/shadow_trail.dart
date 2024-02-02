@@ -7,11 +7,13 @@ class ShadowTrail extends Component with HasPaint {
     required this.tireBody,
     required this.isFrontTire,
     required this.isLeftTire,
+    required this.color,
   }) : super(priority: 1);
 
   final Body tireBody;
   final bool isFrontTire;
   final bool isLeftTire;
+  final Color color;
 
   final trail = <Offset>[];
   final _trailLength = 20;
@@ -21,7 +23,7 @@ class ShadowTrail extends Component with HasPaint {
   @override
   Future<void> onLoad() async {
     paint
-      ..color = (const Color.fromARGB(30, 227, 209, 93))
+      ..color = color.withAlpha(50)
       ..strokeWidth = 2.0;
     jointAnchor = Vector2(
       isLeftTire ? -3.0 : 3.0,

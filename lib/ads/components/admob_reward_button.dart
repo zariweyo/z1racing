@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:z1racing/ads/controller/admob_controller.dart';
-import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class AdmobRewardButton extends StatefulWidget {
@@ -15,27 +12,30 @@ class AdmobRewardButton extends StatefulWidget {
 class _AdmobRewardButtonState extends State<AdmobRewardButton> {
   bool loading = false;
   int z1Coins = 0;
-  StreamSubscription<Z1User?>? streamSubscription;
 
   @override
   void initState() {
     super.initState();
     z1Coins = FirebaseFirestoreRepository.instance.currentUser?.z1Coins ?? 0;
-    streamSubscription =
-        FirebaseFirestoreRepository.instance.z1UserStream.listen((z1User) {
-      if (mounted) {
-        setState(() {
-          loading = false;
-          z1Coins = z1User?.z1Coins ?? 0;
-        });
-      }
-    });
+    FirebaseFirestoreRepository.instance.currentUserNotifier
+        .addListener(addReward);
   }
 
   @override
   void dispose() {
-    streamSubscription?.cancel();
+    FirebaseFirestoreRepository.instance.currentUserNotifier
+        .removeListener(addReward);
     super.dispose();
+  }
+
+  void addReward() {
+    if (mounted) {
+      setState(() {
+        loading = false;
+        z1Coins =
+            FirebaseFirestoreRepository.instance.currentUser?.z1Coins ?? 0;
+      });
+    }
   }
 
   @override

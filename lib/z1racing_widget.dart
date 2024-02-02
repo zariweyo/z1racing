@@ -29,12 +29,14 @@ enum _Z1RacingWidgetStateHome { home, race, loading, update }
 class _Z1RacingWidgetState extends State<Z1RacingWidget> {
   late GlobalKey key;
   _Z1RacingWidgetStateHome stateHome = _Z1RacingWidgetStateHome.loading;
+  Color currentBackgroundColor = Colors.black;
 
   @override
   void initState() {
     key = GlobalKey();
     FirebaseAuthRepository.instance.init().then((_) async {
       await FirebaseFirestoreRepository.instance.init();
+      currentUserChange();
       final z1versionState = FirebaseFirestoreRepository.instance.z1version
           .check(FirebaseAuthRepository.instance.packageInfo);
       switch (z1versionState) {
@@ -52,6 +54,9 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
       }
     });
 
+    FirebaseFirestoreRepository.instance.currentUserNotifier
+        .addListener(currentUserChange);
+
     startBgmMusic();
 
     super.initState();
@@ -60,7 +65,19 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
   @override
   void dispose() {
     FlameAudio.bgm.dispose();
+    FirebaseFirestoreRepository.instance.currentUserNotifier
+        .removeListener(currentUserChange);
     super.dispose();
+  }
+
+  void currentUserChange() {
+    if (FirebaseFirestoreRepository.instance.avatarColor !=
+        currentBackgroundColor) {
+      setState(() {
+        currentBackgroundColor =
+            FirebaseFirestoreRepository.instance.avatarColor;
+      });
+    }
   }
 
   void _reset() {
@@ -153,7 +170,23 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
-      home: _getHome(),
+      home: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            opacity: 0.2,
+            colorFilter: ColorFilter.mode(
+              currentBackgroundColor,
+              BlendMode.modulate,
+            ),
+            image: const AssetImage(
+              'assets/images/background.png',
+            ), // Especifica la ruta de tu imagen
+            fit: BoxFit.none,
+            repeat: ImageRepeat.repeat, // Esto hará que tu imagen se repita
+          ),
+        ),
+        child: _getHome(),
+      ),
       theme: theme,
     );
   }
@@ -167,7 +200,11 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
       loadingBuilder: (context) =>
           const LoadingWidget(key: ValueKey('InitialLoadingWidget')),
       overlayBuilderMap: {
-        'game_over': (_, game) => GameOver(game, onReset: _reset),
+        'game_over': (_, game) => GameOver(
+              game,
+              onReset: _reset,
+              onRestart: _restart,
+            ),
         'game_control': (_, game) => GameControl(
               gameRef: game,
               onReset: _reset,

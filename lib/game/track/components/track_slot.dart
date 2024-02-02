@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:z1racing/models/slot/slot_model.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class TrackSlot extends BodyComponent<Forge2DGame> {
   TrackSlot({
@@ -58,7 +59,7 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
 
     path.reset();
     paint.style = PaintingStyle.fill;
-    paint.color = const Color.fromARGB(255, 246, 67, 234);
+    paint.color = FirebaseFirestoreRepository.instance.avatarColor;
     paint.color = paint.color.darken(0.4);
 
     slotModel.points1.forEachIndexed((index, element) {
@@ -94,12 +95,15 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
     paint.color = ColorExtension.fromRGBHexString('#33cccc');
     paint.color = paint.color.darken(0.5);
     paint.style = PaintingStyle.fill;
-    paint.strokeWidth = 7.0;
+    paint.strokeWidth = 20.0;
+
+    Vector2? firstaddedPoint;
 
     slotModel.pointsAdded.reversed.forEachIndexed((index, element) {
       element = element * scale;
       if (index == 0) {
         path.moveTo(element.x, element.y);
+        firstaddedPoint = Vector2(element.x, element.y);
       } else {
         path.lineTo(element.x, element.y);
       }
@@ -110,6 +114,13 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
       path.lineTo(element.x, element.y);
     });
 
+    if (firstaddedPoint != null) {
+      path.lineTo(firstaddedPoint!.x, firstaddedPoint!.y);
+    }
+
+    canvas.drawPath(path, paint);
+
+    paint.style = PaintingStyle.stroke;
     canvas.drawPath(path, paint);
 
     canvas.drawColor(backgroundColor, BlendMode.color);

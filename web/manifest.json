@@ -3,7 +3,7 @@
     "short_name": "Z1 Racing",
     "start_url": ".",
     "display": "fullscreen",
-    "background_color": "#a9d191",
+    "background_color": "#000000",
     "theme_color": "#a9d191",
     "description": "Z1 Racing",
     "orientation": "landscape-primary",

@@ -123,7 +123,7 @@ class MockTrack5 extends MockTrack {
       ],
       'objects': [
         {
-          'type': 'tree',
+          'type': 'tree1',
           'row': 1,
           'column': 1,
           'position': {
@@ -132,7 +132,7 @@ class MockTrack5 extends MockTrack {
           },
         },
         {
-          'type': 'tree',
+          'type': 'tree1',
           'row': 0,
           'column': 1,
           'position': {
@@ -141,7 +141,7 @@ class MockTrack5 extends MockTrack {
           },
         },
         {
-          'type': 'tree',
+          'type': 'tree1',
           'row': 0,
           'column': 2,
           'position': {
@@ -150,35 +150,35 @@ class MockTrack5 extends MockTrack {
           },
         },
         {
-          'type': 'tree',
-          'row': 2,
-          'column': 3,
+          'type': 'tree1',
+          'row': 1,
+          'column': 2,
           'position': {
             'x': 360.0,
             'y': 40.0,
           },
         },
         {
-          'type': 'tree',
-          'row': 2,
-          'column': 3,
+          'type': 'tree1',
+          'row': 1,
+          'column': 2,
           'position': {
             'x': 360.0,
             'y': 100.0,
           },
         },
         {
-          'type': 'tree',
-          'row': 2,
-          'column': 3,
+          'type': 'tree1',
+          'row': 1,
+          'column': 2,
           'position': {
             'x': 360.0,
             'y': 160.0,
           },
         },
         {
-          'type': 'tree',
-          'row': 2,
+          'type': 'tree1',
+          'row': 1,
           'column': 2,
           'position': {
             'x': -120.0,
@@ -186,8 +186,8 @@ class MockTrack5 extends MockTrack {
           },
         },
         {
-          'type': 'tree',
-          'row': 2,
+          'type': 'tree1',
+          'row': 1,
           'column': 2,
           'position': {
             'x': -140.0,
@@ -195,23 +195,23 @@ class MockTrack5 extends MockTrack {
           },
         },
         {
-          'type': 'tree',
-          'row': 2,
-          'column': 2,
+          'type': 'tree1',
+          'row': 1,
+          'column': 0,
           'position': {
             'x': -80.0,
             'y': 320.0,
           },
         },
         {
-          'type': 'tree',
-          'row': 2,
-          'column': 2,
+          'type': 'tree1',
+          'row': 1,
+          'column': 0,
           'position': {
             'x': -20.0,
             'y': 320.0,
           },
-        }
+        },
       ],
       'trackId': 'Mock2TrackId_b5',
       'name': 'The Mock 5 Track',

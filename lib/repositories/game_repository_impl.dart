@@ -1,9 +1,9 @@
-import 'package:flame/input.dart';
+import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
+import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/models/z1user_race.dart';
-import 'package:z1racing/repositories/firebase_auth_repository.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/track_repository_impl.dart';
@@ -25,21 +25,23 @@ class GameRepositoryImpl extends GameRepository {
   Z1Track currentTrack = Z1Track.empty();
   Z1UserRace? z1UserRace;
   Z1UserRace? z1UserRaceRef;
+  Z1User? z1UserRef;
   Z1CarShadow? z1carShadow;
   Z1CarShadow? z1carShadowRef;
+  CameraComponent? raceCamera;
 
   Vector2 startPosition = Vector2(0, 0);
 
   Vector2 get trackSize => Vector2(currentTrack.width, currentTrack.height);
 
   void initRaceData() {
-    assert(FirebaseAuthRepository.instance.currentUser != null);
+    assert(FirebaseFirestoreRepository.instance.currentUser != null);
     FirebaseFirestoreRepository.instance.logEvent(name: 'race_init');
     z1UserRace = Z1UserRace.init(
-      uid: FirebaseAuthRepository.instance.currentUser!.uid,
+      uid: FirebaseFirestoreRepository.instance.currentUser!.uid,
       trackId: currentTrack.trackId,
       numLaps: currentTrack.numLaps,
-      displayName: FirebaseAuthRepository.instance.currentUser!.name,
+      displayName: FirebaseFirestoreRepository.instance.currentUser!.name,
     );
     z1carShadow = Z1CarShadow(
       id: z1UserRace!.id,
@@ -52,10 +54,10 @@ class GameRepositoryImpl extends GameRepository {
   }
 
   Future loadRefRace() async {
-    assert(FirebaseAuthRepository.instance.currentUser != null);
+    assert(FirebaseFirestoreRepository.instance.currentUser != null);
 
     final currentZ1UserRaces = await TrackRepositoryImpl().getUserRaces(
-      uid: FirebaseAuthRepository.instance.currentUser!.uid,
+      uid: FirebaseFirestoreRepository.instance.currentUser!.uid,
       trackId: currentTrack.trackId,
     );
 
@@ -64,7 +66,8 @@ class GameRepositoryImpl extends GameRepository {
 
     if (currentZ1UserRaces.races.isNotEmpty) {
       final userPos = currentZ1UserRaces.races.indexWhere(
-        (race) => race.uid == FirebaseAuthRepository.instance.currentUser!.uid,
+        (race) =>
+            race.uid == FirebaseFirestoreRepository.instance.currentUser!.uid,
       );
       if (userPos <= 0) {
         z1UserRaceRef = currentZ1UserRaces.races.first;
@@ -77,6 +80,9 @@ class GameRepositoryImpl extends GameRepository {
           uid: z1UserRaceRef!.uid,
           trackId: currentTrack.trackId,
         );
+
+        z1UserRef = await FirebaseFirestoreRepository.instance
+            .getUserByUid(uid: z1UserRaceRef!.uid);
       }
     }
   }

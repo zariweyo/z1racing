@@ -3,10 +3,12 @@ import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
+import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/game/car/components/tire.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
 import 'package:z1racing/game/z1racing_game.dart';
+import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
@@ -14,11 +16,13 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     required this.images,
     required this.playerNumber,
     required this.cameraComponent,
+    required this.avatar,
   }) : super(
           priority: 3,
           paint: Paint(),
         );
 
+  final Z1UserAvatar avatar;
   final Images images;
   late final List<Tire> tires;
 
@@ -45,7 +49,7 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     await super.onLoad();
 
     // These params should be loaded from car model
-    final image = await images.load('pink_car.png');
+    final image = await images.load(avatar.avatarCar);
     _traction = 0.9;
     _maxSpeed = 250;
     _speed = _maxSpeed;
@@ -91,6 +95,7 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
         isLeftTire: isLeftTire,
         jointDef: jointDef,
         isTurnableTire: isFrontTire,
+        color: avatar.avatarBackgroundColor,
       );
     });
 

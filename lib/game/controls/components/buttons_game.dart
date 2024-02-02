@@ -150,10 +150,10 @@ class ButtonsGame extends PositionComponent with DragCallbacks {
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    final imageLeft = await images.load('arrow_left.png');
-    final imageRight = await images.load('arrow_right.png');
-    final imageUp = await images.load('arrow_up.png');
-    final imageBrake = await images.load('brake.png');
+    final imageLeft = await images.load('go_left.png');
+    final imageRight = await images.load('go_right.png');
+    final imageUp = await images.load('go_run.png');
+    final imageBrake = await images.load('go_brake.png');
 
     final bottonLeft = _createButton(
       image: imageLeft,
@@ -169,12 +169,13 @@ class ButtonsGame extends PositionComponent with DragCallbacks {
     );
     final bottonUp = _createButton(
       image: imageUp,
-      margin: const EdgeInsets.only(right: 10, bottom: 270),
+      margin: const EdgeInsets.only(right: 40, bottom: 220),
+      radius: 60,
       type: ButtonGameType.up,
     );
     final bottonDown = _createButton(
       image: imageBrake,
-      margin: const EdgeInsets.only(right: 10, bottom: 120),
+      margin: const EdgeInsets.only(right: 40, bottom: 120),
       type: ButtonGameType.down,
     );
 
@@ -218,14 +219,6 @@ class ActionButton extends PositionComponent {
   final double _radius;
   final Paint _paint;
 
-  late final RRect _renderRRect = RRect.fromRectAndCorners(
-    Rect.fromCircle(center: Offset(_radius * 2, _radius * 2), radius: _radius),
-    topLeft: const Radius.circular(20),
-    topRight: const Radius.circular(20),
-    bottomLeft: const Radius.circular(20),
-    bottomRight: const Radius.circular(20),
-  );
-
   late final Rect _renderRect = Rect.fromCircle(
     center: Offset(_radius * 2, _radius * 2),
     radius: _radius,
@@ -234,7 +227,6 @@ class ActionButton extends PositionComponent {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    canvas.drawRRect(_renderRRect, _paint);
     canvas.drawImageRect(
       image,
       image.size.toRect(),

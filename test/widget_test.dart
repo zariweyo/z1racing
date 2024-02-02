@@ -30,7 +30,7 @@ void main() {
   setUp(() async {
     FirebaseAuthRepository.initInMockMode;
     FirebaseFirestoreRepository.initInMockMode;
-    currentAuthUser = FirebaseAuthRepository.instance.currentUser;
+    currentAuthUser = FirebaseFirestoreRepository.instance.currentUser;
 
     track = (await DataRepositoryMock.getTracks())
         .where((element) => element.trackId == 'Mock2TrackId_b1')
@@ -41,7 +41,7 @@ void main() {
   void resetMockRaces() {
     (FirebaseFirestoreRepository.initInMockMode
             as FirebaseFirestoreRepositoryMock)
-        .loadUserRacesFromMock();
+        .loadFromMock();
   }
 
   testWidgets('Widget LeaderBoard TEST', (WidgetTester tester) async {

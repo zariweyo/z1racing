@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
@@ -51,6 +49,8 @@ class _Z1RacingMap extends Forge2DGame {
         size: 30,
         z1track: GameRepositoryImpl().currentTrack,
         floorColor: const Color.fromARGB(255, 255, 255, 255),
+        ignoreObjects: false,
+        isMap: true,
       ).getComponents(),
     );
 
@@ -59,16 +59,16 @@ class _Z1RacingMap extends Forge2DGame {
 
   void prepareStart({required int numberOfPlayers}) {
     final currentTrack = GameRepositoryImpl().currentTrack;
-    final zoomLevel = min(
+    /* final zoomLevel = min(
       currentTrack.width / dimmensions.width,
       currentTrack.height / dimmensions.height,
-    );
+    ); */
     startCamera = CameraComponent(
       world: cameraWorld,
     )
       ..viewfinder.position = Vector2(currentTrack.minX, currentTrack.minY)
       ..viewfinder.anchor = Anchor.center
-      ..viewfinder.zoom = zoomLevel;
+      ..viewfinder.zoom = 0.4;
     add(startCamera);
   }
 

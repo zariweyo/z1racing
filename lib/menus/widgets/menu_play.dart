@@ -1,10 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/ads/controller/admob_controller.dart';
 import 'package:z1racing/base/components/button_action.dart';
-import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
@@ -21,7 +18,6 @@ class _MenuPlayState extends State<MenuPlay> {
   bool get canPlay => z1Coins > 0;
   int z1Coins = 0;
   bool loading = false;
-  StreamSubscription<Z1User?>? streamSubscription;
   late bool enabled;
 
   @override
@@ -29,14 +25,8 @@ class _MenuPlayState extends State<MenuPlay> {
     super.initState();
     enabled = GameRepositoryImpl().currentTrack.enabled;
     z1Coins = FirebaseFirestoreRepository.instance.currentUser?.z1Coins ?? 0;
-    streamSubscription =
-        FirebaseFirestoreRepository.instance.z1UserStream.listen((z1User) {
-      z1Coins = z1User?.z1Coins ?? 0;
-      loading = false;
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    FirebaseFirestoreRepository.instance.currentUserNotifier
+        .addListener(userChange);
   }
 
   @override
@@ -49,12 +39,22 @@ class _MenuPlayState extends State<MenuPlay> {
 
   @override
   void dispose() {
-    streamSubscription?.cancel();
+    FirebaseFirestoreRepository.instance.currentUserNotifier
+        .removeListener(userChange);
     super.dispose();
+  }
+
+  void userChange() {
+    z1Coins = FirebaseFirestoreRepository.instance.currentUser?.z1Coins ?? 0;
+    loading = false;
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Widget text() {
     final textTheme = Theme.of(context).textTheme;
+    final colorAvatar = FirebaseFirestoreRepository.instance.avatarColor;
     if (!canPlay) {
       return Container(
         width: 110,
@@ -82,7 +82,7 @@ class _MenuPlayState extends State<MenuPlay> {
     return Text(
       AppLocalizations.of(context)!.play.toUpperCase(),
       style: textTheme.bodyLarge
-          ?.copyWith(color: Colors.pink.shade50, fontWeight: FontWeight.bold),
+          ?.copyWith(color: colorAvatar.shade50, fontWeight: FontWeight.bold),
     );
   }
 

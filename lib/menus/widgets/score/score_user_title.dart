@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/base/components/button_action.dart';
 import 'package:z1racing/models/z1track.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/track_repository_impl.dart';
 
 class ScoreUserTitle extends StatelessWidget {
@@ -18,11 +19,12 @@ class ScoreUserTitle extends StatelessWidget {
     required IconData iconData,
     Function()? onPressed,
   }) {
+    final colorAvatar = FirebaseFirestoreRepository.instance.avatarColor;
     return ButtonActions(
       onTap: onPressed,
       child: Icon(
         iconData,
-        color: Colors.pink.shade50,
+        color: colorAvatar.shade50,
       ),
     );
   }

@@ -7,7 +7,7 @@ import 'package:z1racing/menus/widgets/score/score_user_row.dart';
 import 'package:z1racing/menus/widgets/score/score_user_title.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user_race.dart';
-import 'package:z1racing/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 import 'package:z1racing/repositories/track_repository_impl.dart';
 
@@ -34,7 +34,8 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
     currentTrack = GameRepositoryImpl().currentTrack;
     controller.addListener(_scrollListener);
     currentZ1UserRaces[currentTrack.trackId] = [];
-    FirebaseAuthRepository.instance.currentUserNotifier.addListener(renameUser);
+    FirebaseFirestoreRepository.instance.currentUserNotifier
+        .addListener(renameUser);
     initUpdate();
     super.initState();
   }
@@ -54,12 +55,12 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   }
 
   void initUpdate() {
-    _update(FirebaseAuthRepository.instance.currentUser!.uid).then((_) {
+    _update(FirebaseFirestoreRepository.instance.currentUser!.uid).then((_) {
       if (currentZ1UserRaces[currentTrack.trackId]?.isNotEmpty ?? false) {
         final index = currentZ1UserRaces[currentTrack.trackId]?.indexWhere(
               (element) =>
                   element.uid ==
-                  FirebaseAuthRepository.instance.currentUser!.uid,
+                  FirebaseFirestoreRepository.instance.currentUser!.uid,
             ) ??
             -1;
         if (index > 0) {
@@ -72,7 +73,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   @override
   void dispose() {
     super.dispose();
-    FirebaseAuthRepository.instance.currentUserNotifier
+    FirebaseFirestoreRepository.instance.currentUserNotifier
         .removeListener(renameUser);
     controller.removeListener(_scrollListener);
   }
@@ -80,7 +81,8 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   void renameUser() {
     final index = currentZ1UserRaces[currentTrack.trackId]?.indexWhere(
           (element) =>
-              element.uid == FirebaseAuthRepository.instance.currentUser?.uid,
+              element.uid ==
+              FirebaseFirestoreRepository.instance.currentUser?.uid,
         ) ??
         -1;
     if (index >= 0) {
@@ -88,7 +90,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
         currentZ1UserRaces[currentTrack.trackId]![index].metadata =
             currentZ1UserRaces[currentTrack.trackId]![index].metadata.copyWith(
                   displayName:
-                      FirebaseAuthRepository.instance.currentUser?.name,
+                      FirebaseFirestoreRepository.instance.currentUser?.name,
                 );
       });
     }
@@ -183,8 +185,9 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   }
 
   Widget showLoading() {
+    final color = FirebaseFirestoreRepository.instance.avatarColor;
     return LinearProgressIndicator(
-      valueColor: AlwaysStoppedAnimation<Color>(Colors.pink.shade50),
+      valueColor: AlwaysStoppedAnimation<Color>(color.shade50),
       backgroundColor: Colors.transparent,
       minHeight: 1,
     );

@@ -4,9 +4,10 @@ import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 
 class Trail extends Component with HasPaint {
-  Trail({required this.tireBody}) : super(priority: 1);
+  Trail({required this.tireBody, required this.color}) : super(priority: 1);
 
   final Body tireBody;
+  final Color color;
 
   final trail = <Offset>[];
   final _trailLength = 20;
@@ -14,7 +15,7 @@ class Trail extends Component with HasPaint {
   @override
   Future<void> onLoad() async {
     paint
-      ..color = (const Color.fromARGB(50, 219, 11, 230))
+      ..color = color.withAlpha(50)
       ..strokeWidth = 2.0;
   }
 

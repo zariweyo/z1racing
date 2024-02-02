@@ -35,6 +35,10 @@ class _CommonTextfieldState extends State<CommonTextfield> {
     return TextField(
       focusNode: focusNode,
       style: Theme.of(context).textTheme.bodyMedium,
+      decoration: const InputDecoration(
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+      ),
       textAlignVertical: TextAlignVertical.bottom,
       controller: controller,
       onSubmitted: _onSubmitted,

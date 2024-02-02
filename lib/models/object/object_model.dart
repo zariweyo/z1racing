@@ -1,7 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:vector_math/vector_math_64.dart';
 
-enum ObjectModelType { none, tree }
+enum ObjectModelType {
+  none,
+  tree1,
+  tree2,
+}
 
 class ObjectModel {
   final ObjectModelType type;
