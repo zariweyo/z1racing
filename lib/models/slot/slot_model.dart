@@ -8,8 +8,11 @@ enum TrackModelSensor { none, finish, sensor }
 
 enum SlotModelClosedAdded { none, start, end, both }
 
+enum SlotModelLevel { floor, bridge, both }
+
 abstract class SlotModel {
   final Vector2 size;
+  final SlotModelLevel level;
   final TrackModelType type;
   final TrackModelSensor sensor;
   final SlotModelClosedAdded closedAdded;
@@ -26,6 +29,7 @@ abstract class SlotModel {
     required this.size,
     required this.type,
     required this.closedAdded,
+    this.level = SlotModelLevel.floor,
     this.sensor = TrackModelSensor.none,
   });
 

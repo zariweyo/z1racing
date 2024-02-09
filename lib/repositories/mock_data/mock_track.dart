@@ -6,6 +6,7 @@ part 'mock_track4.dart';
 part 'mock_track5.dart';
 part 'mock_track6.dart';
 part 'mock_track7.dart';
+part 'mock_track8.dart';
 
 abstract class MockTrack {
   Z1Track getTrack();

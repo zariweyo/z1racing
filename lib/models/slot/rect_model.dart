@@ -12,6 +12,7 @@ class RectModel extends SlotModel {
     super.sensor,
     this.closedSide = RectModelClosedSide.none,
     super.closedAdded = SlotModelClosedAdded.none,
+    super.level = SlotModelLevel.floor,
   }) : super(type: TrackModelType.rect);
 
   factory RectModel.fromMap(dynamic mapDyn) {
@@ -59,6 +60,12 @@ class RectModel extends SlotModel {
               ) ??
               TrackModelSensor.none
           : TrackModelSensor.none,
+      level: map['level'] != null
+          ? SlotModelLevel.values.firstWhere(
+              (element) => element.name == map['level'],
+              orElse: () => SlotModelLevel.floor,
+            )
+          : SlotModelLevel.floor,
     );
   }
 

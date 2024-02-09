@@ -235,6 +235,11 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       _gameRepository.addNewShadowPosition(
         cars.first.body.position,
         cars.first.body.angle,
+        cars.first.currentLevel,
+        cars.first.tires
+            .where((element) => !element.isFrontTire)
+            .map((e) => e.position)
+            .toList(),
       );
     }
   }

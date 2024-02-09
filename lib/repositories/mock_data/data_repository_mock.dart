@@ -260,13 +260,16 @@ class DataRepositoryMock {
   static Future<List<Z1Track>> getTracks() async {
     final tracks = <Z1Track>[];
 
-    tracks.add(MockTrack1().getTrack());
+    /*
     tracks.add(MockTrack2().getTrack());
     tracks.add(MockTrack3().getTrack());
     tracks.add(MockTrack4().getTrack());
     tracks.add(MockTrack5().getTrack());
-    tracks.add(MockTrack6().getTrack());
+    tracks.add(MockTrack6().getTrack()); */
+    tracks.add(MockTrack1().getTrack());
+    tracks.add(MockTrack2().getTrack());
     tracks.add(MockTrack7().getTrack());
+    tracks.add(MockTrack8().getTrack());
     return tracks;
   }
 }

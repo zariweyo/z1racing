@@ -1,5 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
+import 'package:z1racing/models/slot/slot_model.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1user.dart';
@@ -88,12 +89,21 @@ class GameRepositoryImpl extends GameRepository {
   }
 
   @override
-  void addNewShadowPosition(Vector2 position, double angle) {
+  void addNewShadowPosition(
+    Vector2 position,
+    double angle,
+    SlotModelLevel level,
+    List<Vector2> trailPositions,
+  ) {
     z1carShadow?.addPosition(
       Z1CarShadowPosition(
         time: Duration(milliseconds: (_time * 1000).toInt()),
         position: position.clone(),
         angle: angle,
+        level: level,
+        trailPositions: trailPositions
+            .map((e) => Z1CarShadowTrailPosition(position: e.clone()))
+            .toList(),
       ),
     );
   }
@@ -113,7 +123,9 @@ class GameRepositoryImpl extends GameRepository {
     if (z1UserRace == null ||
         z1UserRace!.lapTimes.length < lap ||
         z1UserRaceRef == null ||
-        z1UserRaceRef!.lapTimes.length < lap) {
+        z1UserRaceRef!.lapTimes.length < lap ||
+        z1UserRace!.lapTimes.isEmpty ||
+        z1UserRaceRef!.lapTimes.isEmpty) {
       return Duration.zero;
     }
 

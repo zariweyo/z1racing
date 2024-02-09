@@ -2,10 +2,12 @@ import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
-import 'package:flutter/painting.dart';
+import 'package:flame/extensions.dart';
 import 'package:z1racing/game/objects/tree_object.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
+import 'package:z1racing/game/track/components/level_change_line.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
+import 'package:z1racing/models/glabal_priorities.dart';
 import 'package:z1racing/models/object/object_model.dart';
 import 'package:z1racing/models/slot/slot_model.dart';
 import 'package:z1racing/models/z1track.dart';
@@ -44,6 +46,8 @@ class Track {
     var currentTrack = z1track.slots.first;
     var currentPosition = initPosition;
     var startPositionSetted = false;
+    var currentLevel = SlotModelLevel.floor;
+
     z1track.slots.forEachIndexed((index, trackModel) {
       if (index == 0) {
         _slots.add(
@@ -56,18 +60,102 @@ class Track {
         );
         currentTrack = trackModel;
       } else {
+        final isLast = index == z1track.slots.length - 2;
         final nextAngle =
             currentTrack.outputAngle - trackModel.inputAngle + currentAngle;
         final nextPosition = currentPosition +
             (currentTrack.masterPoints.last.clone()..rotate(currentAngle)) +
             ((-trackModel.masterPoints.first.clone())..rotate(nextAngle));
 
+        if (trackModel.level != currentLevel &&
+            trackModel.level == SlotModelLevel.bridge) {
+          _slots.add(
+            LevelChangeLine(
+              id: 5,
+              position: nextPosition.clone(),
+              size: Vector2(1, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(20, 25),
+              level: SlotModelLevel.floor,
+            ),
+          );
+          _slots.add(
+            LevelChangeLine(
+              id: 5,
+              position: nextPosition.clone(),
+              size: Vector2(1, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(0, 25),
+              level: SlotModelLevel.both,
+            ),
+          );
+          _slots.add(
+            LevelChangeLine(
+              id: 5,
+              position: nextPosition.clone(),
+              size: Vector2(1, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(20, 25),
+              level: SlotModelLevel.bridge,
+            ),
+          );
+          currentLevel = trackModel.level;
+        } else if (trackModel.level != currentLevel &&
+            trackModel.level == SlotModelLevel.floor) {
+          _slots.add(
+            LevelChangeLine(
+              id: 6,
+              position: nextPosition.clone(),
+              size: Vector2(1, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(-20, 25),
+              level: SlotModelLevel.bridge,
+            ),
+          );
+          _slots.add(
+            LevelChangeLine(
+              id: 5,
+              position: nextPosition.clone(),
+              size: Vector2(1, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(0, 25),
+              level: SlotModelLevel.both,
+            ),
+          );
+          _slots.add(
+            LevelChangeLine(
+              id: 6,
+              position: nextPosition.clone(),
+              size: Vector2(1, 40),
+              angle: nextAngle,
+              offsetPotition: Vector2(20, 25),
+              level: SlotModelLevel.floor,
+            ),
+          );
+          currentLevel = trackModel.level;
+        }
+
+        var trackPriority = GlobalPriorities.slotFloor;
+        if (trackModel.level == SlotModelLevel.bridge &&
+            z1track.slots[index - 1].level == SlotModelLevel.floor) {
+          trackPriority = GlobalPriorities.slotFloor;
+        } else if (trackModel.level == SlotModelLevel.bridge &&
+            !isLast &&
+            z1track.slots[index + 1].level == SlotModelLevel.floor) {
+          trackPriority = GlobalPriorities.slotFloor;
+        } else if (trackModel.level == SlotModelLevel.bridge) {
+          trackPriority = GlobalPriorities.slotBridge;
+        }
+
         _slots.add(
           TrackSlot(
             position: nextPosition,
             slotModel: trackModel,
             angle: nextAngle,
-            floorColor: floorColor,
+            floorColor: trackPriority == GlobalPriorities.slotFloor
+                ? floorColor
+                : floorColor.darken(0.5).withAlpha(200),
+            priority: trackPriority,
           ),
         );
 

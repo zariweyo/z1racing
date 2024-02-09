@@ -8,6 +8,8 @@ import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/car/components/shadow_trail.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/z1racing_game.dart';
+import 'package:z1racing/models/glabal_priorities.dart';
+import 'package:z1racing/models/slot/slot_model.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/game_repository.dart';
@@ -18,7 +20,7 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     required this.images,
     required this.avatar,
   }) : super(
-          priority: 3,
+          priority: GlobalPriorities.shadowCarFloor,
           paint: Paint(),
         );
 
@@ -31,6 +33,7 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
   final scale = 10.0;
   late final _renderPosition = -size.toOffset() / 2;
   late final _renderRect = _renderPosition & size;
+  SlotModelLevel currentLevel = SlotModelLevel.floor;
 
   bool initiated = false;
 
@@ -41,34 +44,10 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    positions = GameRepositoryImpl()
-            .z1carShadowRef
-            ?.positions
-            .sorted((a, b) => a.time.inMilliseconds - b.time.inMilliseconds) ??
-        [];
-
     if (positions.isEmpty) {
       game.cameraWorld.remove(this);
       return;
     }
-
-    shadowTrails.add(
-      ShadowTrail(
-        tireBody: body,
-        isFrontTire: false,
-        isLeftTire: true,
-        color: avatar.avatarBackgroundColor,
-      ),
-    );
-    shadowTrails.add(
-      ShadowTrail(
-        tireBody: body,
-        isFrontTire: false,
-        isLeftTire: false,
-        color: avatar.avatarBackgroundColor,
-      ),
-    );
-    game.cameraWorld.addAll(shadowTrails);
 
     // These params should be loaded from car model
     final image = await images.load(avatar.avatarCar);
@@ -81,11 +60,56 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     final def = BodyDef()..type = BodyType.dynamic;
     final body = world.createBody(def)..angularDamping = 3.0;
 
+    positions = GameRepositoryImpl()
+            .z1carShadowRef
+            ?.positions
+            .sorted((a, b) => a.time.inMilliseconds - b.time.inMilliseconds) ??
+        [];
+
+    shadowTrails.add(
+      ShadowTrail(
+        carBody: body,
+        isFrontTire: false,
+        isLeftTire: true,
+        color: avatar.avatarBackgroundColor,
+        trailPositions: (positions.isNotEmpty)
+            ? positions
+                .where((element) => element.trailPositions.isNotEmpty)
+                .map(
+                  (e) => e.trailPositions.isNotEmpty
+                      ? e.trailPositions[0]
+                      : Z1CarShadowTrailPosition.zero(),
+                )
+                .toList()
+            : [],
+      ),
+    );
+    shadowTrails.add(
+      ShadowTrail(
+        carBody: body,
+        isFrontTire: false,
+        isLeftTire: false,
+        color: avatar.avatarBackgroundColor,
+        trailPositions: (positions.isNotEmpty)
+            ? positions
+                .where((element) => element.trailPositions.isNotEmpty)
+                .map(
+                  (e) => e.trailPositions.length > 1
+                      ? e.trailPositions[1]
+                      : Z1CarShadowTrailPosition.zero(),
+                )
+                .toList()
+            : [],
+      ),
+    );
+
+    game.cameraWorld.addAll(shadowTrails);
+
     return body;
   }
 
-  double total = 0;
   int lastIndex = 0;
+  Duration total = Duration.zero;
 
   @override
   void update(double dt) {
@@ -93,11 +117,16 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
       return;
     }
 
-    total += dt * 1000;
-    final z1CarShadowPositionIndex = lastIndex + 1;
-    if (z1CarShadowPositionIndex < positions.length) {
-      final z1CarShadowPosition = positions[z1CarShadowPositionIndex];
-      lastIndex = z1CarShadowPositionIndex;
+    total += Duration(milliseconds: (dt * 1000).toInt());
+
+    final z1CarShadowPosition = positions.firstWhereIndexedOrNull(
+      (index, element) =>
+          index >= lastIndex &&
+          element.time.inMilliseconds > total.inMilliseconds,
+    );
+
+    if (z1CarShadowPosition != null) {
+      lastIndex++;
 
       body.setTransform(
         z1CarShadowPosition.position,
@@ -105,8 +134,23 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
       );
 
       body.applyLinearImpulse(z1CarShadowPosition.position);
-    } else if (z1CarShadowPositionIndex >= positions.length) {
+      updatePriority(z1CarShadowPosition.level);
+    } else if (lastIndex >= positions.length) {
       game.cameraWorld.remove(this);
+    }
+  }
+
+  void updatePriority(SlotModelLevel level) {
+    if (currentLevel != level) {
+      currentLevel = level;
+      priority = level == SlotModelLevel.floor
+          ? GlobalPriorities.shadowCarFloor
+          : GlobalPriorities.shadowCarBridge;
+      shadowTrails.forEach((shadowTrail) {
+        shadowTrail.priority = level == SlotModelLevel.floor
+            ? GlobalPriorities.shadowCarTrailFloor
+            : GlobalPriorities.shadowCarTrailBridge;
+      });
     }
   }
 

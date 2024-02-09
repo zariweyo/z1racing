@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
+import 'package:z1racing/models/slot/collision_categorie.dart';
 import 'package:z1racing/models/slot/slot_model.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
@@ -12,6 +13,7 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
     required this.angle,
     this.backgroundColor = const Color.fromARGB(0, 0, 0, 0),
     this.floorColor = const Color.fromARGB(255, 74, 59, 74),
+    super.priority,
   });
 
   final Color backgroundColor;
@@ -150,19 +152,25 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
             : slotModel.points2,
       );
 
-    final fixtureDefExternal = FixtureDef(shapeExternal)
+    fixtureDefExternal = FixtureDef(shapeExternal)
       ..restitution = 0.5
       ..userData = this
-      ..friction = 0.1;
+      ..friction = 0.1
+      ..filter.maskBits =
+          CollisionCategorie.getCollisionFromSlotModelLevel(slotModel.level);
     final fixtureDefInternal = FixtureDef(shapeInternal)
       ..restitution = 0.5
       ..userData = this
-      ..friction = 0.1;
+      ..friction = 0.1
+      ..filter.maskBits =
+          CollisionCategorie.getCollisionFromSlotModelLevel(slotModel.level);
 
     return body
       ..createFixture(fixtureDefInternal)
       ..createFixture(fixtureDefExternal);
   }
+
+  late FixtureDef fixtureDefExternal;
 
   @override
   void render(Canvas canvas) {

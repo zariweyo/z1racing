@@ -4,7 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 
 class Trail extends Component with HasPaint {
-  Trail({required this.tireBody, required this.color}) : super(priority: 1);
+  Trail({required this.tireBody, required this.color}) : super(priority: 3);
 
   final Body tireBody;
   final Color color;

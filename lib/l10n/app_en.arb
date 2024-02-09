@@ -30,5 +30,8 @@
     "time": "Time",
     "fastLap": "Fast lap",
     "closed": "Closed",
-    "enabledMusic": "Background music"
+    "enabledMusic": "Background music",
+    "confirmClose": "Do you want to close the application?",
+    "cancel": "Cancel",
+    "closeApp": "Close Z1 Racing"
 }

@@ -17,6 +17,7 @@ class CurveModel extends SlotModel {
     super.sensor,
     super.closedAdded = SlotModelClosedAdded.none,
     this.direction = CurveModelDirection.right,
+    super.level = SlotModelLevel.floor,
   }) : super(type: TrackModelType.curve, size: Vector2(radius, radius)) {
     calculateData();
   }
@@ -46,6 +47,12 @@ class CurveModel extends SlotModel {
               orElse: () => SlotModelClosedAdded.none,
             )
           : SlotModelClosedAdded.none,
+      level: map['level'] != null
+          ? SlotModelLevel.values.firstWhere(
+              (element) => element.name == map['level'],
+              orElse: () => SlotModelLevel.floor,
+            )
+          : SlotModelLevel.floor,
     );
   }
 

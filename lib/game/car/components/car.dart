@@ -6,8 +6,10 @@ import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/game/car/components/tire.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
-import 'package:z1racing/game/track/components/track_slot.dart';
+import 'package:z1racing/game/track/components/level_change_line.dart';
 import 'package:z1racing/game/z1racing_game.dart';
+import 'package:z1racing/models/glabal_priorities.dart';
+import 'package:z1racing/models/slot/slot_model.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
@@ -18,7 +20,7 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     required this.cameraComponent,
     required this.avatar,
   }) : super(
-          priority: 3,
+          priority: GlobalPriorities.carFloor,
           paint: Paint(),
         );
 
@@ -43,6 +45,7 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
 
   double get traction => _traction;
   double get speed => _speed;
+  SlotModelLevel currentLevel = SlotModelLevel.floor;
 
   @override
   Future<void> onLoad() async {
@@ -50,8 +53,8 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
 
     // These params should be loaded from car model
     final image = await images.load(avatar.avatarCar);
-    _traction = 0.9;
-    _maxSpeed = 250;
+    _traction = 0.90; // 0..1
+    _maxSpeed = 120; // 0..120
     _speed = _maxSpeed;
 
     _image = image;
@@ -71,7 +74,7 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
 
     final shape = PolygonShape()
       ..setAsBoxXY(_renderPosition.dx, _renderPosition.dy);
-    final fixtureDef = FixtureDef(shape)
+    final fixtureDef = FixtureDef(shape, isSensor: true)
       ..density = 0.04
       ..userData = this;
     body.createFixture(fixtureDef);
@@ -102,9 +105,12 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
     return body;
   }
 
+  //DebugFps debugFps = DebugFps(desiredFps: 30, secondsSteps: 2);
+
   @override
   void update(double dt) {
     cameraComponent.viewfinder.position = body.position;
+    //debugFps.simulateDelayFps(dt: dt);
   }
 
   @override
@@ -126,17 +132,28 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
 
   @override
   void beginContact(Object other, Contact contact) {
-    if (other is! TrackSlot) {
-      return;
+    var level = currentLevel;
+    if (other is LevelChangeLine) {
+      level = other.level;
     }
-    _speed = 50;
+
+    if (currentLevel != level) {
+      currentLevel = level;
+      tires.forEach((tire) {
+        tire.changeLevel(level);
+      });
+
+      if (level == SlotModelLevel.bridge) {
+        priority = GlobalPriorities.carBridge;
+      } else if (level == SlotModelLevel.floor) {
+        priority = GlobalPriorities.carFloor;
+      }
+    }
   }
 
   @override
   void endContact(Object other, Contact contact) {
-    if (other is! TrackSlot) {
-      return;
-    }
-    _speed = _maxSpeed;
+    if (other is LevelChangeLine) {}
+    return;
   }
 }

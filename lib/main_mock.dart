@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
@@ -12,6 +13,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(false);
   FirebaseFirestoreRepository.initInMockMode;
   FirebaseAuthRepository.initInMockMode;
   AdmobController.initInMockMode;

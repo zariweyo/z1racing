@@ -30,5 +30,8 @@
     "time": "时间",
     "fastLap": "最快圈",
     "closed": "已关闭",
-    "enabledMusic": "背景音乐"
+    "enabledMusic": "背景音乐",
+    "confirmClose": "您要關閉應用程式嗎？",
+    "cancel": "取消",
+    "closeApp": "關閉 Z1 賽車"
 }

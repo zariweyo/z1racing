@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:vector_math/vector_math_64.dart';
+import 'package:z1racing/models/slot/slot_model.dart';
 
 enum GameStatus { none, gameover, start }
 
@@ -9,7 +10,12 @@ abstract class GameRepository {
   ValueNotifier<int> getLapNotifier();
   void setTime(double time);
   void addTime(double time);
-  void addNewShadowPosition(Vector2 position, double angle);
+  void addNewShadowPosition(
+    Vector2 position,
+    double angle,
+    SlotModelLevel level,
+    List<Vector2> trailPositions,
+  );
   double getTime();
   bool raceIsEnd();
   GameStatus getStatus();

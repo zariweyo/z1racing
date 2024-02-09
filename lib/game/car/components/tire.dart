@@ -6,6 +6,9 @@ import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/car/components/trail.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
 import 'package:z1racing/game/z1racing_game.dart';
+import 'package:z1racing/models/glabal_priorities.dart';
+import 'package:z1racing/models/slot/collision_categorie.dart';
+import 'package:z1racing/models/slot/slot_model.dart';
 import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
@@ -24,7 +27,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
             ..color = const Color.fromARGB(256, 3, 0, 0)
             ..strokeWidth = 0.5
             ..style = PaintingStyle.fill,
-          priority: 2,
+          priority: GlobalPriorities.carShadowFloor,
         );
 
   static const double _backTireMaxDriveForce = 300.0;
@@ -70,13 +73,31 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   final Paint _black = BasicPalette.black.paint();
 
+  Trail? trail;
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
     if (!isFrontTire) {
-      game.cameraWorld.add(Trail(tireBody: body, color: color));
+      trail = Trail(tireBody: body, color: color);
+      game.cameraWorld.add(trail!);
     }
   }
+
+  void changeLevel(SlotModelLevel level) {
+    priority = level == SlotModelLevel.floor
+        ? GlobalPriorities.carShadowFloor
+        : GlobalPriorities.carShadowBridge;
+    body.fixtures.first.filterData.categoryBits =
+        CollisionCategorie.getCollisionFromCarLevel(level);
+    trail?.priority = level == SlotModelLevel.floor
+        ? GlobalPriorities.carTrailFloor
+        : GlobalPriorities.carTrailBridge;
+  }
+
+  SlotModelLevel get level => CollisionCategorie.getSlotModelLevelFromCollision(
+        body.fixtures.first.filterData.categoryBits,
+      );
 
   @override
   Body createBody() {
@@ -93,6 +114,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
     final polygonShape = PolygonShape()..setAsBoxXY(0.5, 1.25);
     body.createFixtureFromShape(polygonShape).userData = this;
+    body.fixtures.first.filterData.categoryBits = CollisionCategorie.floor;
 
     jointDef.bodyB = body;
     jointDef.localAnchorA.setFrom(jointAnchor);
@@ -108,10 +130,14 @@ class Tire extends BodyComponent<Z1RacingGame> {
             pressedKeys.isNotEmpty ||
             controlsData.hasHorizontal() ||
             controlsData.hasVertical())) {
-      _updateTurn();
+      var adjustDrive = 1.0;
+      if (dt > 1 / 59) {
+        adjustDrive = 20.0;
+      }
+      _updateTurn(adjustDrive > 1);
       _updateFriction();
       if (!game.isGameOver) {
-        _updateDrive();
+        _updateDrive(adjustDrive);
       }
     }
   }
@@ -119,7 +145,6 @@ class Tire extends BodyComponent<Z1RacingGame> {
   @override
   void render(Canvas canvas) {
     canvas.drawRRect(_renderRect, _black);
-    canvas.drawRRect(_renderRect, paint);
   }
 
   void _updateFriction() {
@@ -141,7 +166,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
     );
   }
 
-  void _updateDrive() {
+  void _updateDrive(double adjustDtForce) {
     var desiredSpeed = 0.0;
     var brake = false;
 
@@ -161,7 +186,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
       brake = true;
     }
 
-    final currentForwardNormal = body.worldVector(Vector2(0.0, 1.0));
+    final currentForwardNormal = body.worldVector(Vector2(0, 1));
     currentSpeed = _forwardVelocity.dot(currentForwardNormal);
 
     var force = 0.0;
@@ -180,11 +205,15 @@ class Tire extends BodyComponent<Z1RacingGame> {
     }
 
     if (force.abs() > 0) {
-      body.applyForce(currentForwardNormal..scale(1 * traction * force));
+      body.applyForce(
+        currentForwardNormal..scale(1 * traction * force * adjustDtForce),
+      );
+    } else {
+      //print("--> force 0 $desiredSpeed $currentSpeed");
     }
   }
 
-  void _updateTurn() {
+  void _updateTurn(bool disable) {
     var desiredAngle = 0.0;
     var isTurning = false;
 
@@ -205,7 +234,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
       desiredAngle += _lockAngle;
       isTurning = true;
     }
-    if (isTurnableTire && isTurning) {
+    if (isTurnableTire && isTurning && !disable) {
       final turnPerTimeStep = _turnSpeedPerSecond;
       final angleNow = joint.jointAngle();
       final angleToTurn =

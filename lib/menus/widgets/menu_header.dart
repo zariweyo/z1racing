@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/base/components/button_action.dart';
+import 'package:z1racing/base/components/by_button.dart';
 import 'package:z1racing/menus/widgets/settings/menu_settings.dart';
 import 'package:z1racing/models/z1user.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
@@ -39,24 +40,31 @@ class _MenuHeaderState extends State<MenuHeader> {
   @override
   Widget build(BuildContext context) {
     final color = FirebaseFirestoreRepository.instance.avatarColor;
-    return ButtonActions(
-      onTap: () {
-        MenuSettings.open(context: context);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(5),
-        alignment: Alignment.topRight,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            titleName(context: context),
-            Icon(
-              Icons.settings,
-              color: color.shade50,
+    return Row(
+      children: [
+        Expanded(
+          child: ButtonActions(
+            onTap: () {
+              MenuSettings.open(context: context);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              alignment: Alignment.topRight,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: titleName(context: context)),
+                  Icon(
+                    Icons.settings,
+                    color: color.shade50,
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
-      ),
+        const ByButton(),
+      ],
     );
   }
 
@@ -67,8 +75,13 @@ class _MenuHeaderState extends State<MenuHeader> {
       AppLocalizations.of(context)!
           .homeHello
           .replaceAll('%%USERNAME%%', name.toUpperCase()),
-      style: textTheme.bodyMedium
-          ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+      style: textTheme.bodyMedium?.copyWith(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+      ),
     );
   }
 }
