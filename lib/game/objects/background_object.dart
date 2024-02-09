@@ -5,6 +5,7 @@ import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
 import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/repositories/game_repository.dart';
 import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class BackgroundObject extends BodyComponent<Forge2DGame> {
@@ -18,8 +19,8 @@ class BackgroundObject extends BodyComponent<Forge2DGame> {
     super.onLoad();
     _sprite = await Sprite.load('background.png');
     paint.colorFilter = ColorFilter.mode(
-      FirebaseFirestoreRepository.instance.avatarColor.shade900.withAlpha(200),
-      BlendMode.darken,
+      FirebaseFirestoreRepository.instance.avatarColor.withAlpha(50),
+      BlendMode.modulate,
     );
   }
 
@@ -33,17 +34,29 @@ class BackgroundObject extends BodyComponent<Forge2DGame> {
 
   @override
   void render(Canvas canvas) {
-    final visibleWorld = GameRepositoryImpl().raceCamera?.visibleWorldRect ??
-        camera.visibleWorldRect;
-    final left = (visibleWorld.left ~/ 100) * 100.0 - 200;
-    final right = (visibleWorld.right ~/ 100) * 100.0 + 200;
-    final top = (visibleWorld.top ~/ 100) * 100.0 - 200;
-    final bottom = (visibleWorld.bottom ~/ 100) * 100.0 + 200;
-    for (var i = left; i <= right; i += 100.0) {
-      for (var j = top; j < bottom; j += 100.0) {
+    var visibleWorld = Rect.zero;
+    if (GameRepositoryImpl().status == GameStatus.start) {
+      visibleWorld = GameRepositoryImpl().raceCamera?.visibleWorldRect ??
+          camera.visibleWorldRect;
+    } else {
+      visibleWorld = camera.visibleWorldRect.translate(
+        GameRepositoryImpl().startPosition.x,
+        GameRepositoryImpl().startPosition.y,
+      );
+    }
+
+    const extendedSize = 200.0;
+    const sideSize = 100.0;
+
+    final left = (visibleWorld.left ~/ sideSize) * sideSize - extendedSize;
+    final right = (visibleWorld.right ~/ sideSize) * sideSize + extendedSize;
+    final top = (visibleWorld.top ~/ sideSize) * sideSize - extendedSize;
+    final bottom = (visibleWorld.bottom ~/ sideSize) * sideSize + extendedSize;
+    for (var i = left; i <= right; i += sideSize) {
+      for (var j = top; j < bottom; j += sideSize) {
         _sprite.renderRect(
           canvas,
-          Rect.fromLTWH(i, j, 100, 100),
+          Rect.fromLTWH(i, j, sideSize, sideSize),
           overridePaint: paint,
         );
       }

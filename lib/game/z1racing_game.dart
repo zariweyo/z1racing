@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:flame/camera.dart';
 import 'package:flame/components.dart';
@@ -44,8 +42,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   Z1RacingGame() : super(gravity: Vector2.zero(), zoom: 1);
 
   @override
-  Color backgroundColor() =>
-      FirebaseFirestoreRepository.instance.avatarColor.shade900;
+  Color backgroundColor() => Colors.black;
 
   static const double playZoom = 3.0;
   late final World cameraWorld;
@@ -88,16 +85,11 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   }
 
   void prepareStart({required int numberOfPlayers}) {
-    final currentTrack = GameRepositoryImpl().currentTrack;
-    final zoomLevel = min(
-      currentTrack.width / canvasSize.x,
-      currentTrack.height / canvasSize.y,
-    );
+    const zoomLevel = 1.0;
     startCamera = CameraComponent(
       world: cameraWorld,
     )
-      ..viewfinder.position =
-          Vector2(canvasSize.x / 3, canvasSize.y - currentTrack.height / 2)
+      ..viewfinder.position = GameRepositoryImpl().startPosition
       ..viewfinder.anchor = Anchor.center
       ..viewfinder.zoom = zoomLevel;
     add(startCamera);

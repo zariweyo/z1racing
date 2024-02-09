@@ -105,8 +105,7 @@ class ShadowCar extends BodyComponent<Z1RacingGame> with ContactCallbacks {
       );
 
       body.applyLinearImpulse(z1CarShadowPosition.position);
-    } else if (z1CarShadowPositionIndex < 0 &&
-        lastIndex >= positions.length - 2) {
+    } else if (z1CarShadowPositionIndex >= positions.length) {
       game.cameraWorld.remove(this);
     }
   }

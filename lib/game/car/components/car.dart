@@ -71,9 +71,8 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
 
     final shape = PolygonShape()
       ..setAsBoxXY(_renderPosition.dx, _renderPosition.dy);
-    final fixtureDef = FixtureDef(shape, isSensor: true)
+    final fixtureDef = FixtureDef(shape)
       ..density = 0.04
-      ..restitution = 0.9
       ..userData = this;
     body.createFixture(fixtureDef);
 
