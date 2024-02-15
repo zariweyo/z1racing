@@ -217,7 +217,7 @@ class MockTrack5 extends MockTrack {
       'name': 'The Mock 5 Track',
       'numLaps': 3,
       'version': 1,
-      'order': 5,
+      'vorder': 5,
       'enabled': true,
       'carInitAngle': 3.055,
     });

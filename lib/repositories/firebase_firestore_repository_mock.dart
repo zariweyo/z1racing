@@ -56,16 +56,17 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
 
   @override
   Future<Z1Track?> getTrackByOrder({
-    required int order,
+    required int vorder,
+    required List<int> acceptedVersions,
     TrackRequestDirection direction = TrackRequestDirection.next,
   }) async {
     final tracks = (await DataRepositoryMock.getTracks())
-        .sorted((a, b) => a.order.compareTo(b.order));
+        .sorted((a, b) => a.vorder.compareTo(b.vorder));
     if (tracks.isEmpty) {
       return null;
     }
     var index = tracks.indexWhere(
-      (track) => track.order >= order,
+      (track) => track.vorder >= vorder,
     );
     if (direction == TrackRequestDirection.previous) {
       index--;

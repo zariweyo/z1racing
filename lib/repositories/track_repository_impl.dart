@@ -1,3 +1,4 @@
+import 'package:z1racing/enviroment/enviroment_repository.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
 import 'package:z1racing/models/z1track_races.dart';
@@ -12,11 +13,12 @@ enum UserRacesOptions { both, descending, ascending }
 class TrackRepositoryImpl extends TrackRepository {
   @override
   Future<Z1Track?> getTrack({
-    int order = 0,
+    int vorder = 0,
     TrackRequestDirection direction = TrackRequestDirection.next,
   }) async {
     return FirebaseFirestoreRepository.instance.getTrackByOrder(
-      order: order,
+      vorder: vorder,
+      acceptedVersions: EnviromentRepository.instance.acceptedVersions,
       direction: direction,
     );
   }

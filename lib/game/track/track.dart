@@ -75,7 +75,7 @@ class Track {
               position: nextPosition.clone(),
               size: Vector2(1, 40),
               angle: nextAngle,
-              offsetPotition: Vector2(20, 25),
+              offsetPotition: Vector2(-20, 25),
               level: SlotModelLevel.floor,
             ),
           );

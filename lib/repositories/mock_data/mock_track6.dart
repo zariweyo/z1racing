@@ -308,7 +308,7 @@ class MockTrack6 extends MockTrack {
       'name': 'The Mock 6 Track',
       'numLaps': 3,
       'version': 1,
-      'order': 6,
+      'vorder': 6,
       'enabled': true,
       'carInitAngle': 3.055,
     });

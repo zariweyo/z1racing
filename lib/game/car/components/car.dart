@@ -143,7 +143,7 @@ class Car extends BodyComponent<Z1RacingGame> with ContactCallbacks {
         tire.changeLevel(level);
       });
 
-      if (level == SlotModelLevel.bridge) {
+      if ([SlotModelLevel.bridge, SlotModelLevel.both].contains(level)) {
         priority = GlobalPriorities.carBridge;
       } else if (level == SlotModelLevel.floor) {
         priority = GlobalPriorities.carFloor;

@@ -10,7 +10,7 @@ class Z1Track {
   final List<SlotModel> slots;
   final int version;
   final double carInitAngle;
-  final int order;
+  final int vorder;
   final bool enabled;
   final List<ObjectModel> objects;
 
@@ -21,7 +21,7 @@ class Z1Track {
     required this.name,
     required this.numLaps,
     required this.slots,
-    required this.order,
+    required this.vorder,
     required this.enabled,
     required this.version,
     required this.objects,
@@ -33,7 +33,7 @@ class Z1Track {
     String? name,
     int? numLaps,
     List<SlotModel>? slots,
-    int? order,
+    int? vorder,
     bool? enabled,
     int? version,
     double? carInitAngle,
@@ -44,7 +44,7 @@ class Z1Track {
       name: name ?? this.name,
       numLaps: numLaps ?? this.numLaps,
       slots: slots ?? this.slots,
-      order: order ?? this.order,
+      vorder: vorder ?? this.vorder,
       enabled: enabled ?? this.enabled,
       version: version ?? this.version,
       carInitAngle: carInitAngle ?? this.carInitAngle,
@@ -57,7 +57,7 @@ class Z1Track {
       trackId: map['trackId']?.toString() ?? '',
       name: map['name']?.toString() ?? '',
       numLaps: int.tryParse(map['numLaps']?.toString() ?? '') ?? 0,
-      order: int.tryParse(map['order']?.toString() ?? '') ?? 0,
+      vorder: int.tryParse(map['vorder']?.toString() ?? '') ?? 0,
       enabled: bool.tryParse(map['enabled']?.toString() ?? '') ?? false,
       slots: map['slots'] != null
           ? (map['slots'] as List<dynamic>)
@@ -83,7 +83,7 @@ class Z1Track {
       numLaps: 0,
       enabled: false,
       slots: [],
-      order: 0,
+      vorder: 0,
       version: 0,
       objects: [],
     );

@@ -66,7 +66,8 @@ abstract class FirebaseFirestoreRepository {
     required String trackId,
   });
   Future<Z1Track?> getTrackByOrder({
-    required int order,
+    required int vorder,
+    required List<int> acceptedVersions,
     TrackRequestDirection direction = TrackRequestDirection.next,
   });
   Future<List<Z1UserRace>> getUserRacesByTime({

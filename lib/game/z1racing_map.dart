@@ -63,13 +63,15 @@ class _Z1RacingMap extends Forge2DGame {
       currentTrack.width / dimmensions.width,
       currentTrack.height / dimmensions.height,
     ); */
-    startCamera = CameraComponent(
-      world: cameraWorld,
-    )
-      ..viewfinder.position = Vector2(currentTrack.minX, currentTrack.minY)
-      ..viewfinder.anchor = Anchor.center
-      ..viewfinder.zoom = 0.4;
-    add(startCamera);
+    if (!currentTrack.isEmpty) {
+      startCamera = CameraComponent(
+        world: cameraWorld,
+      )
+        ..viewfinder.position = Vector2(currentTrack.minX, currentTrack.minY)
+        ..viewfinder.anchor = Anchor.center
+        ..viewfinder.zoom = 0.4;
+      add(startCamera);
+    }
   }
 
   @override

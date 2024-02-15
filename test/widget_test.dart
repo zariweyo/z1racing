@@ -76,7 +76,7 @@ void main() {
 
   test('Test Mock Track', () async {
     final tracks = (await DataRepositoryMock.getTracks())
-        .sorted((a, b) => a.order.compareTo(b.order));
+        .sorted((a, b) => a.vorder.compareTo(b.vorder));
     expect(tracks.length >= 3, true);
 
     Z1Track? currentTrack = tracks.first;
@@ -86,7 +86,8 @@ void main() {
       required int indexExpected,
     }) async {
       currentTrack = await FirebaseFirestoreRepository.instance.getTrackByOrder(
-        order: currentTrack!.order,
+        vorder: currentTrack!.vorder,
+        acceptedVersions: [0],
         direction: direction,
       );
       expect(currentTrack != null, true);

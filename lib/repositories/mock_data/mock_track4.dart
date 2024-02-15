@@ -44,7 +44,7 @@ class MockTrack4 extends MockTrack {
       'numLaps': 5,
       'initialDatetime': '2023-11-10T12:00:00Z',
       'version': 1,
-      'order': 4,
+      'vorder': 4,
       'enabled': true,
     });
   }

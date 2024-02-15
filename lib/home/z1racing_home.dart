@@ -72,9 +72,10 @@ class _Z1HomeState extends State<Z1RacingHome> {
     setState(() {
       loading = true;
     });
-    final order = GameRepositoryImpl().currentTrack.order;
+    final vorder = GameRepositoryImpl().currentTrack.vorder;
+
     final track = await TrackRepositoryImpl()
-        .getTrack(order: order, direction: direction);
+        .getTrack(vorder: vorder, direction: direction);
     if (track != null) {
       GameRepositoryImpl().currentTrack = track;
     }

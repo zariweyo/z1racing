@@ -161,7 +161,7 @@ class MockTrack3 extends MockTrack {
       'numLaps': 5,
       'initialDatetime': '2023-12-12T12:00:00Z',
       'version': 1,
-      'order': 3,
+      'vorder': 3,
       'enabled': true,
     });
   }

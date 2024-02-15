@@ -1,6 +1,3 @@
-import 'dart:math' as math;
-import 'dart:ui';
-
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
@@ -29,17 +26,8 @@ class LevelChangeLine extends BodyComponent {
 
   @override
   Body createBody() {
-    paint.color = const Color.fromARGB(128, 255, 255, 255);
-    paint
-      ..style = PaintingStyle.fill
-      ..shader = Gradient.radial(
-        (size / 2).toOffset(),
-        math.max(size.x, size.y),
-        [
-          paint.color,
-          Colors.black,
-        ],
-      );
+    // Enable only for testing
+    paint.color = Colors.transparent;
 
     final groundBody = world.createBody(
       BodyDef(

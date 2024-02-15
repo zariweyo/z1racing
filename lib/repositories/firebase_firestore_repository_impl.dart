@@ -321,28 +321,32 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
 
   @override
   Future<Z1Track?> getTrackByOrder({
-    required int order,
+    required int vorder,
+    required List<int> acceptedVersions,
     TrackRequestDirection direction = TrackRequestDirection.next,
   }) async {
-    var query = trackDataCol.orderBy(
-      'order',
-      descending: [TrackRequestDirection.previous, TrackRequestDirection.last]
-          .contains(direction),
-    );
+    var query =
+        trackDataCol.where('version', whereIn: acceptedVersions).orderBy(
+              'vorder',
+              descending: [
+                TrackRequestDirection.previous,
+                TrackRequestDirection.last,
+              ].contains(direction),
+            );
 
     switch (direction) {
       case TrackRequestDirection.last:
         break;
       case TrackRequestDirection.previous:
         query = query.where(
-          'order',
-          isLessThan: order,
+          'vorder',
+          isLessThan: vorder,
         );
         break;
       case TrackRequestDirection.next:
         query = query.where(
-          'order',
-          isGreaterThan: order,
+          'vorder',
+          isGreaterThan: vorder,
         );
         break;
     }
