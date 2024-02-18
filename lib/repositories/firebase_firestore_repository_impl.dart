@@ -6,6 +6,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:z1racing/base/exceptions/duplicated_name_exception.dart';
+import 'package:z1racing/base/utils/zip_utils.dart';
 import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
@@ -100,11 +101,17 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     await raceDoc.set(z1userRace.toJson());
 
     if (z1carShadow != null) {
-      return shadowDoc(
-        raceId: z1userRace.id,
-        trackId: z1userRace.trackId,
-        shadowId: z1userRace.id,
-      ).set(z1carShadow.toJson());
+      final shadowJsonData = z1carShadow.toJson();
+      final bytesSize = ZipUtils.jsonSizeInBytes(shadowJsonData);
+      debugPrint('--> bytesSize $bytesSize');
+
+      if (bytesSize < 1000000) {
+        return shadowDoc(
+          raceId: z1userRace.id,
+          trackId: z1userRace.trackId,
+          shadowId: z1userRace.id,
+        ).set(z1carShadow.toJson());
+      }
     }
   }
 
@@ -121,11 +128,17 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     await raceDoc.update(z1userRace.toUpdateTimeAndBestLapJson());
 
     if (z1carShadow != null) {
-      return shadowDoc(
-        raceId: z1userRace.id,
-        trackId: z1userRace.trackId,
-        shadowId: z1userRace.id,
-      ).set(z1carShadow.toJson());
+      final shadowJsonData = z1carShadow.toJson();
+      final bytesSize = ZipUtils.jsonSizeInBytes(shadowJsonData);
+      debugPrint('--> bytesSize $bytesSize');
+
+      if (bytesSize < 1000000) {
+        return shadowDoc(
+          raceId: z1userRace.id,
+          trackId: z1userRace.trackId,
+          shadowId: z1userRace.id,
+        ).set(z1carShadow.toJson());
+      }
     }
   }
 
@@ -142,11 +155,17 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
     await raceDoc.update(z1userRace.toUpdateTimeJson());
 
     if (z1carShadow != null) {
-      return shadowDoc(
-        raceId: z1userRace.id,
-        trackId: z1userRace.trackId,
-        shadowId: z1userRace.id,
-      ).set(z1carShadow.toJson());
+      final shadowJsonData = z1carShadow.toJson();
+      final bytesSize = ZipUtils.jsonSizeInBytes(shadowJsonData);
+      debugPrint('--> bytesSize $bytesSize');
+
+      if (bytesSize < 1000000) {
+        return shadowDoc(
+          raceId: z1userRace.id,
+          trackId: z1userRace.trackId,
+          shadowId: z1userRace.id,
+        ).set(z1carShadow.toJson());
+      }
     }
   }
 
@@ -369,6 +388,9 @@ class FirebaseFirestoreRepositoryImpl implements FirebaseFirestoreRepository {
       return [];
     }
     try {
+      if (limit == 0) {
+        return [];
+      }
       final raceCol = trackDataCol.doc(trackId).collection(racesCol);
       var query =
           raceCol.orderBy('positionHash', descending: descending).limit(limit);

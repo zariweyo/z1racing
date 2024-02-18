@@ -37,7 +37,12 @@ class GameRepositoryImpl extends GameRepository {
 
   void initRaceData() {
     assert(FirebaseFirestoreRepository.instance.currentUser != null);
-    FirebaseFirestoreRepository.instance.logEvent(name: 'race_init');
+    FirebaseFirestoreRepository.instance.logEvent(
+      name: 'race_init',
+      parameters: {
+        'trackId': currentTrack.trackId,
+      },
+    );
     z1UserRace = Z1UserRace.init(
       uid: FirebaseFirestoreRepository.instance.currentUser!.uid,
       trackId: currentTrack.trackId,
@@ -111,7 +116,13 @@ class GameRepositoryImpl extends GameRepository {
   Future<void> _onLapUpdate() async {
     addLapTimeFromCurrent();
     if (raceIsEnd()) {
-      FirebaseFirestoreRepository.instance.logEvent(name: 'race_complete');
+      FirebaseFirestoreRepository.instance.logEvent(
+        name: 'race_complete',
+        parameters: {
+          'trackId': currentTrack.trackId,
+          'millis': getTime().toInt(),
+        },
+      );
       z1UserRace =
           z1UserRace?.copyWith(time: Duration(milliseconds: getTime().toInt()));
       saveRace();
@@ -253,7 +264,12 @@ class GameRepositoryImpl extends GameRepository {
 
   @override
   void reset() {
-    FirebaseFirestoreRepository.instance.logEvent(name: 'race_reset');
+    FirebaseFirestoreRepository.instance.logEvent(
+      name: 'race_end',
+      parameters: {
+        'trackId': currentTrack.trackId,
+      },
+    );
     lapNotifier.dispose();
     lapNotifier = ValueNotifier<int>(1);
     setTime(0);
@@ -263,7 +279,12 @@ class GameRepositoryImpl extends GameRepository {
 
   @override
   void restart() {
-    FirebaseFirestoreRepository.instance.logEvent(name: 'race_restart');
+    FirebaseFirestoreRepository.instance.logEvent(
+      name: 'race_restart',
+      parameters: {
+        'trackId': currentTrack.trackId,
+      },
+    );
     lapNotifier.value = 1;
     setTime(0);
     initRaceData();

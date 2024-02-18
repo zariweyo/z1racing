@@ -33,5 +33,6 @@
     "enabledMusic": "Background music",
     "confirmClose": "Do you want to close the application?",
     "cancel": "Cancel",
-    "closeApp": "Close Z1 Racing"
+    "closeApp": "Close Z1 Racing",
+    "save": "Save"
 }

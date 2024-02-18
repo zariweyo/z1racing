@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:z1racing/base/utils/zip_utils.dart';
 import 'package:z1racing/extensions/z1useravatar_extension.dart';
 import 'package:z1racing/models/z1car_shadow.dart';
 import 'package:z1racing/models/z1track.dart';
@@ -16,7 +17,7 @@ import 'package:z1racing/repositories/track_repository_impl.dart';
 
 class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   List<Z1UserRace> dataMockUserRaces = [];
-  List<Z1CarShadow> dataMockCarShadows = [];
+  List<Map<String, dynamic>> dataMockCarShadows = [];
   final _streamChangeController = StreamController<Z1User?>.broadcast();
   late List<Z1User> userList;
 
@@ -159,19 +160,23 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
   ) async {
     dataMockUserRaces.add(z1userRace);
     if (z1carShadow != null) {
-      dataMockCarShadows.add(z1carShadow);
+      final shadowJsonData = z1carShadow.toJson();
+      final bytesSize = ZipUtils.jsonSizeInBytes(shadowJsonData);
+      debugPrint('--> Shadow $bytesSize');
+      dataMockCarShadows.add(z1carShadow.toJson());
     }
   }
 
   void _updateCarShadow(Z1CarShadow? z1carShadow) {
     if (z1carShadow != null) {
-      final index = dataMockCarShadows.indexWhere(
-        (element) =>
-            element.id == z1carShadow.id &&
-            element.z1UserRaceId == z1carShadow.z1UserRaceId,
-      );
+      final index =
+          dataMockCarShadows.map(Z1CarShadow.fromMap).toList().indexWhere(
+                (element) =>
+                    element.id == z1carShadow.id &&
+                    element.z1UserRaceId == z1carShadow.z1UserRaceId,
+              );
       if (index >= 0) {
-        dataMockCarShadows[index] = z1carShadow;
+        dataMockCarShadows[index] = z1carShadow.toJson();
       }
     }
   }
@@ -185,9 +190,12 @@ class FirebaseFirestoreRepositoryMock implements FirebaseFirestoreRepository {
     if (z1UserRace == null) {
       return null;
     }
-    return dataMockCarShadows.firstWhereOrNull(
-      (element) => element.z1UserRaceId == z1UserRace.id,
-    );
+    return dataMockCarShadows
+        .map(Z1CarShadow.fromMap)
+        .toList()
+        .firstWhereOrNull(
+          (element) => element.z1UserRaceId == z1UserRace.id,
+        );
   }
 
   @override

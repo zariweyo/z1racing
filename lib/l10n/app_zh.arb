@@ -33,5 +33,6 @@
     "enabledMusic": "背景音乐",
     "confirmClose": "您要關閉應用程式嗎？",
     "cancel": "取消",
-    "closeApp": "關閉 Z1 賽車"
+    "closeApp": "關閉 Z1 賽車",
+    "save": "保存"
 }

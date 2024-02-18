@@ -271,6 +271,7 @@ class DataRepositoryMock {
     tracks.add(MockTrack7().getTrack());
     //tracks.add(MockTrack8().getTrack());
     tracks.add(MockTrack9().getTrack());
+    tracks.add(MockTrack10().getTrack());
     return tracks;
   }
 }

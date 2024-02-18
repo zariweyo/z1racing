@@ -59,7 +59,7 @@ class _SettingsNicknameState extends State<SettingsNickname> {
           ),
         ),
         Container(
-          width: 200,
+          width: 300,
           child: CommonTextfield(
             initialText: displayName,
             onSubmitted: _nameUpdated,
