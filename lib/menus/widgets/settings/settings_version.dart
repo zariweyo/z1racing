@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:z1racing/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/domain/repositories/firebase_auth_repository.dart';
 
 class SettingsVersion extends StatelessWidget {
   const SettingsVersion({super.key});

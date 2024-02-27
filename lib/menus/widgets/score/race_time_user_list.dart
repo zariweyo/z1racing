@@ -2,18 +2,17 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:z1racing/domain/entities/z1track.dart';
+import 'package:z1racing/domain/entities/z1user_race.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/repositories/track_repository.dart';
 import 'package:z1racing/menus/widgets/score/score_user_column_title.dart';
 import 'package:z1racing/menus/widgets/score/score_user_row.dart';
 import 'package:z1racing/menus/widgets/score/score_user_title.dart';
-import 'package:z1racing/models/z1track.dart';
-import 'package:z1racing/models/z1user_race.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
-import 'package:z1racing/repositories/track_repository_impl.dart';
 
 class RaceTimeUserList extends StatefulWidget {
-  final Function(TrackRequestDirection)? changeTrack;
-  const RaceTimeUserList({super.key, this.changeTrack});
+  final Z1Track track;
+  const RaceTimeUserList({required this.track, super.key});
 
   @override
   State<RaceTimeUserList> createState() => _RaceTimeUserListState();
@@ -23,7 +22,6 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   Map<String, List<Z1UserRace>> currentZ1UserRaces = {};
   int firstPosition = 0;
   bool initiated = false;
-  late Z1Track currentTrack;
   bool loadingTop = false;
   bool loadingBottom = false;
   ScrollController controller = ScrollController();
@@ -31,33 +29,32 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
 
   @override
   void initState() {
-    currentTrack = GameRepositoryImpl().currentTrack;
     controller.addListener(_scrollListener);
-    currentZ1UserRaces[currentTrack.trackId] = [];
+    currentZ1UserRaces[widget.track.trackId] = [];
     FirebaseFirestoreRepository.instance.currentUserNotifier
         .addListener(renameUser);
     initUpdate();
     super.initState();
   }
 
-  @override
+  /* @override
   void didUpdateWidget(covariant RaceTimeUserList oldWidget) {
-    if (currentTrack != GameRepositoryImpl().currentTrack) {
+    if (widget.track != GameRepositoryImpl().widget.track) {
       setState(() {
-        currentTrack = GameRepositoryImpl().currentTrack;
+        widget.track = GameRepositoryImpl().widget.track;
         loadingTop = true;
         endComplete = false;
-        currentZ1UserRaces[currentTrack.trackId] = [];
+        currentZ1UserRaces[widget.track.trackId] = [];
         initUpdate();
       });
     }
     super.didUpdateWidget(oldWidget);
-  }
+  } */
 
   void initUpdate() {
     _update(FirebaseFirestoreRepository.instance.currentUser!.uid).then((_) {
-      if (currentZ1UserRaces[currentTrack.trackId]?.isNotEmpty ?? false) {
-        final index = currentZ1UserRaces[currentTrack.trackId]?.indexWhere(
+      if (currentZ1UserRaces[widget.track.trackId]?.isNotEmpty ?? false) {
+        final index = currentZ1UserRaces[widget.track.trackId]?.indexWhere(
               (element) =>
                   element.uid ==
                   FirebaseFirestoreRepository.instance.currentUser!.uid,
@@ -79,7 +76,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   }
 
   void renameUser() {
-    final index = currentZ1UserRaces[currentTrack.trackId]?.indexWhere(
+    final index = currentZ1UserRaces[widget.track.trackId]?.indexWhere(
           (element) =>
               element.uid ==
               FirebaseFirestoreRepository.instance.currentUser?.uid,
@@ -87,8 +84,8 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
         -1;
     if (index >= 0) {
       setState(() {
-        currentZ1UserRaces[currentTrack.trackId]![index].metadata =
-            currentZ1UserRaces[currentTrack.trackId]![index].metadata.copyWith(
+        currentZ1UserRaces[widget.track.trackId]![index].metadata =
+            currentZ1UserRaces[widget.track.trackId]![index].metadata.copyWith(
                   displayName:
                       FirebaseFirestoreRepository.instance.currentUser?.name,
                 );
@@ -97,7 +94,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   }
 
   Future<void> _scrollListener() async {
-    if (currentZ1UserRaces[currentTrack.trackId] == null) {
+    if (currentZ1UserRaces[widget.track.trackId] == null) {
       return;
     }
     if (controller.position.atEdge) {
@@ -106,25 +103,25 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
         if (firstPosition <= 1) {
           return;
         }
-        if (currentZ1UserRaces[currentTrack.trackId]!.isNotEmpty) {
-          final init = currentZ1UserRaces[currentTrack.trackId]!.length;
+        if (currentZ1UserRaces[widget.track.trackId]!.isNotEmpty) {
+          final init = currentZ1UserRaces[widget.track.trackId]!.length;
           await _update(
-            currentZ1UserRaces[currentTrack.trackId]!.first.uid,
+            currentZ1UserRaces[widget.track.trackId]!.first.uid,
             userRacesOptions: UserRacesOptions.descending,
           );
-          final res = currentZ1UserRaces[currentTrack.trackId]!.length - init;
+          final res = currentZ1UserRaces[widget.track.trackId]!.length - init;
           controller.jumpTo(res * 40 - 10);
         }
       } else if (!loadingBottom) {
         if (!endComplete &&
-            currentZ1UserRaces[currentTrack.trackId]!.isNotEmpty) {
-          final init = currentZ1UserRaces[currentTrack.trackId]!.length;
+            currentZ1UserRaces[widget.track.trackId]!.isNotEmpty) {
+          final init = currentZ1UserRaces[widget.track.trackId]!.length;
           await _update(
-            currentZ1UserRaces[currentTrack.trackId]!.last.uid,
+            currentZ1UserRaces[widget.track.trackId]!.last.uid,
             userRacesOptions: UserRacesOptions.ascending,
           );
           controller.jumpTo(controller.position.pixels + 10);
-          if (currentZ1UserRaces[currentTrack.trackId]!.length - init == 0) {
+          if (currentZ1UserRaces[widget.track.trackId]!.length - init == 0) {
             endComplete = true;
           }
         }
@@ -137,7 +134,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
     UserRacesOptions userRacesOptions = UserRacesOptions.both,
   }) {
     final completer = Completer();
-    if (currentZ1UserRaces[currentTrack.trackId] == null) {
+    if (currentZ1UserRaces[widget.track.trackId] == null) {
       completer.complete();
       return completer.future;
     }
@@ -150,22 +147,22 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
         loadingBottom = true;
       }
     });
-    TrackRepositoryImpl()
+    TrackRepository.instance
         .getUserRaces(
       uid: uid,
-      trackId: currentTrack.trackId,
+      trackId: widget.track.trackId,
       userRacesOptions: userRacesOptions,
     )
         .then((trackRace) {
       if (mounted) {
         setState(() {
           initiated = true;
-          currentZ1UserRaces[currentTrack.trackId]!
+          currentZ1UserRaces[widget.track.trackId]!
             ..addAll(
               trackRace.races.where(
                 (element) =>
-                    element.trackId == currentTrack.trackId &&
-                    !currentZ1UserRaces[currentTrack.trackId]!
+                    element.trackId == widget.track.trackId &&
+                    !currentZ1UserRaces[widget.track.trackId]!
                         .contains(element),
               ),
             )
@@ -196,7 +193,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
   Widget showList() {
     return ListView(
       controller: controller,
-      children: currentZ1UserRaces[currentTrack.trackId]
+      children: currentZ1UserRaces[widget.track.trackId]
               ?.mapIndexed(
                 (index, z1Race) => ScoreUserRow(
                   position: firstPosition + index,
@@ -224,8 +221,7 @@ class _RaceTimeUserListState extends State<RaceTimeUserList> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ScoreUserTitle(
-            currentTrack: currentTrack,
-            changeTrack: widget.changeTrack,
+            currentTrack: widget.track,
           ),
           const ScoreUserColumnsTitle(),
           if (loadingTop) showLoading(),

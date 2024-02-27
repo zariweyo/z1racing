@@ -8,7 +8,7 @@
     "version": "النسخة %%VERSION%%",
     "nickName": "الاسم المستعار",
     "updateAvailable": "التحديث متاح",
-    "updateNeeded": "الرجاء، قم بتحديث Z1Racing للمتابعة في اللعب. شكرا.",
+    "updateNeeded": "الرجاء، قم بتحديث Z1Rally للمتابعة في اللعب. شكرا.",
     "update": "تحديث",
     "menu": "القائمة",
     "restartRace": "إعادة تشغيل السباق",
@@ -33,6 +33,6 @@
     "enabledMusic": "موسيقى الخلفية",
     "confirmClose": "هل ترغب في إغلاق التطبيق؟",
     "cancel": "إلغاء",
-    "closeApp": "إغلاق Z1 Racing",
+    "closeApp": "إغلاق Z1 Rally",
     "save": "حفظ"
 }

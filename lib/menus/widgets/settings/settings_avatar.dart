@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:z1racing/domain/entities/z1user.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/extensions/z1useravatar_extension.dart';
-import 'package:z1racing/models/z1user.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class SettingsAvatar extends StatefulWidget {
   const SettingsAvatar({super.key});

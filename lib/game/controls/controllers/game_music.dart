@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flame_audio/flame_audio.dart';
-import 'package:z1racing/repositories/preferences_repository.dart';
+import 'package:z1racing/domain/repositories/preferences_repository.dart';
 
 class GameMusic {
   List<String> musics = [

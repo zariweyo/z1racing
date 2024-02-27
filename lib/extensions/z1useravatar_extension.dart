@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:z1racing/models/z1user.dart';
+import 'package:z1racing/domain/entities/z1user.dart';
 
 extension Z1UserAvatarExtension on Z1UserAvatar {
   String get _avatarPath => 'assets/images/avatars';

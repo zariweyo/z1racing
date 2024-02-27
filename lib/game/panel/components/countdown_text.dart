@@ -3,12 +3,12 @@ import 'package:flame/effects.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:z1racing/data/game_repository_impl.dart';
+import 'package:z1racing/domain/repositories/game_repository.dart';
 import 'package:z1racing/game/z1racing_game.dart';
-import 'package:z1racing/repositories/game_repository.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class CountDownText extends PositionComponent with HasGameRef<Z1RacingGame> {
-  CountDownText({this.seconds = 5}) : super();
+  CountDownText({this.seconds = 5}) : super(priority: 100);
 
   late final TextComponent _timePassedComponent;
   double totalTime = 0;

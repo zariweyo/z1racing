@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/ads/components/admob_reward_button.dart';
 import 'package:z1racing/base/components/update_button.dart';
+import 'package:z1racing/domain/entities/z1user.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/extensions/z1useravatar_extension.dart';
-import 'package:z1racing/menus/widgets/menu_play.dart';
-import 'package:z1racing/models/z1user.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class Menu extends StatefulWidget {
-  final void Function() onPressStart;
-  const Menu({required this.onPressStart, super.key});
+  const Menu({super.key});
 
   @override
   State<Menu> createState() => _MenuState();
@@ -43,9 +39,6 @@ class _MenuState extends State<Menu> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final numLaps = GameRepositoryImpl().currentTrack.numLaps;
-
     return Column(
       children: [
         Container(
@@ -65,15 +58,6 @@ class _MenuState extends State<Menu> {
                     fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 5),
-                  MenuPlay(
-                    onPressStart: widget.onPressStart,
-                  ),
-                  Text(
-                    AppLocalizations.of(context)!
-                        .numLaps
-                        .replaceAll('%%LAPS%%', numLaps.toString()),
-                    style: textTheme.bodyMedium,
-                  ),
                   const AdmobRewardButton(),
                   const UpdateButton(),
                 ],
@@ -81,7 +65,7 @@ class _MenuState extends State<Menu> {
               Column(
                 children: [
                   Container(
-                    height: 200,
+                    height: 150,
                     child: Image.asset(z1User.z1UserAvatar.avatarBasePath),
                   ),
                 ],

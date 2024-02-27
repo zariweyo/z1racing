@@ -1,8 +1,8 @@
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
-import 'package:z1racing/models/glabal_priorities.dart';
-import 'package:z1racing/models/slot/slot_model.dart';
+import 'package:z1racing/domain/entities/slot/slot_model.dart';
+import 'package:z1racing/models/global_priorities.dart';
 
 class LevelChangeLine extends BodyComponent {
   LevelChangeLine({

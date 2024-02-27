@@ -21,6 +21,10 @@ class ControlsData implements Comparable<ControlsData> {
     _delta = other.delta.clone();
   }
 
+  void updateDelta(Vector2 newDelta) {
+    _delta = newDelta.clone();
+  }
+
   double get downValue => delta.y > 0 ? delta.y : 0;
   double get upValue => delta.y < 0 ? delta.y.abs() : 0;
   double get rightValue => delta.x > 0 ? delta.x : 0;

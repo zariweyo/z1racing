@@ -8,7 +8,7 @@
     "version": "Version %%VERSION%%",
     "nickName": "Nickname",
     "updateAvailable": "Update available",
-    "updateNeeded": "Please, update Z1Racing to continue playing. Thanks.",
+    "updateNeeded": "Please, update Z1Rally to continue playing. Thanks.",
     "update": "Update",
     "menu": "Menu",
     "restartRace": "Restart race",
@@ -33,6 +33,12 @@
     "enabledMusic": "Background music",
     "confirmClose": "Do you want to close the application?",
     "cancel": "Cancel",
-    "closeApp": "Close Z1 Racing",
-    "save": "Save"
+    "closeApp": "Close Z1 Rally",
+    "save": "Save",
+    "goal1": "Win the race",
+    "goal2": "Get the 2º position",
+    "goal3": "Get the 3º position",
+    "goalPodium1": "Congratulations, you win the race",
+    "goalPodium2": "Congratulations, you have come in 2º position",
+    "goalPodium3": "Congratulations, you have come in 3º position"
 }

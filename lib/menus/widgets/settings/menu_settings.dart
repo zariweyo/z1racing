@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:z1racing/base/components/button_action.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 import 'package:z1racing/menus/widgets/settings/settings_avatar.dart';
 import 'package:z1racing/menus/widgets/settings/settings_music.dart';
 import 'package:z1racing/menus/widgets/settings/settings_nickname.dart';
 import 'package:z1racing/menus/widgets/settings/settings_version.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
 
 class MenuSettings extends StatefulWidget {
   const MenuSettings({super.key});

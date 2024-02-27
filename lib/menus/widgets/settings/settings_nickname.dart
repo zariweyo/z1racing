@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/base/components/common_textfield.dart';
 import 'package:z1racing/base/exceptions/duplicated_name_exception.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
+import 'package:z1racing/data/game_repository_impl.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 
 class SettingsNickname extends StatefulWidget {
   // ignore: avoid_positional_boolean_parameters

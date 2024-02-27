@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:z1racing/base/components/duration_widget.dart';
-import 'package:z1racing/models/z1user_race.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/entities/z1user_race.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 
 class ScoreUserRow extends StatelessWidget {
   final int position;

@@ -1,17 +1,17 @@
-import 'dart:math' as math;
+import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
+import 'package:z1racing/data/game_repository_impl.dart';
+import 'package:z1racing/domain/entities/object/object_model.dart';
+import 'package:z1racing/domain/entities/slot/slot_model.dart';
+import 'package:z1racing/domain/entities/z1track.dart';
 import 'package:z1racing/game/objects/tree_object.dart';
 import 'package:z1racing/game/track/components/lap_line.dart';
 import 'package:z1racing/game/track/components/level_change_line.dart';
 import 'package:z1racing/game/track/components/track_slot.dart';
-import 'package:z1racing/models/glabal_priorities.dart';
-import 'package:z1racing/models/object/object_model.dart';
-import 'package:z1racing/models/slot/slot_model.dart';
-import 'package:z1racing/models/z1track.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
+import 'package:z1racing/models/global_priorities.dart';
 
 class Track {
   final Vector2 position;
@@ -23,6 +23,10 @@ class Track {
   Z1Track z1track;
   Vector2 initPosition = Vector2.zero();
   final Color floorColor;
+  final Color floorBridgeColor;
+  final Color borderColor;
+  final Color borderBridgeColor;
+  Rect dimmension = Rect.zero;
 
   Track({
     required this.position,
@@ -31,31 +35,46 @@ class Track {
     this.isMap = false,
     this.size = 40,
     this.floorColor = const Color.fromARGB(255, 74, 59, 74),
+    this.floorBridgeColor = const Color.fromARGB(255, 74, 59, 74),
+    this.borderColor = const Color.fromARGB(255, 239, 235, 239),
+    this.borderBridgeColor = const Color.fromARGB(255, 239, 235, 239),
   }) {
     compose();
   }
 
   void compose() {
-    final objetcOffset = isMap ? Vector2(-200, -200) : Vector2.zero();
+    final objetcOffset = Vector2.zero();
     if (z1track.slots.isEmpty) {
       return;
     }
     initPosition = position.clone()..add(Vector2(-160, -150));
 
-    var currentAngle = z1track.slots.first.inputAngle - math.pi;
+    var currentAngle = -z1track.slots.first.inputAngle;
     var currentTrack = z1track.slots.first;
     var currentPosition = initPosition;
     var startPositionSetted = false;
     var currentLevel = SlotModelLevel.floor;
 
     z1track.slots.forEachIndexed((index, trackModel) {
+      final baseFloorColor = trackModel.level == SlotModelLevel.bridge
+          ? floorBridgeColor
+          : floorColor;
+      final baseBorderColor = trackModel.level == SlotModelLevel.bridge
+          ? borderBridgeColor
+          : borderColor;
       if (index == 0) {
         _slots.add(
           TrackSlot(
+            index: index,
             position: initPosition.clone(),
             slotModel: trackModel,
             angle: currentAngle,
-            floorColor: floorColor,
+            floorColor: baseFloorColor,
+            borderColor: baseBorderColor,
+            trackSlotPosition: z1track.numLaps <= 1
+                ? TrackSlotPosition.first
+                : TrackSlotPosition.normal,
+            priority: isMap ? -1 : GlobalPriorities.slotFloor,
           ),
         );
         currentTrack = trackModel;
@@ -67,7 +86,8 @@ class Track {
             (currentTrack.masterPoints.last.clone()..rotate(currentAngle)) +
             ((-trackModel.masterPoints.first.clone())..rotate(nextAngle));
 
-        if (trackModel.level != currentLevel &&
+        if (!isMap &&
+            trackModel.level != currentLevel &&
             trackModel.level == SlotModelLevel.bridge) {
           _slots.add(
             LevelChangeLine(
@@ -100,7 +120,8 @@ class Track {
             ),
           );
           currentLevel = trackModel.level;
-        } else if (trackModel.level != currentLevel &&
+        } else if (!isMap &&
+            trackModel.level != currentLevel &&
             trackModel.level == SlotModelLevel.floor) {
           _slots.add(
             LevelChangeLine(
@@ -136,7 +157,9 @@ class Track {
         }
 
         var trackPriority = GlobalPriorities.slotFloor;
-        if (trackModel.level == SlotModelLevel.bridge &&
+        if (isMap) {
+          trackPriority = -1;
+        } else if (trackModel.level == SlotModelLevel.bridge &&
             z1track.slots[index - 1].level == SlotModelLevel.floor) {
           trackPriority = GlobalPriorities.slotFloor;
         } else if (trackModel.level == SlotModelLevel.bridge &&
@@ -146,20 +169,21 @@ class Track {
         } else if (trackModel.level == SlotModelLevel.bridge) {
           trackPriority = GlobalPriorities.slotBridge;
         }
-
         _slots.add(
           TrackSlot(
+            index: index,
             position: nextPosition,
             slotModel: trackModel,
             angle: nextAngle,
-            floorColor: trackPriority == GlobalPriorities.slotFloor
-                ? floorColor
-                : floorColor.darken(0.5).withAlpha(200),
+            floorColor: baseFloorColor,
+            borderColor: baseBorderColor,
             priority: trackPriority,
           ),
         );
 
-        if (trackModel.sensor == TrackModelSensor.finish) {
+        if (!isMap &&
+            (trackModel.sensor == TrackModelSensor.finish ||
+                trackModel.sensor == TrackModelSensor.start)) {
           _slots.add(
             LapLine(
               id: 1,
@@ -167,7 +191,7 @@ class Track {
               size: Vector2(1, 40),
               angle: nextAngle,
               offsetPotition: Vector2(40, 25),
-              isFinish: false,
+              type: LapLineType.control,
             ),
           );
           _slots.add(
@@ -177,7 +201,7 @@ class Track {
               size: Vector2(1, 40),
               angle: nextAngle,
               offsetPotition: Vector2(60, 25),
-              isFinish: false,
+              type: LapLineType.control,
             ),
           );
           _slots.add(
@@ -187,7 +211,9 @@ class Track {
               size: Vector2(3, 40),
               angle: nextAngle,
               offsetPotition: Vector2(20, 25),
-              isFinish: true,
+              type: trackModel.sensor == TrackModelSensor.finish
+                  ? LapLineType.finish
+                  : LapLineType.start,
             ),
           );
           if (!startPositionSetted) {
@@ -200,10 +226,16 @@ class Track {
         currentTrack = trackModel;
         currentAngle = nextAngle;
         currentPosition = nextPosition;
+        dimmension = Rect.fromLTRB(
+          min(currentPosition.x, dimmension.left),
+          min(currentPosition.y, dimmension.top),
+          max(currentPosition.x, dimmension.right),
+          max(currentPosition.y, dimmension.bottom),
+        );
       }
     });
 
-    if (!ignoreObjects) {
+    if (!isMap && !ignoreObjects) {
       z1track.objects.forEachIndexed((index, objectModel) {
         switch (objectModel.type) {
           case ObjectModelType.none:
@@ -231,7 +263,5 @@ class Track {
     }
   }
 
-  Iterable<Component> getComponents() {
-    return _slots;
-  }
+  Iterable<Component> get getComponents => _slots;
 }

@@ -1,13 +1,26 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flame/camera.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
+import 'package:flame/events.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/input.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
+import 'package:z1racing/data/game_repository_impl.dart';
+import 'package:z1racing/domain/entities/z1track.dart';
+import 'package:z1racing/domain/entities/z1user.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/repositories/game_repository.dart';
+import 'package:z1racing/extensions/logicalKeyboardKey_extension.dart';
+import 'package:z1racing/game/atmosphere/night_component.dart';
+import 'package:z1racing/game/atmosphere/rain_component.dart';
 import 'package:z1racing/game/car/components/car.dart';
+import 'package:z1racing/game/car/components/ia_car.dart';
+import 'package:z1racing/game/car/components/player_car.dart';
 import 'package:z1racing/game/car/components/shadow_car.dart';
 import 'package:z1racing/game/controls/components/buttons_game.dart';
 import 'package:z1racing/game/controls/controllers/game_music.dart';
@@ -16,12 +29,8 @@ import 'package:z1racing/game/objects/background_object.dart';
 import 'package:z1racing/game/panel/components/countdown_text.dart';
 import 'package:z1racing/game/panel/components/lap_text.dart';
 import 'package:z1racing/game/panel/components/reference_time_text.dart';
-import 'package:z1racing/game/panel/components/sublap_list.dart';
 import 'package:z1racing/game/track/track.dart';
-import 'package:z1racing/models/z1user.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
-import 'package:z1racing/repositories/game_repository.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
+import 'package:z1racing/models/z1control.dart';
 
 final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
   {
@@ -38,7 +47,8 @@ final List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> playersKeys = [
   },
 ];
 
-class Z1RacingGame extends Forge2DGame with KeyboardEvents {
+class Z1RacingGame extends Forge2DGame
+    with KeyboardEvents, MultiTouchDragDetector {
   Z1RacingGame() : super(gravity: Vector2.zero(), zoom: 1);
 
   @override
@@ -49,9 +59,10 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   late CameraComponent startCamera;
   late CameraComponent raceCamera;
   late List<Map<LogicalKeyboardKey, LogicalKeyboardKey>> activeKeyMaps;
-  late List<Set<LogicalKeyboardKey>> pressedKeySets;
+  Set<Z1Control> pressedKeySet = {};
   ButtonsGame? joystick;
-  List<ControlsData> controlsDatas = [];
+
+  ControlsData controlsData = ControlsData.zero();
   final cars = <Car>[];
   bool isGameOver = true;
   Car? winner;
@@ -59,38 +70,57 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
   final GameRepository _gameRepository = GameRepositoryImpl();
   late GameMusic gameMusic;
   ReferenceTimeText? referenceTimeText;
+  late Z1Track currentTrack;
 
   @override
   Future<void> onLoad() async {
+    pressedKeySet = {};
+    activeKeyMaps = List.generate(1, (i) => playersKeys[i]);
+
+    currentTrack = GameRepositoryImpl().currentTrack;
     gameMusic = GameMusic();
     _gameRepository.reset();
     children.register<CameraComponent>();
     cameraWorld = World();
     add(cameraWorld);
+
     cameraWorld.add(BackgroundObject(gameSize: canvasSize));
 
     cameraWorld.addAll(
       Track(
         position: Vector2(200, 200),
         size: 30,
-        z1track: GameRepositoryImpl().currentTrack,
+        z1track: currentTrack,
         floorColor: const Color.fromARGB(255, 43, 67, 70),
+        floorBridgeColor: const Color.fromARGB(220, 43, 67, 70),
+        borderColor: FirebaseFirestoreRepository.instance.avatarColor,
+        borderBridgeColor:
+            FirebaseFirestoreRepository.instance.avatarColor.withAlpha(128),
         ignoreObjects: false,
-      ).getComponents(),
+      ).getComponents,
     );
 
     countdownText = CountDownText();
 
-    prepareStart(numberOfPlayers: 1);
+    if (currentTrack.settings.rain > 0) {
+      add(
+        RainEffect(
+          speed: currentTrack.settings.rain,
+        ),
+      );
+    }
+
+    prepareStart();
   }
 
-  void prepareStart({required int numberOfPlayers}) {
+  void prepareStart() {
     const zoomLevel = 1.0;
     startCamera = CameraComponent(
       world: cameraWorld,
     )
       ..viewfinder.position = GameRepositoryImpl().startPosition
       ..viewfinder.anchor = Anchor.center
+      ..viewfinder.angle = pi
       ..viewfinder.zoom = zoomLevel;
     add(startCamera);
 
@@ -99,7 +129,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         ScaleEffect.to(
           Vector2.all(playZoom),
           EffectController(duration: 1.0),
-          onComplete: () => start(numberOfPlayers: numberOfPlayers),
+          onComplete: start,
         ),
       )
       ..add(
@@ -116,7 +146,7 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     joystick?.stream.listen(onJoystickChange);
   }
 
-  void start({required int numberOfPlayers}) {
+  void start() {
     isGameOver = false;
     overlays.add('game_control');
     startCamera.removeFromParent();
@@ -135,25 +165,23 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       );
     }
 
-    final viewportSize = alignedVector(longMultiplier: 1 / numberOfPlayers);
-    final cameras = List.generate(numberOfPlayers, (i) {
-      return CameraComponent(
-        world: cameraWorld,
-        viewport: FixedSizeViewport(viewportSize.x, viewportSize.y)
-          ..position = alignedVector(
-            longMultiplier: i == 0 ? 0.0 : 1 / (i + 1),
-            shortMultiplier: 0.0,
-          ),
-      )
-        ..priority = -1
-        ..viewfinder.anchor = Anchor.center
-        ..viewfinder.zoom = playZoom;
-    });
+    final viewportSize = alignedVector(longMultiplier: 1);
+    raceCamera = CameraComponent(
+      world: cameraWorld,
+      viewport: FixedSizeViewport(viewportSize.x, viewportSize.y)
+        ..position = alignedVector(
+          longMultiplier: 0.0,
+          shortMultiplier: 0.0,
+        ),
+    )
+      ..priority = -1
+      ..viewfinder.angle = pi
+      ..viewfinder.anchor = Anchor.center
+      ..viewfinder.zoom = playZoom;
 
-    raceCamera = cameras.first;
     GameRepositoryImpl().raceCamera = raceCamera;
 
-    addAll(cameras);
+    add(raceCamera);
 
     final shadowCar = ShadowCar(
       images: images,
@@ -163,31 +191,43 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
 
     cameraWorld.add(shadowCar);
 
-    for (var i = 0; i < numberOfPlayers; i++) {
-      final car = Car(
+    final car = PlayerCar(
+      images: images,
+      controlsData: controlsData,
+      pressedKeys: pressedKeySet,
+      cameraComponent: raceCamera,
+      startPosition: GameRepositoryImpl().startPosition.clone()
+        ..translate(0, -20),
+      avatar: FirebaseFirestoreRepository.instance.currentUser!.z1UserAvatar,
+    );
+
+    _gameRepository.getLapNotifier().addListener(() {
+      if (_gameRepository.raceIsEnd()) {
+        isGameOver = true;
+        winner = car;
+        overlays.add('game_over');
+      } else {
+        Future.delayed(const Duration(milliseconds: 100), addReferenceTime);
+      }
+    });
+
+    cars.add(car);
+    cameraWorld.add(car);
+
+    GameRepositoryImpl().currentTrack.iaCars.forEach((iaCarDef) {
+      final iaCar = IACar(
         images: images,
-        playerNumber: i,
-        cameraComponent: cameras[i],
-        avatar: FirebaseFirestoreRepository.instance.currentUser!.z1UserAvatar,
+        startPosition: GameRepositoryImpl().startPosition.clone(),
+        startVia: iaCarDef.via,
+        velocity: iaCarDef.speed,
+        avatar: iaCarDef.avatar,
+        delay: iaCarDef.delay,
       );
-      final lapText = LapText();
+      cars.add(iaCar);
+      cameraWorld.add(iaCar);
+    });
 
-      final sublapText = SubLapList();
-
-      _gameRepository.getLapNotifier().addListener(() {
-        if (_gameRepository.raceIsEnd()) {
-          isGameOver = true;
-          winner = car;
-          overlays.add('game_over');
-        } else {
-          Future.delayed(const Duration(milliseconds: 100), addReferenceTime);
-        }
-      });
-
-      cars.add(car);
-      cameraWorld.add(car);
-      cameras[i].viewport.addAll([lapText, sublapText]);
-    }
+    addAll([LapText()]);
 
     initJoystick().then((_) {
       add(joystick!);
@@ -204,12 +244,23 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       FpsTextComponent(
         position: Vector2(size.x - 124, 20),
         scale: Vector2.all(0.8),
+        priority: 100,
       ),
     );
 
-    pressedKeySets = List.generate(numberOfPlayers, (_) => {});
-    activeKeyMaps = List.generate(numberOfPlayers, (i) => playersKeys[i]);
-    controlsDatas = List.generate(numberOfPlayers, (_) => ControlsData.zero());
+    if (currentTrack.settings.dark > 0) {
+      add(
+        NightComponent(
+          holePosition: Vector2(100, 100),
+          holeRadius: 50,
+          camera: raceCamera,
+          cars: cars,
+          shadowCar: shadowCar,
+          size: Vector2(400, 800),
+          dark: currentTrack.settings.dark,
+        ),
+      );
+    }
   }
 
   void addReferenceTime() {
@@ -236,28 +287,23 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
         cars.first.body.position,
         cars.first.body.angle,
         cars.first.currentLevel,
-        cars.first.tires
-            .where((element) => !element.isFrontTire)
-            .map((e) => e.position)
-            .toList(),
       );
     }
   }
 
   void onJoystickChange(ControlsData event) {
-    controlsDatas[0].updateBy(event);
+    controlsData.updateBy(event);
   }
 
   @override
   KeyEventResult onKeyEvent(
-    RawKeyEvent event,
+    KeyEvent event,
     Set<LogicalKeyboardKey> keysPressed,
   ) {
     super.onKeyEvent(event, keysPressed);
     if (!isLoaded || isGameOver) {
       return KeyEventResult.ignored;
     }
-
     pressKey(keysPressed);
     return KeyEventResult.handled;
   }
@@ -267,16 +313,14 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
     for (final key in keysPressed) {
       activeKeyMaps.forEachIndexed((i, keyMap) {
         if (keyMap.containsKey(key)) {
-          pressedKeySets[i].add(keyMap[key]!);
+          pressedKeySet.add(keyMap[key]!.toZ1Control());
         }
       });
     }
   }
 
   void _clearPressedKeys() {
-    for (final pressedKeySet in pressedKeySets) {
-      pressedKeySet.clear();
-    }
+    pressedKeySet.clear();
   }
 
   @override
@@ -286,5 +330,31 @@ class Z1RacingGame extends Forge2DGame with KeyboardEvents {
       car.onRemove();
     });
     return;
+  }
+
+  List<Vector2> dragPoints = [];
+
+  @override
+  void onDragUpdate(int pointerId, DragUpdateInfo info) {
+    dragPoints.add(raceCamera.globalToLocal(info.eventPosition.global));
+    super.onDragUpdate(pointerId, info);
+  }
+
+  @override
+  void onDragCancel(int pointerId) {
+    GameRepositoryImpl().setTap = [];
+    super.onDragCancel(pointerId);
+  }
+
+  @override
+  void onDragStart(int pointerId, DragStartInfo info) {
+    dragPoints.clear();
+    super.onDragStart(pointerId, info);
+  }
+
+  @override
+  void onDragEnd(int pointerId, DragEndInfo info) {
+    GameRepositoryImpl().setTap = dragPoints;
+    super.onDragEnd(pointerId, info);
   }
 }
