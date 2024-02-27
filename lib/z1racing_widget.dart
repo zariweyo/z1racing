@@ -3,19 +3,22 @@ import 'package:flame/game.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/base/components/loading_widget.dart';
 import 'package:z1racing/base/theme/z1theme.dart';
+import 'package:z1racing/data/game_repository_impl.dart';
+import 'package:z1racing/domain/entities/z1version.dart';
+import 'package:z1racing/domain/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/repositories/preferences_repository.dart';
 import 'package:z1racing/game/z1racing_game.dart';
 import 'package:z1racing/home/z1racing_home.dart';
-import 'package:z1racing/menus/widgets/alert_update_forced.dart';
-import 'package:z1racing/menus/widgets/game_control.dart';
-import 'package:z1racing/menus/widgets/game_over.dart';
-import 'package:z1racing/models/z1version.dart';
-import 'package:z1racing/repositories/firebase_auth_repository.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
-import 'package:z1racing/repositories/preferences_repository.dart';
+import 'package:z1racing/menus/common/alert_update_forced.dart';
+import 'package:z1racing/menus/common/game_control.dart';
+import 'package:z1racing/menus/common/game_over.dart';
+import 'package:z1racing/services/main_service/main_service_bloc.dart';
+import 'package:z1racing/services/main_service/main_service_states.dart';
 
 class Z1RacingWidget extends StatefulWidget {
   const Z1RacingWidget({super.key});
@@ -24,11 +27,9 @@ class Z1RacingWidget extends StatefulWidget {
   State<Z1RacingWidget> createState() => _Z1RacingWidgetState();
 }
 
-enum _Z1RacingWidgetStateHome { home, race, loading, update }
-
 class _Z1RacingWidgetState extends State<Z1RacingWidget> {
   late GlobalKey key;
-  _Z1RacingWidgetStateHome stateHome = _Z1RacingWidgetStateHome.loading;
+  MainServiceStateHome stateHome = MainServiceStateHome.loading;
   Color currentBackgroundColor = Colors.black;
 
   @override
@@ -43,12 +44,12 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
         case Z1VersionState.none:
         case Z1VersionState.updateAvailable:
           setState(() {
-            stateHome = _Z1RacingWidgetStateHome.home;
+            stateHome = MainServiceStateHome.home;
           });
           break;
         case Z1VersionState.updateForced:
           setState(() {
-            stateHome = _Z1RacingWidgetStateHome.update;
+            stateHome = MainServiceStateHome.update;
           });
           break;
       }
@@ -85,7 +86,7 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
       GameRepositoryImpl().reset();
       key = GlobalKey();
       game = null;
-      stateHome = _Z1RacingWidgetStateHome.home;
+      stateHome = MainServiceStateHome.home;
     });
   }
 
@@ -112,18 +113,6 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     }
   }
 
-  Future<void> onPressStart() async {
-    setState(() {
-      stateHome = _Z1RacingWidgetStateHome.loading;
-    });
-
-    await GameRepositoryImpl().loadRefRace();
-
-    setState(() {
-      stateHome = _Z1RacingWidgetStateHome.race;
-    });
-  }
-
   Future<void> _resumeAudio() async {
     final audioEnabled = PreferencesRepository.instance.getEnableMusic();
     if (audioEnabled) {
@@ -137,20 +126,18 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
   }
 
   Widget _getHome() {
-    FirebaseAnalytics.instance.setCurrentScreen(screenName: stateHome.name);
+    FirebaseAnalytics.instance.logScreenView(screenName: stateHome.name);
     switch (stateHome) {
-      case _Z1RacingWidgetStateHome.home:
+      case MainServiceStateHome.home:
         _resumeAudio();
-        return Z1RacingHome(
-          onPressStart: onPressStart,
-        );
-      case _Z1RacingWidgetStateHome.race:
+        return const Z1RacingHome();
+      case MainServiceStateHome.race:
         _stopAudio();
         return gameWidget();
-      case _Z1RacingWidgetStateHome.loading:
+      case MainServiceStateHome.loading:
         _stopAudio();
         return const LoadingWidget();
-      case _Z1RacingWidgetStateHome.update:
+      case MainServiceStateHome.update:
         _stopAudio();
         return const AlertUpdateForced();
     }
@@ -166,26 +153,32 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
     ]);
 
     return MaterialApp(
-      title: 'Z1 Racing',
+      title: 'Z1 Rally',
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
-      home: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            opacity: 0.2,
-            colorFilter: ColorFilter.mode(
-              currentBackgroundColor,
-              BlendMode.modulate,
+      home: BlocProvider(
+        create: (context) => MainServiceBloc(),
+        child: BlocListener<MainServiceBloc, MainServiceState>(
+          listener: listener,
+          child: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                opacity: 0.2,
+                colorFilter: ColorFilter.mode(
+                  currentBackgroundColor,
+                  BlendMode.modulate,
+                ),
+                image: const AssetImage(
+                  'assets/images/background.png',
+                ), // Especifica la ruta de tu imagen
+                fit: BoxFit.none,
+                repeat: ImageRepeat.repeat, // Esto hará que tu imagen se repita
+              ),
             ),
-            image: const AssetImage(
-              'assets/images/background.png',
-            ), // Especifica la ruta de tu imagen
-            fit: BoxFit.none,
-            repeat: ImageRepeat.repeat, // Esto hará que tu imagen se repita
+            child: _getHome(),
           ),
         ),
-        child: _getHome(),
       ),
       theme: theme,
     );
@@ -230,5 +223,13 @@ class _Z1RacingWidgetState extends State<Z1RacingWidget> {
       },
       child: game!,
     );
+  }
+
+  void listener(BuildContext context, MainServiceState state) {
+    if (state is MainServiceStatePage) {
+      setState(() {
+        stateHome = state.stateHome;
+      });
+    }
   }
 }

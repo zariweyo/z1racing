@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:z1racing/ads/controller/admob_controller.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 
 class AdmobRewardButton extends StatefulWidget {
   const AdmobRewardButton({super.key});

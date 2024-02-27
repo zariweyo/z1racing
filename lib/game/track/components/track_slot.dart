@@ -1,24 +1,35 @@
 import 'dart:ui';
+
 import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:z1racing/models/slot/collision_categorie.dart';
-import 'package:z1racing/models/slot/slot_model.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/entities/slot/slot_model.dart';
+import 'package:z1racing/domain/entities/slot/slot_via_model.dart';
+// ignore: unused_import
+import 'package:z1racing/extensions/double_extension.dart';
+import 'package:z1racing/models/collision_categorie.dart';
+
+enum TrackSlotPosition { first, last, normal }
 
 class TrackSlot extends BodyComponent<Forge2DGame> {
   TrackSlot({
+    required this.index,
     required this.slotModel,
     required this.position,
     required this.angle,
     this.backgroundColor = const Color.fromARGB(0, 0, 0, 0),
     this.floorColor = const Color.fromARGB(255, 74, 59, 74),
+    this.borderColor = const Color.fromARGB(255, 239, 235, 239),
+    this.trackSlotPosition = TrackSlotPosition.normal,
     super.priority,
   });
 
   final Color backgroundColor;
   final SlotModel slotModel;
   final Color floorColor;
+  final Color borderColor;
+  final TrackSlotPosition trackSlotPosition;
+  final int index;
 
   late final Image _image;
 
@@ -61,7 +72,7 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
 
     path.reset();
     paint.style = PaintingStyle.fill;
-    paint.color = FirebaseFirestoreRepository.instance.avatarColor;
+    paint.color = borderColor;
     paint.color = paint.color.darken(0.4);
 
     slotModel.points1.forEachIndexed((index, element) {
@@ -92,6 +103,24 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
       });
     }
     canvas.drawPath(path, paint);
+    path.reset();
+
+    paint.style = PaintingStyle.stroke;
+    paint.strokeWidth = 8.0;
+
+    /* slotModel.vias.forEachIndexed((index, via) {
+      paint.color = viaColors[index];
+      via.forEachIndexed((index, element) {
+        element = element * scale;
+        if (index == 0) {
+          path.moveTo(element.x, element.y);
+        } else {
+          path.lineTo(element.x, element.y);
+        }
+      });
+      canvas.drawPath(path, paint);
+      path.reset();
+    }); */
 
     path.reset();
     paint.color = ColorExtension.fromRGBHexString('#33cccc');
@@ -127,6 +156,19 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
 
     canvas.drawColor(backgroundColor, BlendMode.color);
 
+    /* add(
+      TextComponent(
+        text: angle.toAngle().toStringAsFixed(2),
+        anchor: Anchor.center,
+        textRenderer: TextPaint(
+          style: GoogleFonts.rubikMonoOne(
+            fontSize: 5,
+            color: const Color.fromARGB(235, 248, 248, 248),
+          ),
+        ),
+      ),
+    ); */
+
     final picture = recorder.endRecording();
     _image = await picture.toImage(
       _scaledRect.width.toInt(),
@@ -152,25 +194,65 @@ class TrackSlot extends BodyComponent<Forge2DGame> {
             : slotModel.points2,
       );
 
-    fixtureDefExternal = FixtureDef(shapeExternal)
+    final fixtureDefExternal = FixtureDef(shapeExternal)
       ..restitution = 0.5
       ..userData = this
       ..friction = 0.1
       ..filter.maskBits =
-          CollisionCategorie.getCollisionFromSlotModelLevel(slotModel.level);
+          CollisionCategorie.getTrackCollisionFromSlotModelLevel(
+        slotModel.level,
+      );
     final fixtureDefInternal = FixtureDef(shapeInternal)
       ..restitution = 0.5
       ..userData = this
       ..friction = 0.1
       ..filter.maskBits =
-          CollisionCategorie.getCollisionFromSlotModelLevel(slotModel.level);
+          CollisionCategorie.getTrackCollisionFromSlotModelLevel(
+        slotModel.level,
+      );
 
-    return body
+    body
       ..createFixture(fixtureDefInternal)
       ..createFixture(fixtureDefExternal);
-  }
 
-  late FixtureDef fixtureDefExternal;
+    slotModel.vias.forEachIndexed((index, via) {
+      final shapeVia = ChainShape()..createChain(via);
+      final fixtureDefVia = FixtureDef(shapeVia)
+        ..restitution = 0
+        ..userData = SlotViaModel(number: index)
+        ..friction = 0
+        ..isSensor = false
+        ..filter.maskBits =
+            CollisionCategorie.getViaCollisionFromSlotModelLevel(
+          slotModel.level,
+          index,
+        );
+      final fixtureDefViaSensor = FixtureDef(shapeVia)
+        ..restitution = 0
+        ..userData = SlotViaModel(number: index)
+        ..friction = 0
+        ..isSensor = true;
+      body
+        ..createFixture(fixtureDefVia)
+        ..createFixture(fixtureDefViaSensor);
+    });
+
+    if (trackSlotPosition == TrackSlotPosition.first) {
+      final shapeInitial = ChainShape()
+        ..createChain([slotModel.points1.first, slotModel.points2.first]);
+      final fixtureDefInitial = FixtureDef(shapeInitial)
+        ..restitution = 0.5
+        ..userData = this
+        ..friction = 0.1
+        ..filter.maskBits =
+            CollisionCategorie.getTrackCollisionFromSlotModelLevel(
+          slotModel.level,
+        );
+      body.createFixture(fixtureDefInitial);
+    }
+
+    return body;
+  }
 
   @override
   void render(Canvas canvas) {

@@ -5,10 +5,13 @@ import 'package:flame/extensions.dart';
 import 'package:flame/palette.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
+import 'package:z1racing/data/game_repository_impl.dart';
+import 'package:z1racing/domain/repositories/game_repository.dart';
+import 'package:z1racing/game/car/components/ia_car.dart';
+import 'package:z1racing/game/car/components/player_car.dart';
+import 'package:z1racing/models/global_priorities.dart';
 
-import 'package:z1racing/game/car/components/car.dart';
-import 'package:z1racing/models/glabal_priorities.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
+enum LapLineType { finish, control, start }
 
 class LapLine extends BodyComponent with ContactCallbacks {
   LapLine({
@@ -16,12 +19,12 @@ class LapLine extends BodyComponent with ContactCallbacks {
     required this.position,
     required this.size,
     required this.offsetPotition,
-    required this.isFinish,
+    required this.type,
     this.angle = 0,
   }) : super(priority: GlobalPriorities.slotFloor);
 
   final int id;
-  final bool isFinish;
+  final LapLineType type;
   @override
   final Vector2 position;
   final Vector2 offsetPotition;
@@ -30,6 +33,10 @@ class LapLine extends BodyComponent with ContactCallbacks {
   final double angle;
   late final Rect rect = size.toRect();
   Image? _finishOverlay;
+
+  bool get isFinish => type == LapLineType.finish;
+  bool get isStart => type == LapLineType.start;
+  bool get isControl => type == LapLineType.control;
 
   @override
   Future<void> onLoad() async {
@@ -101,17 +108,19 @@ class LapLine extends BodyComponent with ContactCallbacks {
 
   @override
   void beginContact(Object other, Contact contact) {
-    if (other is! Car) {
-      return;
-    }
-
-    if (isFinish && other.passedStartControl.length == 2) {
-      GameRepositoryImpl().addLap();
-      other.passedStartControl.clear();
-    } else if (!isFinish) {
-      other.passedStartControl
-          .removeWhere((passedControl) => passedControl.id > id);
-      other.passedStartControl.add(this);
+    if (other is PlayerCar) {
+      if (isFinish && other.passedStartControl.length == 2) {
+        GameRepositoryImpl().addLap();
+        other.passedStartControl.clear();
+      } else if (isControl) {
+        other.passedStartControl
+            .removeWhere((passedControl) => passedControl.id > id);
+        other.passedStartControl.add(this);
+      }
+    } else if (other is IACar && isFinish) {
+      if (GameRepositoryImpl().status != GameStatus.gameover) {
+        GameRepositoryImpl().addPosition();
+      }
     }
   }
 }

@@ -214,6 +214,7 @@ class ActionButton extends PositionComponent {
           position: Vector2(move, move),
           size: Vector2.all(2 * radius),
           anchor: Anchor.center,
+          priority: 100,
         );
 
   final double _radius;

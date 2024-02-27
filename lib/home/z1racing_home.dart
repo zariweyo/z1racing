@@ -1,14 +1,10 @@
 import 'package:flutter/widgets.dart';
-import 'package:z1racing/game/z1racing_map.dart';
+import 'package:z1racing/menus/common/menu_header.dart';
+import 'package:z1racing/menus/season/season_tracks.dart';
 import 'package:z1racing/menus/widgets/menu.dart';
-import 'package:z1racing/menus/widgets/menu_header.dart';
-import 'package:z1racing/menus/widgets/score/race_time_user_list.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
-import 'package:z1racing/repositories/track_repository_impl.dart';
 
 class Z1RacingHome extends StatefulWidget {
-  final void Function() onPressStart;
-  const Z1RacingHome({required this.onPressStart, super.key});
+  const Z1RacingHome({super.key});
 
   @override
   State<Z1RacingHome> createState() => _Z1HomeState();
@@ -19,9 +15,9 @@ class _Z1HomeState extends State<Z1RacingHome> {
 
   @override
   void initState() {
-    if (GameRepositoryImpl().currentTrack.isEmpty) {
+    /* if (GameRepositoryImpl().currentTrack.isEmpty) {
       _changeTrack(TrackRequestDirection.last);
-    }
+    } */
     super.initState();
   }
 
@@ -29,12 +25,13 @@ class _Z1HomeState extends State<Z1RacingHome> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
+/*         Expanded(
           flex: 5,
           child: Stack(
             alignment: AlignmentDirectional.center,
             children: [
               Z1RacingMap(
+                z1track: GameRepositoryImpl().currentTrack,
                 key: GlobalKey(),
               ),
               RaceTimeUserList(
@@ -43,6 +40,10 @@ class _Z1HomeState extends State<Z1RacingHome> {
               ),
             ],
           ),
+        ), */
+        const Expanded(
+          flex: 5,
+          child: SeasonTracks(),
         ),
         Expanded(
           flex: 3,
@@ -54,10 +55,8 @@ class _Z1HomeState extends State<Z1RacingHome> {
               ),
               Expanded(
                 child: ListView(
-                  children: [
-                    Menu(
-                      onPressStart: widget.onPressStart,
-                    ),
+                  children: const [
+                    Menu(),
                   ],
                 ),
               ),
@@ -66,22 +65,5 @@ class _Z1HomeState extends State<Z1RacingHome> {
         ),
       ],
     );
-  }
-
-  Future<void> _changeTrack(TrackRequestDirection direction) async {
-    setState(() {
-      loading = true;
-    });
-    final vorder = GameRepositoryImpl().currentTrack.vorder;
-
-    final track = await TrackRepositoryImpl()
-        .getTrack(vorder: vorder, direction: direction);
-    if (track != null) {
-      GameRepositoryImpl().currentTrack = track;
-    }
-
-    setState(() {
-      loading = false;
-    });
   }
 }

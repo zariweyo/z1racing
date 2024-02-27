@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:z1racing/models/z1version.dart';
-import 'package:z1racing/repositories/firebase_auth_repository.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/entities/z1version.dart';
+import 'package:z1racing/domain/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 
 class UpdateButton extends StatelessWidget {
   const UpdateButton({super.key});

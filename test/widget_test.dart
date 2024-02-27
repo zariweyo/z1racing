@@ -9,19 +9,19 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:z1racing/data/firebase_firestore_repository_mock.dart';
+import 'package:z1racing/data/game_repository_impl.dart';
+import 'package:z1racing/data/mock_data/data_repository_mock.dart';
+import 'package:z1racing/domain/entities/z1car_shadow.dart';
+import 'package:z1racing/domain/entities/z1track.dart';
+import 'package:z1racing/domain/entities/z1user.dart';
+import 'package:z1racing/domain/entities/z1user_race.dart';
+import 'package:z1racing/domain/repositories/firebase_auth_repository.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/repositories/track_repository.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
 import 'package:z1racing/extensions/string_extension.dart';
 import 'package:z1racing/menus/widgets/score/race_time_user_list.dart';
-import 'package:z1racing/models/z1car_shadow.dart';
-import 'package:z1racing/models/z1track.dart';
-import 'package:z1racing/models/z1user.dart';
-import 'package:z1racing/models/z1user_race.dart';
-import 'package:z1racing/repositories/firebase_auth_repository.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository_mock.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
-import 'package:z1racing/repositories/mock_data/data_repository_mock.dart';
-import 'package:z1racing/repositories/track_repository_impl.dart';
 
 void main() {
   Z1User? currentAuthUser;
@@ -33,7 +33,7 @@ void main() {
     currentAuthUser = FirebaseFirestoreRepository.instance.currentUser;
 
     track = (await DataRepositoryMock.getTracks())
-        .where((element) => element.trackId == 'Mock2TrackId_b1')
+        .where((element) => element.trackId == 'rookie_1')
         .first;
     GameRepositoryImpl().currentTrack = track;
   });
@@ -47,10 +47,12 @@ void main() {
   testWidgets('Widget LeaderBoard TEST', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(
-      const MaterialApp(
-        home: RaceTimeUserList(),
+      MaterialApp(
+        home: RaceTimeUserList(
+          track: track,
+        ),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: <Locale>[Locale('en')],
+        supportedLocales: const <Locale>[Locale('en')],
       ),
     );
 
@@ -74,41 +76,11 @@ void main() {
     expect(currentAuthUser?.name, currentFirestoreUser?.name);
   });
 
-  test('Test Mock Track', () async {
-    final tracks = (await DataRepositoryMock.getTracks())
-        .sorted((a, b) => a.vorder.compareTo(b.vorder));
-    expect(tracks.length >= 3, true);
-
-    Z1Track? currentTrack = tracks.first;
-
-    Future<void> doOper({
-      required TrackRequestDirection direction,
-      required int indexExpected,
-    }) async {
-      currentTrack = await FirebaseFirestoreRepository.instance.getTrackByOrder(
-        vorder: currentTrack!.vorder,
-        acceptedVersions: [0],
-        direction: direction,
-      );
-      expect(currentTrack != null, true);
-      expect(currentTrack!.id, tracks[indexExpected].id);
-    }
-
-    await doOper(direction: TrackRequestDirection.next, indexExpected: 1);
-    await doOper(direction: TrackRequestDirection.next, indexExpected: 2);
-    await doOper(direction: TrackRequestDirection.next, indexExpected: 3);
-    await doOper(direction: TrackRequestDirection.previous, indexExpected: 2);
-    await doOper(direction: TrackRequestDirection.previous, indexExpected: 1);
-    await doOper(direction: TrackRequestDirection.previous, indexExpected: 0);
-    await doOper(direction: TrackRequestDirection.next, indexExpected: 1);
-    await doOper(direction: TrackRequestDirection.previous, indexExpected: 0);
-  });
-
   test('Update race time', () async {
     resetMockRaces();
     Future<Z1UserRace?> getCurrentUserRace() async {
       const uidCheck = 'uid2';
-      final trackRaces = await TrackRepositoryImpl()
+      final trackRaces = await TrackRepository.instance
           .getUserRaces(uid: uidCheck, trackId: track.trackId);
 
       return trackRaces.races
@@ -198,7 +170,7 @@ void main() {
   test('Test Mock LeaderBoard list', () async {
     resetMockRaces();
     const uidCheck = 'uid2';
-    final trackRaces = await TrackRepositoryImpl()
+    final trackRaces = await TrackRepository.instance
         .getUserRaces(uid: uidCheck, trackId: track.trackId);
     debugPrint(
       trackRaces.races

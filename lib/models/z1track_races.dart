@@ -1,4 +1,4 @@
-import 'package:z1racing/models/z1user_race.dart';
+import 'package:z1racing/domain/entities/z1user_race.dart';
 
 class Z1TrackRaces {
   final List<Z1UserRace> races;

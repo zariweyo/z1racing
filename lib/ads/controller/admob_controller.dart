@@ -7,7 +7,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:z1racing/repositories/preferences_repository.dart';
+import 'package:z1racing/domain/repositories/preferences_repository.dart';
 
 class AdmobController {
   static AdmobController get instance {

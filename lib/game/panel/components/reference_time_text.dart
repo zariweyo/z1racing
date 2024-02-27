@@ -11,7 +11,7 @@ class ReferenceTimeText extends PositionComponent
   late final TextComponent _timePassedComponent;
   final Duration duration;
 
-  ReferenceTimeText({required this.duration});
+  ReferenceTimeText({required this.duration}) : super(priority: 100);
 
   @override
   Future<void> onLoad() async {

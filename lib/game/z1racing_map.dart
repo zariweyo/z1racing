@@ -1,26 +1,61 @@
+import 'dart:math';
+
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
+import 'package:z1racing/domain/entities/z1track.dart';
 import 'package:z1racing/game/track/track.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
 
-class Z1RacingMap extends StatelessWidget {
-  const Z1RacingMap({super.key});
+class Z1RacingMap extends StatefulWidget {
+  final Z1Track z1track;
+  final Offset size;
+  const Z1RacingMap({
+    required this.z1track,
+    this.size = const Offset(300, 300),
+    super.key,
+  });
+
+  @override
+  State<Z1RacingMap> createState() => _Z1RacingMapState();
+}
+
+class _Z1RacingMapState extends State<Z1RacingMap> {
+  late List<Component> trackComponents;
+  late Track track;
+
+  @override
+  void initState() {
+    track = Track(
+      position: Vector2(0, 0),
+      size: 30,
+      z1track: widget.z1track,
+      floorColor: Colors.white60,
+      floorBridgeColor: Colors.white60.withAlpha(128),
+      ignoreObjects: false,
+      isMap: true,
+    );
+    trackComponents = track.getComponents.toList();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    const dimmensions = Size(400, 400);
+    if (track.z1track.slots.isEmpty) {
+      return Container();
+    }
 
     return Container(
-      height: 400,
-      width: 400,
+      height: widget.size.dx,
+      width: widget.size.dy,
       padding: const EdgeInsets.all(5),
       margin: const EdgeInsets.all(5),
       child: GameWidget<_Z1RacingMap>(
         game: _Z1RacingMap(
-          dimmensions: dimmensions,
+          sizeDim: widget.size,
+          dimmensions: track.dimmension,
+          trackComponents: trackComponents,
         ),
       ),
     );
@@ -28,8 +63,14 @@ class Z1RacingMap extends StatelessWidget {
 }
 
 class _Z1RacingMap extends Forge2DGame {
-  final Size dimmensions;
-  _Z1RacingMap({required this.dimmensions}) : super(zoom: 1);
+  final Rect dimmensions;
+  final Offset sizeDim;
+  final Iterable<Component> trackComponents;
+  _Z1RacingMap({
+    required this.dimmensions,
+    required this.trackComponents,
+    required this.sizeDim,
+  });
 
   @override
   Color backgroundColor() => Colors.transparent;
@@ -44,34 +85,27 @@ class _Z1RacingMap extends Forge2DGame {
     add(cameraWorld);
 
     cameraWorld.addAll(
-      Track(
-        position: Vector2(0, 0),
-        size: 30,
-        z1track: GameRepositoryImpl().currentTrack,
-        floorColor: const Color.fromARGB(255, 255, 255, 255),
-        ignoreObjects: false,
-        isMap: true,
-      ).getComponents(),
+      trackComponents,
     );
 
     prepareStart(numberOfPlayers: 1);
   }
 
   void prepareStart({required int numberOfPlayers}) {
-    final currentTrack = GameRepositoryImpl().currentTrack;
-    /* final zoomLevel = min(
-      currentTrack.width / dimmensions.width,
-      currentTrack.height / dimmensions.height,
-    ); */
-    if (!currentTrack.isEmpty) {
-      startCamera = CameraComponent(
-        world: cameraWorld,
-      )
-        ..viewfinder.position = Vector2(currentTrack.minX, currentTrack.minY)
-        ..viewfinder.anchor = Anchor.center
-        ..viewfinder.zoom = 0.4;
-      add(startCamera);
-    }
+    final zoomLevel = min(
+      sizeDim.dx / dimmensions.width,
+      sizeDim.dy / dimmensions.height,
+    );
+    startCamera = CameraComponent(
+      world: cameraWorld,
+    )
+      ..viewfinder.position =
+          Vector2(dimmensions.left - 50, dimmensions.bottom - 50)
+      ..viewfinder.anchor = Anchor.topRight
+      ..viewfinder.angle = pi
+      ..viewfinder.zoom = zoomLevel;
+
+    add(startCamera);
   }
 
   @override

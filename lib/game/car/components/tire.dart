@@ -1,16 +1,18 @@
+import 'dart:math';
+
+import 'package:flame/components.dart';
 import 'package:flame/palette.dart';
 import 'package:flame_forge2d/flame_forge2d.dart' hide Particle, World;
 import 'package:flutter/material.dart' hide Image, Gradient;
-import 'package:flutter/services.dart';
+import 'package:z1racing/data/game_repository_impl.dart';
+import 'package:z1racing/domain/entities/slot/slot_model.dart';
 import 'package:z1racing/game/car/components/car.dart';
 import 'package:z1racing/game/car/components/trail.dart';
 import 'package:z1racing/game/controls/models/jcontrols_data.dart';
 import 'package:z1racing/game/z1racing_game.dart';
-import 'package:z1racing/models/glabal_priorities.dart';
-import 'package:z1racing/models/slot/collision_categorie.dart';
-import 'package:z1racing/models/slot/slot_model.dart';
-import 'package:z1racing/repositories/game_repository.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
+import 'package:z1racing/models/collision_categorie.dart';
+import 'package:z1racing/models/global_priorities.dart';
+import 'package:z1racing/models/z1control.dart';
 
 class Tire extends BodyComponent<Z1RacingGame> {
   Tire({
@@ -19,8 +21,10 @@ class Tire extends BodyComponent<Z1RacingGame> {
     required this.isFrontTire,
     required this.isLeftTire,
     required this.jointDef,
-    required this.controlsData,
     required this.color,
+    required this.startAngle,
+    this.startLevel = SlotModelLevel.floor,
+    this.controlsData,
     this.isTurnableTire = false,
   }) : super(
           paint: Paint()
@@ -34,6 +38,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
   static const double _frontTireMaxDriveForce = 600.0;
   static const double _backTireMaxLateralImpulse = 8.5;
   static const double _frontTireMaxLateralImpulse = 7.5;
+  double _coefTireSquash = 0.3;
 
   final Car car;
   final size = Vector2(0.5, 1.25);
@@ -45,9 +50,11 @@ class Tire extends BodyComponent<Z1RacingGame> {
     const Radius.circular(0.3),
   );
 
-  final Set<LogicalKeyboardKey> pressedKeys;
-  final ControlsData controlsData;
+  final Set<Z1Control> pressedKeys;
+  final ControlsData? controlsData;
   final Color color;
+  final double startAngle;
+  final SlotModelLevel startLevel;
 
   late final double _maxDriveForce =
       isFrontTire ? _frontTireMaxDriveForce : _backTireMaxDriveForce;
@@ -75,49 +82,85 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   Trail? trail;
 
+  Vector2 get _jointAnchor => Vector2(
+        isLeftTire ? -3.0 : 3.0,
+        isFrontTire ? 3.5 : -4.25,
+      );
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    if (!isFrontTire) {
-      trail = Trail(tireBody: body, color: color);
-      game.cameraWorld.add(trail!);
-    }
+    _coefTireSquash =
+        max(2.5 - GameRepositoryImpl().currentTrack.settings.slide, 0.3);
   }
 
+  SlotModelLevel lastLevel = SlotModelLevel.floor;
+
+  List<int> _viasSelected = [];
+
   void changeLevel(SlotModelLevel level) {
+    lastLevel = level;
     priority = level == SlotModelLevel.floor
         ? GlobalPriorities.carShadowFloor
         : GlobalPriorities.carShadowBridge;
     body.fixtures.first.filterData.categoryBits =
-        CollisionCategorie.getCollisionFromCarLevel(level);
+        _setCollisionLevel(level, viasSelected: _viasSelected);
     trail?.priority = level == SlotModelLevel.floor
         ? GlobalPriorities.carTrailFloor
         : GlobalPriorities.carTrailBridge;
+  }
+
+  void selectVia({required List<int> viasSelected}) {
+    _viasSelected = viasSelected;
+    body.fixtures.first.filterData.categoryBits =
+        _setCollisionLevel(lastLevel, viasSelected: viasSelected);
+  }
+
+  void translatePosition(Vector2 translate) {
+    body.setTransform(
+      position.clone().translated(translate.x, translate.y),
+      angle,
+    );
   }
 
   SlotModelLevel get level => CollisionCategorie.getSlotModelLevelFromCollision(
         body.fixtures.first.filterData.categoryBits,
       );
 
+  int _setCollisionLevel(
+    SlotModelLevel level, {
+    List<int> viasSelected = const [],
+  }) {
+    if (isFrontTire) {
+      var viasSum = 0;
+      if (viasSelected.isNotEmpty) {
+        viasSelected.forEach((via) {
+          viasSum += CollisionCategorie.getViaCollisionFromSlotModelLevel(
+            level,
+            via,
+          );
+        });
+      }
+      return CollisionCategorie.getCollisionFromCarLevel(level) + viasSum;
+    }
+    return 0;
+  }
+
   @override
   Body createBody() {
-    final jointAnchor = Vector2(
-      isLeftTire ? -3.0 : 3.0,
-      isFrontTire ? 3.5 : -4.25,
-    );
-
     final def = BodyDef()
       ..type = BodyType.dynamic
-      ..angle = car.body.angle
-      ..position = car.body.position + jointAnchor;
+      ..angle = startAngle
+      ..position = car.body.position + _jointAnchor;
     final body = world.createBody(def)..userData = this;
 
     final polygonShape = PolygonShape()..setAsBoxXY(0.5, 1.25);
     body.createFixtureFromShape(polygonShape).userData = this;
-    body.fixtures.first.filterData.categoryBits = CollisionCategorie.floor;
+    body.fixtures.first.filterData.categoryBits =
+        _setCollisionLevel(startLevel);
 
     jointDef.bodyB = body;
-    jointDef.localAnchorA.setFrom(jointAnchor);
+    jointDef.localAnchorA.setFrom(_jointAnchor);
     world.createJoint(joint = RevoluteJoint(jointDef));
     joint.setLimits(0, 0);
     return body;
@@ -125,11 +168,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   @override
   void update(double dt) {
-    if (GameRepositoryImpl().getStatus() == GameStatus.start &&
-        (body.isAwake ||
-            pressedKeys.isNotEmpty ||
-            controlsData.hasHorizontal() ||
-            controlsData.hasVertical())) {
+    if (car.initiated) {
       var adjustDrive = 1.0;
       if (dt > 1 / 59) {
         adjustDrive = 20.0;
@@ -149,7 +188,7 @@ class Tire extends BodyComponent<Z1RacingGame> {
 
   void _updateFriction() {
     final impulse = _lateralVelocity
-      ..scale(-body.mass)
+      ..scale(-_coefTireSquash)
       ..clampScalar(-_maxLateralImpulse, _maxLateralImpulse)
       ..scale(_currentTraction);
     body.applyLinearImpulse(impulse);
@@ -170,18 +209,18 @@ class Tire extends BodyComponent<Z1RacingGame> {
     var desiredSpeed = 0.0;
     var brake = false;
 
-    if (controlsData.upValue > 0) {
-      desiredSpeed = car.speed * controlsData.upValue;
+    if (controlsData != null && controlsData!.upValue > 0) {
+      desiredSpeed = car.speed * controlsData!.upValue;
     }
-    if (controlsData.downValue > 0) {
-      desiredSpeed += _maxBackwardSpeed * controlsData.downValue;
+    if (controlsData != null && controlsData!.downValue > 0) {
+      desiredSpeed += _maxBackwardSpeed * controlsData!.downValue;
       brake = true;
     }
 
-    if (pressedKeys.contains(LogicalKeyboardKey.arrowUp)) {
+    if (pressedKeys.contains(Z1Control.run)) {
       desiredSpeed = car.speed;
     }
-    if (pressedKeys.contains(LogicalKeyboardKey.arrowDown)) {
+    if (pressedKeys.contains(Z1Control.stop)) {
       desiredSpeed += _maxBackwardSpeed;
       brake = true;
     }
@@ -208,8 +247,6 @@ class Tire extends BodyComponent<Z1RacingGame> {
       body.applyForce(
         currentForwardNormal..scale(1 * traction * force * adjustDtForce),
       );
-    } else {
-      //print("--> force 0 $desiredSpeed $currentSpeed");
     }
   }
 
@@ -217,20 +254,20 @@ class Tire extends BodyComponent<Z1RacingGame> {
     var desiredAngle = 0.0;
     var isTurning = false;
 
-    if (controlsData.leftValue > 0) {
-      desiredAngle = -(_lockAngle * controlsData.leftValue);
+    if (controlsData != null && controlsData!.leftValue > 0) {
+      desiredAngle = -(_lockAngle * controlsData!.leftValue);
       isTurning = true;
     }
-    if (controlsData.rightValue > 0) {
-      desiredAngle += _lockAngle * controlsData.rightValue;
+    if (controlsData != null && controlsData!.rightValue > 0) {
+      desiredAngle += _lockAngle * controlsData!.rightValue;
       isTurning = true;
     }
 
-    if (pressedKeys.contains(LogicalKeyboardKey.arrowLeft)) {
+    if (pressedKeys.contains(Z1Control.left)) {
       desiredAngle = -_lockAngle;
       isTurning = true;
     }
-    if (pressedKeys.contains(LogicalKeyboardKey.arrowRight)) {
+    if (pressedKeys.contains(Z1Control.right)) {
       desiredAngle += _lockAngle;
       isTurning = true;
     }

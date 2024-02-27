@@ -5,12 +5,12 @@ import 'package:flame/effects.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' hide Image, Gradient;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:z1racing/data/game_repository_impl.dart';
 import 'package:z1racing/extensions/duration_extension.dart';
 import 'package:z1racing/game/z1racing_game.dart';
-import 'package:z1racing/repositories/game_repository_impl.dart';
 
 class LapText extends PositionComponent with HasGameRef<Z1RacingGame> {
-  LapText() : super(position: Vector2(70, 50));
+  LapText() : super(position: Vector2(70, 50), priority: 100);
   late final ValueNotifier<int> lapNotifier =
       GameRepositoryImpl().getLapNotifier();
   late final TextComponent _timePassedComponent;

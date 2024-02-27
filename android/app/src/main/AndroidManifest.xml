@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="Z1 Racing"
+        android:label="Z1 Rally"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

@@ -1,11 +1,11 @@
 {
-    "name": "Z1 Racing",
-    "short_name": "Z1 Racing",
+    "name": "Z1 Rally",
+    "short_name": "Z1 Rally",
     "start_url": ".",
     "display": "fullscreen",
     "background_color": "#000000",
     "theme_color": "#a9d191",
-    "description": "Z1 Racing",
+    "description": "Z1 Rally",
     "orientation": "landscape-primary",
     "prefer_related_applications": false,
     "icons": [

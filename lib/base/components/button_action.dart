@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 
 class ButtonActions extends StatelessWidget {
   final Function()? onTap;

@@ -1,7 +1,7 @@
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:z1racing/repositories/preferences_repository.dart';
+import 'package:z1racing/domain/repositories/preferences_repository.dart';
 
 class SettingsMusic extends StatefulWidget {
   const SettingsMusic({super.key});

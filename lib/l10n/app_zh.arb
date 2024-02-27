@@ -8,7 +8,7 @@
     "version": "版本 %%VERSION%%",
     "nickName": "昵称",
     "updateAvailable": "有可用更新",
-    "updateNeeded": "请更新 Z1Racing 以继续游戏。谢谢。",
+    "updateNeeded": "请更新 Z1Rally 以继续游戏。谢谢。",
     "update": "更新",
     "menu": "菜单",
     "restartRace": "重新开始比赛",
@@ -34,5 +34,11 @@
     "confirmClose": "您要關閉應用程式嗎？",
     "cancel": "取消",
     "closeApp": "關閉 Z1 賽車",
-    "save": "保存"
+    "save": "保存",
+    "goal1": "赢得比赛",
+    "goal2": "获得第二名",
+    "goal3": "获得第三名",
+    "goalPodium1": "恭喜你，你赢得了比赛",
+    "goalPodium2": "恭喜你，你获得了第二名",
+    "goalPodium3": "恭喜你，你获得了第三名"
 }

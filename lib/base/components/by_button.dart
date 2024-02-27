@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:z1racing/base/components/button_action.dart';
-import 'package:z1racing/repositories/firebase_firestore_repository.dart';
+import 'package:z1racing/domain/repositories/firebase_firestore_repository.dart';
 
 class ByButton extends StatefulWidget {
   const ByButton({super.key});

@@ -3,14 +3,30 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 
-class Trail extends Component with HasPaint {
-  Trail({required this.tireBody, required this.color}) : super(priority: 3);
+enum TrailWheel { leftFront, leftBack, rightFront, rightBack }
 
-  final Body tireBody;
+class Trail extends Component with HasPaint {
+  Trail({
+    required this.carBody,
+    required this.color,
+    required this.trailWheel,
+  }) : super(priority: 3);
+
+  final Body carBody;
   final Color color;
+  final TrailWheel trailWheel;
 
   final trail = <Offset>[];
   final _trailLength = 20;
+
+  Vector2 get relativePosition => Vector2(
+        [TrailWheel.leftBack, TrailWheel.leftFront].contains(trailWheel)
+            ? 3.0
+            : -3.0,
+        [TrailWheel.leftFront, TrailWheel.rightFront].contains(trailWheel)
+            ? 3.5
+            : -4.25,
+      );
 
   @override
   Future<void> onLoad() async {
@@ -21,12 +37,14 @@ class Trail extends Component with HasPaint {
 
   @override
   void update(double dt) {
-    if (tireBody.linearVelocity.length2 > 100) {
+    if (carBody.linearVelocity.length2 > 100) {
       if (trail.length > _trailLength) {
         trail.removeAt(0);
       }
-      final trailPoint = tireBody.position.toOffset();
-      trail.add(trailPoint);
+      final trailPoint = carBody.position
+          .translated(relativePosition.x, relativePosition.y)
+        ..rotate(carBody.angle, center: carBody.position);
+      trail.add(trailPoint.toOffset());
     } else if (trail.isNotEmpty) {
       trail.removeAt(0);
     }
